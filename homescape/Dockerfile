@@ -2,8 +2,8 @@
 # HOMESCAPE_REF is the release tag, so installing or updating the app builds exactly that version and nothing pushed to
 # main after it. Raise it with every release (CONTRIBUTING.md > Releases).
 FROM node:22-alpine AS web
-ARG HOMESCAPE_REPO=https://github.com/muratozturkdev/homescape
-ARG HOMESCAPE_REF=v0.2.1
+ARG HOMESCAPE_REPO=https://github.com/demios78/homescape
+ARG HOMESCAPE_REF=v0.2.1-dm.1
 COPY . /files
 RUN if [ -f /files/www/index.html ]; then \
       cp -r /files/www /out; \

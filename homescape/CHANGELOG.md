@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1-dm.1 (demios78 fork)
+
+- Beds come in Twin, Full, Queen and King sizes, with five headboard styles: flat, framed panels, padded, arched and
+  carved lattice. Frame and bedding colors can be chosen, including a floral print.
+- Nightstands can have a carved lattice door and a color of their own.
+- New furniture: a narrow console table with an adjustable length.
+- Installs from github.com/demios78/homescape.
+
 ## 0.2.1
 
 - The average temperature counts only indoor rooms: terraces, balconies and gardens no longer change it
