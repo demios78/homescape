@@ -169,6 +169,7 @@ export const KIND_ICON: Record<ItemKind, LucideIcon> = {
   armchair: Armchair,
   gamingChair: Armchair,
   coffeeTable: Coffee,
+  consoleTable: Table2,
   roundTable: CircleDot,
   rug: Square,
   doormat: RectangleHorizontal,

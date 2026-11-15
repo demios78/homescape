@@ -46,6 +46,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   sofa: F.Sofa,
   armchair: F.Armchair,
   coffeeTable: F.CoffeeTable,
+  consoleTable: F.ConsoleTable,
   roundTable: F.RoundTable,
   rug: F.Rug,
   doormat: F.Doormat,

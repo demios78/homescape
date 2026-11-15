@@ -102,6 +102,7 @@ export const SURFACE_Y: Partial<Record<ItemKind, number>> = {
   desk: 0.75,
   diningTable: 0.78,
   coffeeTable: 0.44,
+  consoleTable: 0.76,
   roundTable: 0.47,
   tvUnit: 0.5,
   nightstand: 0.48,

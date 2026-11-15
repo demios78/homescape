@@ -675,3 +675,167 @@ export function rugTexture(shape: string, color: string, w: number, d: number) {
   rugCache.set(key, t)
   return t
 }
+
+/**
+ * Embossed panel (like a pressed tin or carved headboard inset): a dark base with a lighter quatrefoil medallion, corner
+ * fans and a dotted border. Drawn once; tinted by the material color.
+ */
+export function medallionTexture() {
+  return base('medallion', (g, s) => {
+    g.fillStyle = '#ffffff'
+    g.fillRect(0, 0, s, s)
+    const c = s / 2
+    g.lineCap = 'round'
+    const stroke = (w: number, a: number) => {
+      g.lineWidth = w
+      g.strokeStyle = `rgba(40, 34, 30, ${a})`
+    }
+    // Quatrefoil: four lobes around the center, then a smaller diamond inside
+    stroke(s * 0.022, 0.55)
+    for (let i = 0; i < 4; i++) {
+      const a = (i * Math.PI) / 2
+      g.beginPath()
+      g.ellipse(c + Math.cos(a) * s * 0.15, c + Math.sin(a) * s * 0.15, s * 0.13, s * 0.085, a, 0, Math.PI * 2)
+      g.stroke()
+    }
+    stroke(s * 0.016, 0.5)
+    g.beginPath()
+    g.moveTo(c, c - s * 0.36)
+    g.lineTo(c + s * 0.36, c)
+    g.lineTo(c, c + s * 0.36)
+    g.lineTo(c - s * 0.36, c)
+    g.closePath()
+    g.stroke()
+    g.beginPath()
+    g.arc(c, c, s * 0.05, 0, Math.PI * 2)
+    g.stroke()
+    // Corner fans
+    stroke(s * 0.014, 0.42)
+    for (const [x, y] of [[0, 0], [s, 0], [0, s], [s, s]]) {
+      for (const r of [0.16, 0.22]) {
+        g.beginPath()
+        g.arc(x, y, s * r, 0, Math.PI * 2)
+        g.stroke()
+      }
+    }
+    // Dotted border
+    g.fillStyle = 'rgba(40, 34, 30, 0.45)'
+    for (let i = 0; i < 24; i++) {
+      const k = ((i + 0.5) / 24) * s
+      for (const [x, y] of [[k, s * 0.035], [k, s * 0.965], [s * 0.035, k], [s * 0.965, k]]) {
+        g.beginPath()
+        g.arc(x, y, s * 0.008, 0, Math.PI * 2)
+        g.fill()
+      }
+    }
+  })
+}
+
+/**
+ * Floral bedding print (block-print style: small mauve flower sprigs with green leaves on an off-white ground, a faint
+ * lattice between them). Tiles; the bed repeats it about every 60 cm.
+ */
+export function floralTexture() {
+  return base('floral-bedding', (g, s) => {
+    g.fillStyle = '#f2efeb'
+    g.fillRect(0, 0, s, s)
+    g.strokeStyle = 'rgba(140, 170, 160, 0.45)'
+    g.lineWidth = s * 0.012
+    for (const o of [0, s / 2]) {
+      g.beginPath()
+      g.ellipse(o + s / 4, s / 2, s * 0.24, s * 0.46, 0, 0, Math.PI * 2)
+      g.stroke()
+    }
+    const sprig = (x: number, y: number) => {
+      g.strokeStyle = '#6f8f6c'
+      g.lineWidth = s * 0.016
+      g.beginPath()
+      g.moveTo(x, y + s * 0.15)
+      g.lineTo(x, y - s * 0.02)
+      g.stroke()
+      g.fillStyle = '#7f9d77'
+      for (const k of [-1, 1]) {
+        g.beginPath()
+        g.ellipse(x + k * s * 0.05, y + s * 0.08, s * 0.045, s * 0.018, k * 0.6, 0, Math.PI * 2)
+        g.fill()
+      }
+      g.fillStyle = '#9b4a73'
+      for (const [dx, dy, r] of [[0, -0.06, 0.05], [-0.055, -0.005, 0.04], [0.055, -0.005, 0.04]]) {
+        g.beginPath()
+        g.arc(x + dx * s, y + dy * s, r * s, 0, Math.PI * 2)
+        g.fill()
+      }
+      g.fillStyle = '#c87fa3'
+      g.beginPath()
+      g.arc(x, y - s * 0.065, s * 0.02, 0, Math.PI * 2)
+      g.fill()
+    }
+    for (const [x, y] of [[0.25, 0.27], [0.75, 0.77], [0.75, 0.27], [0.25, 0.77]]) sprig(x * s, y * s)
+  })
+}
+
+/**
+ * Carved lattice (like a hand-carved Indian jali panel): white scrolls and petals on a transparent ground, with a few
+ * darker flecks for a distressed finish. Tinted by the material color; holes cut with alphaTest.
+ */
+export function latticeTexture() {
+  return base('lattice', (g, s) => {
+    g.clearRect(0, 0, s, s)
+    g.lineCap = 'round'
+    g.strokeStyle = '#ffffff'
+    const c = s / 2
+    // Frame of the tile: half a bar on each edge, so tiles join into full bars
+    g.lineWidth = s * 0.07
+    g.strokeRect(0, 0, s, s)
+    // Center flower: four petals and a ring
+    g.lineWidth = s * 0.05
+    for (let i = 0; i < 4; i++) {
+      const a = (i * Math.PI) / 2
+      g.beginPath()
+      g.ellipse(c + Math.cos(a) * s * 0.14, c + Math.sin(a) * s * 0.14, s * 0.12, s * 0.07, a, 0, Math.PI * 2)
+      g.stroke()
+    }
+    g.beginPath()
+    g.arc(c, c, s * 0.05, 0, Math.PI * 2)
+    g.stroke()
+    // Scrolls from each corner toward the flower
+    g.lineWidth = s * 0.045
+    for (const [x, y] of [[0, 0], [s, 0], [0, s], [s, s]]) {
+      const dx = Math.sign(c - x)
+      const dy = Math.sign(c - y)
+      g.beginPath()
+      g.moveTo(x + dx * s * 0.04, y + dy * s * 0.04)
+      g.bezierCurveTo(x + dx * s * 0.3, y + dy * s * 0.05, x + dx * s * 0.05, y + dy * s * 0.3, x + dx * s * 0.24, y + dy * s * 0.24)
+      g.stroke()
+      g.beginPath()
+      g.arc(x + dx * s * 0.17, y + dy * s * 0.17, s * 0.045, 0, Math.PI * 2)
+      g.stroke()
+    }
+    // Leaves on the edge midpoints
+    for (const [x, y, a] of [[c, 0, 0], [c, s, 0], [0, c, Math.PI / 2], [s, c, Math.PI / 2]]) {
+      g.beginPath()
+      g.ellipse(x, y, s * 0.09, s * 0.05, a, 0, Math.PI * 2)
+      g.stroke()
+    }
+    // Distressed flecks on the carving
+    g.globalCompositeOperation = 'source-atop'
+    const r = rngT(7)
+    for (let i = 0; i < 220; i++) {
+      g.fillStyle = `rgba(150, 132, 108, ${0.25 + r() * 0.35})`
+      g.fillRect(r() * s, r() * s, 1 + r() * 3, 1 + r() * 2)
+    }
+    g.globalCompositeOperation = 'source-over'
+  })
+}
+
+function rngT(seed: number) {
+  let x = seed >>> 0 || 1
+  return () => {
+    x ^= x << 13
+    x >>>= 0
+    x ^= x >> 17
+    x ^= x << 5
+    x >>>= 0
+    return x / 4294967296
+  }
+}

@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { deviceClass, isActive, lightColor, lightLevel } from '@/ha/derive'
 import type { HassEntity } from '@/ha/types'
 import { bindingsOf, ledOf, ledSource } from '@/model/bindings'
-import { BEAM } from '@/model/catalog'
+import { BEAM, bedModel } from '@/model/catalog'
 import { apertureOf, doorSides, isOutdoor, rectsOf, roomAt, WALL_H, WALL_T } from '@/model/geometry'
 import type { Item, ItemKind, Level, Rect, Room } from '@/model/types'
 import { openNeighbors } from '@/model/walls'
@@ -490,7 +490,8 @@ export function computeRoomLights(level: Level, entities: Record<string, HassEnt
       const src = id ? entities[id] : undefined
       if (src && isActive(src)) {
         const strip = mode === 'strip'
-        push(it, strip ? [0, 0.9, -0.88] : [0, 1.0, -1.0], strip ? 3.8 : 3.2, strip ? 2.5 : 2.3, 3, _c.set(lightColor(src)).multiplyScalar(Math.max(0.35, lightLevel(src))), strip ? 0.78 : 0.75)
+        const b = bedModel(it)
+        push(it, strip ? [0, b.stripY - 0.005, -b.d / 2 + b.front + 0.08] : [0, b.backY + 0.06, -b.d / 2 + 0.05], strip ? 3.8 : 3.2, strip ? 2.5 : 2.3, 3, _c.set(lightColor(src)).multiplyScalar(Math.max(0.35, lightLevel(src))), strip ? 0.78 : 0.75)
       }
       continue
     }

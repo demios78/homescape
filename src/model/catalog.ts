@@ -83,6 +83,7 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   sofa: { label: t('Sofa'), group: 'furniture', domains: [], size: [2.2, 0.9], labelY: 1.1 },
   armchair: { label: t('Armchair'), group: 'furniture', domains: [], size: [0.9, 0.85], labelY: 1.1 },
   coffeeTable: { label: t('Coffee table'), group: 'furniture', domains: [], size: [1.1, 0.6], labelY: 0.7 },
+  consoleTable: { label: t('Console table'), group: 'furniture', domains: [], size: [1.2, 0.35], labelY: 1 },
   roundTable: { label: t('Round side table'), group: 'furniture', domains: [], size: [0.6, 0.6], labelY: 0.7 },
   rug: { label: t('Rug'), group: 'furniture', domains: [], size: [2.6, 1.8], labelY: 0.3 },
   // Doormat with adjustable size; walked on like a rug
@@ -357,6 +358,63 @@ export const PET_COLORS: [string, string][] = [
   [t('Pink'), '#f2b8c6'],
 ]
 
+/**
+ * Beds: the size sets the frame footprint (Item.len width, Item.len2 length; the mattress sits inside), the headboard
+ * style is Item.variant. A bed without them keeps the original 1.7 x 2.1 m look (flat headboard), so old plans need no
+ * migration. Frame sizes: US mattresses plus the frame around them.
+ */
+export const BED_SIZES: [string, string, number, number][] = [
+  ['twin', t('Twin'), 1.07, 2.05],
+  ['full', t('Full'), 1.45, 2.05],
+  ['queen', t('Queen'), 1.62, 2.18],
+  ['king', t('King'), 2.03, 2.18],
+]
+export const BED_STYLES: [string, string][] = [
+  ['flat', t('Flat')],
+  ['framed', t('Panels')],
+  ['tufted', t('Padded')],
+  ['arched', t('Arched')],
+  ['lattice', t('Lattice')],
+]
+/** Frame (and headboard) colors; the first two are the original look. */
+export const BED_FRAME_COLORS: [string, string][] = [
+  [t('Honey'), '#d9a86c'],
+  [t('Weathered oak'), '#8a7766'],
+  [t('Whitewash'), '#e6dfd2'],
+  [t('Walnut'), '#6b4a34'],
+  [t('White'), '#f3f1ec'],
+  [t('Gray'), '#a9adb8'],
+  [t('Navy'), '#34416c'],
+  [t('Black'), '#2a2a2e'],
+]
+/** Bedding with a printed pattern instead of a plain color: the swatch shows its base tone. */
+export const BED_FLORAL = '#e9e4e6'
+export const BEDDING_COLORS: [string, string][] = [
+  [t('Periwinkle'), '#8f9ef0'],
+  [t('White'), '#f6f4ef'],
+  [t('Cream'), '#eee3cc'],
+  [t('Mauve floral'), BED_FLORAL],
+  [t('Gray'), '#bfc3cf'],
+  [t('Blush'), '#efc4c0'],
+  [t('Sage'), '#a6bc9d'],
+  [t('Navy'), '#34416c'],
+]
+/**
+ * Bed geometry shared by the model, the scene and the room lights: frame size, style, headboard top (head), the distance
+ * from the back edge to the headboard front (front) and the height of a front LED strip (stripY).
+ */
+export function bedModel(it: { len?: number; len2?: number; variant?: string }) {
+  const style = it.variant === 'framed' || it.variant === 'tufted' || it.variant === 'arched' || it.variant === 'lattice' ? it.variant : 'flat'
+  const w = it.len ?? 1.7
+  const d = it.len2 ?? 2.1
+  const head = { flat: 0.975, framed: 1.5, tufted: 1.25, arched: 1.3, lattice: 1.45 }[style]
+  const front = { flat: 0.09, framed: 0.085, tufted: 0.13, arched: 0.08, lattice: 0.085 }[style]
+  // The arched headboard is lower at its sides than at its peak: its LEDs sit below the side edges
+  const stripY = style === 'framed' || style === 'lattice' ? head - 0.18 : style === 'arched' ? head - 0.35 : head - 0.07
+  const backY = style === 'arched' ? head - 0.22 : head - 0.035
+  return { w, d, style, head, front, stripY, backY }
+}
+
 /** Kinds with color and option settings: which settings are shown. */
 export const OPTIONS: Partial<
   Record<
@@ -436,6 +494,15 @@ export const OPTIONS: Partial<
     note: t('Bind the curtain motor (Home Assistant cover) to this window: its open percentage (current_position) opens and closes the curtain; the slat angle of a venetian blind and the stripe alignment of a zebra blind follow current_tilt_position. With a window sensor bound, the sash opens.'),
   },
   bed: {
+    variantLabel: t('Headboard'),
+    variants: BED_STYLES,
+    variantDef: 'flat',
+    top: t('Bedding color'),
+    topList: BEDDING_COLORS,
+    topDef: '#8f9ef0',
+    body: t('Frame color'),
+    bodyList: BED_FRAME_COLORS,
+    bodyDef: '#d9a86c',
     ledLabel: t('Headboard light'),
     ledEntityLabel: t('Headboard light entity'),
     led: [
@@ -542,6 +609,18 @@ export const OPTIONS: Partial<
   },
   oven: { variantLabel: t('Placement'), variants: [['under', t('Under the counter')], ['tall', t('Tall unit (eye level)')]] },
   desk: { top: t('Top color'), body: t('Leg and drawer color'), drawers: true },
+  consoleTable: { top: t('Top color'), body: t('Leg color'), topList: BED_FRAME_COLORS, bodyList: BED_FRAME_COLORS, topDef: '#6b4a34', bodyDef: '#6b4a34' },
+  nightstand: {
+    variantLabel: t('Front'),
+    variants: [
+      ['open', t('Open shelf')],
+      ['lattice', t('Lattice door')],
+    ],
+    variantDef: 'open',
+    body: t('Color'),
+    bodyList: BED_FRAME_COLORS,
+    bodyDef: '#ffffff',
+  },
   gamingChair: { body: t('Seat color'), bodyDef: '#1f2440', top: t('Stripe color'), topList: ACCENT_COLORS, topDef: '#e2564b' },
   tvUnit: { top: t('Door color'), body: t('Body color') },
   drawerUnit: { top: t('Top color'), body: t('Body color') },
@@ -861,6 +940,7 @@ export const OPTIONS: Partial<
 /** Kinds with adjustable length: length (local x) limits (m); the card shows label when given */
 export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; label?: string }>> = {
   desk: { min: 0.8, max: 2.6 },
+  consoleTable: { min: 0.6, max: 2.2, label: t('Table length') },
   kitchenCounter: { min: 0.6, max: 4, label: t('Counter length') },
   tvUnit: { min: 0.8, max: 3.2, label: t('Unit length') },
   window: { min: 0.5, max: 3, label: t('Window width') },
@@ -910,6 +990,9 @@ export const ITEM_PRESETS: ItemPreset[] = [
   { id: 'rugRound', kind: 'rug', label: t('Round rug'), sub: t('Ø {d} m · can be oval', { d: 1.6 }), extra: { variant: 'round', len: 1.6, len2: 1.6 } },
   { id: 'rugCowhide', kind: 'rug', label: t('Cowhide'), sub: `${formatNumber(1.6)} × ${formatNumber(2)} m`, extra: { variant: 'cowhide', len: 1.6, len2: 2 } },
   { id: 'rugSheep', kind: 'rug', label: t('Sheepskin'), sub: `${formatNumber(0.7)} × ${formatNumber(1)} m`, extra: { variant: 'sheep', len: 0.7, len2: 1 } },
+  // Bed sizes; all the same kind, the card changes size, headboard and colors
+  { id: 'bedKing', kind: 'bed', label: t('King bed'), sub: t('framed panels · {w} × {d} m', { w: formatNumber(2.03), d: formatNumber(2.18) }), extra: { variant: 'framed', len: 2.03, len2: 2.18 } },
+  { id: 'bedTwin', kind: 'bed', label: t('Twin bed'), sub: `${formatNumber(1.07)} × ${formatNumber(2.05)} m`, extra: { len: 1.07, len2: 2.05 } },
 ]
 
 /** Window size: width (Item.len), height (Item.len2), bottom edge 0.9 m above the floor (moves with Item.y). */
@@ -920,7 +1003,7 @@ export const windowSize = (it: { len?: number; len2?: number }) => ({ w: it.len 
 export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, number] {
   const [w, d] = CATALOG[kind].size
   // The second size only for kinds that use it as depth (ceiling strip, rug); the L arm of a counter is computed separately.
-  if (kind === 'ceilingStrip' || kind === 'rug' || kind === 'doormat' || kind === 'pool') return [len ?? w, len2 ?? d]
+  if (kind === 'ceilingStrip' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed') return [len ?? w, len2 ?? d]
   // A ceiling fan is round: the blade span in both directions
   if (kind === 'ceilingFan') return [len ?? w, len ?? d]
   return [len ?? w, d]

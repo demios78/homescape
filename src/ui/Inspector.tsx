@@ -4,7 +4,7 @@ import { canToggle, toggle, turnOffAll } from '@/ha/actions'
 import { friendlyName, isActive, relativeTime, stateLabel } from '@/ha/derive'
 import { useHa } from '@/ha/store'
 import { bindingsOf, boundAnywhere, emitsLight, isBound, ledOf, ledSource } from '@/model/bindings'
-import { BEAM, BODY_COLORS, CATALOG, CONSOLE_LEN, consoleModel, ITEM_PRESETS, OPTIONS, RESIZABLE, RESIZABLE2, sizeOf, TOP_COLORS } from '@/model/catalog'
+import { BEAM, BED_SIZES, bedModel, BODY_COLORS, CATALOG, CONSOLE_LEN, consoleModel, ITEM_PRESETS, OPTIONS, RESIZABLE, RESIZABLE2, sizeOf, TOP_COLORS } from '@/model/catalog'
 import { kindFor, modelName, variantFor } from '@/model/generate'
 import { doorSides, isOutdoor, isStreetSurface, rectsOf, roomArea, roomAt, wallLengthAt, wallSnap, type Side } from '@/model/geometry'
 import { groupFamily, groupMates, heatingSummary } from '@/model/groups'
@@ -538,6 +538,26 @@ function FurnitureOptions({ item }: { item: Item }) {
             </>
           )
         })()}
+      {item.kind === 'bed' && (
+        <div className="grid gap-1.5">
+          <span className="text-[12px] font-semibold text-ink-2">{t('Bed size')}</span>
+          {/*
+           * The size sets the frame footprint (Item.len, len2), checked against the rules; a bed without one keeps the original
+           * size. The headboard edge stays where it is (usually against a wall): the center moves along the bed's length.
+           */}
+          <div className="flex gap-1.5">
+            {BED_SIZES.map(([k, label, w, d]) => {
+              const dz = (d - bedModel(item).d) / 2
+              const at = { x: Math.round((item.x + Math.sin(item.rot) * dz) * 1000) / 1000, z: Math.round((item.z + Math.cos(item.rot) * dz) * 1000) / 1000 }
+              return (
+                <button key={k} id={`bedsize-${k}-${item.id}`} type="button" className={seg(item.len === w && item.len2 === d)} onClick={() => tryPatch({ len: w, len2: d, ...at }, true, label)}>
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
       {MOUNTABLE.includes(item.kind) && (
         <div className="grid gap-1.5">
           <span className="text-[12px] font-semibold text-ink-2">{t('Placement')}</span>

@@ -177,6 +177,7 @@ export type ItemKind =
   | 'sofa'
   | 'armchair'
   | 'coffeeTable'
+  | 'consoleTable'
   | 'roundTable'
   | 'rug'
   | 'doormat'

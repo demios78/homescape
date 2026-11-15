@@ -4,14 +4,14 @@ import * as THREE from 'three'
 import { domainOf, isActive, lightColor, lightLevel } from '@/ha/derive'
 import { t } from '@/i18n'
 import { HEADBOARD } from '@/model/bindings'
-import { CATALOG, RUG_DEFAULT } from '@/model/catalog'
+import { BED_FLORAL, bedModel, CATALOG, RUG_DEFAULT } from '@/model/catalog'
 import { DRAWER_SLIDE } from '@/model/containers'
 import { SINK_W } from '@/model/counter'
 import { markShadows } from '../frame'
 import { StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { rugTexture } from './textures'
+import { floralTexture, latticeTexture, medallionTexture, rugTexture } from './textures'
 import { gainOf, type Visual } from './visual'
 
 /*
@@ -47,12 +47,12 @@ function Carcass({ w, h, d, y = 0, z = 0, color, shelves = [], top = true }: { w
 }
 
 /** Hinged door: swings about 100° on the hinge edge; handle on the free edge */
-function SwingDoor({ w, h, at, hinge, open, color, handle = 0.3 }: { w: number; h: number; at: [number, number, number]; hinge: 'l' | 'r'; open: number; color: string; handle?: number }) {
+function SwingDoor({ w, h, at, hinge, open, color, handle = 0.3, material }: { w: number; h: number; at: [number, number, number]; hinge: 'l' | 'r'; open: number; color: string; handle?: number; material?: THREE.Material }) {
   const s = hinge === 'l' ? 1 : -1
   const ref = useEased(open * -s * 1.8)
   return (
     <group ref={ref} position={[at[0] - (s * w) / 2, at[1], at[2]]}>
-      <Box size={[w, h, T]} position={[(s * w) / 2, 0, 0]} color={color} shadow={false} />
+      <Box size={[w, h, T]} position={[(s * w) / 2, 0, 0]} color={color} material={material} shadow={false} />
       {handle > 0 && <Box size={[0.022, Math.min(handle, h * 0.5), 0.022]} position={[s * (w - 0.045), h * 0.12, 0.02]} color={C.steel} shadow={false} />}
     </group>
   )
@@ -381,6 +381,13 @@ function headboardLight(v: Visual) {
  * soft halo in front; 'back' is a hidden LED behind the headboard casting a rectangular halo on the wall. It glows while
  * the bound light or plug is on, takes the light's color and also lights the room slightly (roomLights.ts).
  */
+/**
+ * Bed. Size from Item.len / len2 (catalog.ts > bedModel, BED_SIZES), headboard style from Item.variant: flat (the original
+ * look), framed (a wood frame with a crown cap, three dark embossed panels, side rails and a footboard with posts),
+ * tufted (an upholstered headboard with buttons) or arched (a curved headboard and a tall curved footboard with carved
+ * rosettes and finial posts) or lattice (a frame with four carved see-through panels and a low lattice footboard).
+ * Frame color Item.body, bedding Item.top. Back edge at local -d/2.
+ */
 export function Bed({ v }: { v: Visual }) {
   const src = headboardLight(v)
   // Not chosen: strip if a light is bound; only for a bed in the plan (ghosts and thumbnails have no v.at)
@@ -389,48 +396,326 @@ export function Bed({ v }: { v: Visual }) {
   const color = src?.color ?? '#ffd29a'
   const level = src?.level ?? 1
   const strip = useLitMaterial('#d9dbe6', on, color, level, 2.6)
+  const { w, d, style, head, front, stripY, backY } = bedModel(v.opts)
+  const back = -d / 2
+  const frame = v.opts.body ?? C.kraft
+  const headColor = v.opts.body ? shade(v.opts.body, 0.82) : C.kraftDark
+  const sheet = v.opts.top ?? C.brandLight
+  const pillows = w < 1.3 ? [0] : [-w * 0.235, w * 0.235]
+  const pw = w < 1.3 ? 0.6 : Math.min(0.9, w / 2 - 0.25)
+  const dd = d * 0.548
+  const sw = w - 0.14
   return (
     <group>
-      <Box size={[1.7, 0.3, 2.05]} position={[0, 0.2, 0]} color={C.kraft} radius={0.04} />
-      <Box size={[1.62, 0.2, 1.95]} position={[0, 0.44, 0.02]} color={C.white} radius={0.06} />
-      <Box size={[1.7, 0.85, 0.08]} position={[0, 0.55, -1.0]} color={C.kraftDark} radius={0.03} />
+      {style === 'framed' ? (
+        <FramedBed w={w} d={d} head={head} color={frame} />
+      ) : style === 'arched' ? (
+        <ArchedBed w={w} d={d} head={head} color={frame} />
+      ) : style === 'lattice' ? (
+        <LatticeBed w={w} d={d} head={head} color={frame} />
+      ) : (
+        <>
+          <Box size={[w, 0.3, d - 0.05]} position={[0, 0.2, 0]} color={frame} radius={0.04} />
+          {style === 'flat' && <Box size={[w, 0.85, 0.08]} position={[0, head - 0.425, back + 0.05]} color={headColor} radius={0.03} />}
+          {style === 'tufted' && <TuftedHead w={w} back={back} head={head} color={frame} />}
+        </>
+      )}
+      <Box size={[w - 0.08, 0.2, d - 0.15]} position={[0, 0.44, 0.02]} color={C.white} radius={0.06} />
       {mode === 'strip' && (
         <>
-          <Box size={[1.56, 0.022, 0.016]} position={[0, 0.905, -0.952]} material={strip} shadow={false} />
+          <Box size={[sw, 0.022, 0.016]} position={[0, stripY, back + front + 0.008]} material={strip} shadow={false} />
           {on && (
             <>
-              <StripGlow length={1.56} width={0.07} position={[0, 0.905, -0.944]} color={color} opacity={level * (v.night ? 1 : 0.6)} />
+              <StripGlow length={sw} width={0.07} position={[0, stripY, back + front + 0.016]} color={color} opacity={level * (v.night ? 1 : 0.6)} />
               {/* light spreading down the headboard face */}
-              <Wash length={1.64} depth={0.62} position={[0, 0.895 - 0.31, -0.955]} color={color} opacity={level * (v.night ? 0.75 : 0.36)} />
+              <Wash length={w - 0.06} depth={0.62} position={[0, stripY - 0.01 - 0.31, back + front + 0.005]} color={color} opacity={level * (v.night ? 0.75 : 0.36)} />
             </>
           )}
         </>
       )}
       {mode === 'back' && (
         <>
-          <Box size={[1.5, 0.02, 0.02]} position={[0, 0.94, -1.05]} material={strip} shadow={false} />
+          <Box size={[w - 0.2, 0.02, 0.02]} position={[0, backY, back]} material={strip} shadow={false} />
           {on && (
             <>
-              <StripGlow length={1.5} width={0.06} position={[0, 0.96, -1.05]} color={color} opacity={level * (v.night ? 0.9 : 0.48)} />
+              <StripGlow length={w - 0.2} width={0.06} position={[0, backY + 0.02, back]} color={color} opacity={level * (v.night ? 0.9 : 0.48)} />
               {/* light spreading up the wall from behind the headboard */}
-              <Wash length={2.1} depth={0.95} position={[0, 0.975 + 0.475, -1.064]} rotation={[0, 0, Math.PI]} color={color} opacity={level * (v.night ? 0.8 : 0.4)} />
+              <Wash length={w + 0.4} depth={0.95} position={[0, backY + 0.51, back - 0.014]} rotation={[0, 0, Math.PI]} color={color} opacity={level * (v.night ? 0.8 : 0.4)} />
             </>
           )}
         </>
       )}
-      <Box size={[0.6, 0.12, 0.38]} position={[-0.4, 0.6, -0.72]} color={C.offWhite} radius={0.05} />
-      <Box size={[0.6, 0.12, 0.38]} position={[0.4, 0.6, -0.72]} color={C.offWhite} radius={0.05} />
-      <Box size={[1.66, 0.06, 1.15]} position={[0, 0.56, 0.38]} color={C.brandLight} radius={0.03} />
+      {pillows.map((x) => (
+        <Box key={x} size={[pw, 0.12, 0.38]} position={[x, 0.6, back + 0.33]} color={C.offWhite} radius={0.05} />
+      ))}
+      <Box size={[w - 0.04, 0.06, dd]} position={[0, 0.56, d / 2 - 0.095 - dd / 2]} color={sheet} material={sheet === BED_FLORAL ? floralMaterial(w - 0.04, dd) : undefined} radius={0.03} />
     </group>
   )
 }
 
+/** Floral bedding: one material per duvet size (the print repeats about every 60 cm). */
+const floralMats = new Map<string, THREE.MeshStandardMaterial>()
+function floralMaterial(w: number, d: number) {
+  const key = `${w.toFixed(2)}x${d.toFixed(2)}`
+  let m = floralMats.get(key)
+  if (!m) {
+    const map = floralTexture().clone()
+    map.repeat.set(w / 0.6, d / 0.6)
+    map.needsUpdate = true
+    m = new THREE.MeshStandardMaterial({ map, roughness: 0.9 })
+    floralMats.set(key, m)
+  }
+  return m
+}
+
+/** Framed bed: posts, crown cap, three embossed panels; side rails, a slat deck and a low footboard with posts. */
+function FramedBed({ w, d, head, color }: { w: number; d: number; head: number; color: string }) {
+  const back = -d / 2
+  const panel = useMemo(() => {
+    const m = new THREE.MeshStandardMaterial({ color: shade(color, 0.36), map: medallionTexture(), roughness: 0.55, metalness: 0.15 })
+    return m
+  }, [color])
+  useEffect(() => () => panel.dispose(), [panel])
+  const z = back + 0.045
+  const inner = w - 0.16
+  const stile = 0.06
+  const pw = (inner - stile * 2) / 3
+  const lo = 0.5
+  const hi = head - 0.17
+  const foot = d / 2 - 0.045
+  return (
+    <>
+      {/* headboard */}
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.08, head - 0.04, 0.08]} position={[s * (w / 2 - 0.04), (head - 0.04) / 2, z]} color={color} radius={0.01} />
+      ))}
+      <Box size={[w, 0.13, 0.07]} position={[0, head - 0.105, z]} color={color} radius={0.01} />
+      <Box size={[w + 0.06, 0.04, 0.11]} position={[0, head - 0.02, z + 0.005]} color={shade(color, 0.92)} radius={0.01} />
+      <Box size={[inner, 0.1, 0.07]} position={[0, lo - 0.05, z]} color={color} radius={0.01} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[stile, hi - lo, 0.07]} position={[s * (pw / 2 + stile / 2), (lo + hi) / 2, z]} color={color} radius={0.008} />
+      ))}
+      {[-1, 0, 1].map((s) => (
+        <Box key={s} size={[pw, hi - lo, 0.03]} position={[s * (pw + stile), (lo + hi) / 2, z - 0.005]} material={panel} />
+      ))}
+      {/* rails and slat deck */}
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.05, 0.24, d - 0.17]} position={[s * (w / 2 - 0.025), 0.27, 0.0]} color={color} radius={0.01} />
+      ))}
+      <Box size={[w - 0.1, 0.04, d - 0.17]} position={[0, 0.32, 0]} color={shade(color, 0.6)} />
+      {/* footboard */}
+      {[-1, 1].map((s) => (
+        <group key={s} position={[s * (w / 2 - 0.045), 0, foot]}>
+          <Box size={[0.09, 0.47, 0.09]} position={[0, 0.335, 0]} color={color} radius={0.01} />
+          <Box size={[0.065, 0.1, 0.065]} position={[0, 0.05, 0]} color={color} radius={0.01} />
+          <Box size={[0.11, 0.03, 0.11]} position={[0, 0.585, 0]} color={shade(color, 0.92)} radius={0.008} />
+        </group>
+      ))}
+      <Box size={[w - 0.12, 0.3, 0.04]} position={[0, 0.3, d / 2 - 0.03]} color={color} radius={0.01} />
+      <Box size={[w - 0.12, 0.035, 0.06]} position={[0, 0.465, d / 2 - 0.035]} color={shade(color, 0.92)} radius={0.008} />
+    </>
+  )
+}
+
+/**
+ * Arched board: flat at the bottom, its top edge curving from h at the sides to h + rise in the middle; centered on x,
+ * base at y 0, t thick around z 0. One geometry per size.
+ */
+const archGeos = new Map<string, THREE.ExtrudeGeometry>()
+function archGeometry(w: number, h: number, rise: number, t: number) {
+  const key = [w, h, rise, t].map((n) => n.toFixed(3)).join(':')
+  let g = archGeos.get(key)
+  if (!g) {
+    const s = new THREE.Shape()
+    s.moveTo(-w / 2, 0)
+    s.lineTo(w / 2, 0)
+    s.lineTo(w / 2, h)
+    s.quadraticCurveTo(0, h + rise * 2, -w / 2, h)
+    s.closePath()
+    g = new THREE.ExtrudeGeometry(s, { depth: t, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.006, bevelSegments: 2, curveSegments: 24 })
+    g.translate(0, 0, -t / 2)
+    archGeos.set(key, g)
+  }
+  return g
+}
+
+/** Carved rosette: a center bud with four petals and two leaves, facing +z. */
+function Rosette({ position, color }: { position: [number, number, number]; color: string }) {
+  return (
+    <group position={position}>
+      <Ball r={0.022} position={[0, 0, 0.01]} color={color} shadow={false} />
+      {[0, 1, 2, 3].map((i) => (
+        <Ball key={i} r={0.016} position={[Math.cos((i * Math.PI) / 2 + 0.78) * 0.026, Math.sin((i * Math.PI) / 2 + 0.78) * 0.026, 0]} scale={[1, 1, 0.5]} color={color} shadow={false} />
+      ))}
+      {[-1, 1].map((k) => (
+        <Ball key={k} r={0.02} position={[k * 0.06, -0.008, -0.002]} scale={[1.8, 0.6, 0.4]} color={color} shadow={false} />
+      ))}
+    </group>
+  )
+}
+
+/** Post with a turned finial: a square post, a cap and a ball on a neck. */
+function FinialPost({ h, at, color }: { h: number; at: [number, number, number]; color: string }) {
+  return (
+    <group position={at}>
+      <Box size={[0.065, 0.1, 0.065]} position={[0, 0.05, 0]} color={color} radius={0.01} />
+      <Box size={[0.09, h - 0.1, 0.09]} position={[0, 0.1 + (h - 0.1) / 2, 0]} color={color} radius={0.012} />
+      <Box size={[0.11, 0.03, 0.11]} position={[0, h + 0.015, 0]} color={color} radius={0.008} />
+      <Cyl r={0.022} h={0.04} position={[0, h + 0.05, 0]} color={color} segments={12} />
+      <Ball r={0.042} position={[0, h + 0.1, 0]} color={color} />
+    </group>
+  )
+}
+
+/**
+ * Arched bed (like a white carved youth bed): finial posts at the four corners, an arched headboard and a tall arched
+ * footboard, each with a raised inner panel and a rosette at the top; side rails and a slat deck under the mattress.
+ */
+function ArchedBed({ w, d, head, color }: { w: number; d: number; head: number; color: string }) {
+  const back = -d / 2
+  const zh = back + 0.045
+  const zf = d / 2 - 0.03
+  const pw = w - 0.12
+  const trim = shade(color, 0.9)
+  const m = mat(color)
+  const mi = mat(shade(color, 0.96))
+  return (
+    <>
+      {/* headboard: sides 1.05 m, peak at head */}
+      {[-1, 1].map((s) => (
+        <FinialPost key={`h${s}`} h={head - 0.2} at={[s * (w / 2 - 0.045), 0, zh]} color={color} />
+      ))}
+      <mesh geometry={archGeometry(pw, head - 0.55, 0.25, 0.04)} material={m} position={[0, 0.3, zh]} castShadow receiveShadow />
+      <mesh geometry={archGeometry(pw - 0.24, head - 0.85, 0.2, 0.012)} material={mi} position={[0, 0.48, zh + 0.028]} receiveShadow />
+      <Rosette position={[0, head - 0.07, zh + 0.03]} color={trim} />
+      {/* rails and slat deck */}
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.05, 0.24, d - 0.17]} position={[s * (w / 2 - 0.025), 0.27, 0]} color={color} radius={0.01} />
+      ))}
+      <Box size={[w - 0.1, 0.04, d - 0.17]} position={[0, 0.32, 0]} color={shade(color, 0.75)} />
+      {/* footboard: sides 0.82 m, peak 0.94 m */}
+      {[-1, 1].map((s) => (
+        <FinialPost key={`f${s}`} h={0.92} at={[s * (w / 2 - 0.045), 0, d / 2 - 0.045]} color={color} />
+      ))}
+      <mesh geometry={archGeometry(pw, 0.62, 0.12, 0.035)} material={m} position={[0, 0.2, zf]} castShadow receiveShadow />
+      <mesh geometry={archGeometry(pw - 0.2, 0.4, 0.09, 0.012)} material={mi} position={[0, 0.3, zf + 0.022]} receiveShadow />
+      <Rosette position={[0, 0.86, zf + 0.025]} color={trim} />
+    </>
+  )
+}
+
+/** Carved lattice panel material: one per color and panel size, the carving repeating about every 38 cm. */
+const latticeMats = new Map<string, THREE.MeshStandardMaterial>()
+function latticeMaterial(color: string, w: number, h: number) {
+  const rx = Math.max(1, Math.round(w / 0.38))
+  const ry = Math.max(1, Math.round(h / 0.38))
+  const key = `${color}:${rx}:${ry}`
+  let m = latticeMats.get(key)
+  if (!m) {
+    const map = latticeTexture().clone()
+    map.repeat.set(rx, ry)
+    map.needsUpdate = true
+    m = new THREE.MeshStandardMaterial({ color, map, alphaTest: 0.5, roughness: 0.85, side: THREE.DoubleSide })
+    latticeMats.set(key, m)
+  }
+  return m
+}
+
+/**
+ * Lattice bed (like a carved whitewashed wood bed): posts, a capped top rail, a middle rail and a center stile framing four
+ * see-through carved panels; side rails, a slat deck and a low footboard with a lattice band between two rails.
+ */
+function LatticeBed({ w, d, head, color }: { w: number; d: number; head: number; color: string }) {
+  const back = -d / 2
+  const z = back + 0.045
+  const inner = w - 0.16
+  const lo = 0.5
+  const hi = head - 0.16
+  const mid = lo + (hi - lo) * 0.42
+  const pw = (inner - 0.06) / 2
+  const ft = d / 2 - 0.032
+  return (
+    <>
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.08, head - 0.04, 0.08]} position={[s * (w / 2 - 0.04), (head - 0.04) / 2, z]} color={color} radius={0.01} />
+      ))}
+      <Box size={[w, 0.12, 0.07]} position={[0, head - 0.1, z]} color={color} radius={0.01} />
+      <Box size={[w + 0.04, 0.035, 0.09]} position={[0, head - 0.018, z + 0.005]} color={shade(color, 0.95)} radius={0.008} />
+      <Box size={[inner, 0.1, 0.07]} position={[0, lo - 0.05, z]} color={color} radius={0.01} />
+      <Box size={[inner, 0.07, 0.07]} position={[0, mid, z]} color={color} radius={0.008} />
+      <Box size={[0.06, hi - lo, 0.07]} position={[0, (lo + hi) / 2, z]} color={color} radius={0.008} />
+      {[-1, 1].flatMap((s) =>
+        [
+          [lo, mid - 0.035],
+          [mid + 0.035, hi],
+        ].map(([y0, y1]) => <Box key={`${s}${y0}`} size={[pw, y1 - y0, 0.025]} position={[s * (pw / 2 + 0.03), (y0 + y1) / 2, z]} material={latticeMaterial(color, pw, y1 - y0)} />),
+      )}
+      {/* rails and slat deck */}
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.05, 0.24, d - 0.16]} position={[s * (w / 2 - 0.025), 0.27, 0]} color={color} radius={0.01} />
+      ))}
+      <Box size={[w - 0.1, 0.04, d - 0.16]} position={[0, 0.32, 0]} color={shade(color, 0.7)} />
+      {/* footboard */}
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.085, 0.52, 0.085]} position={[s * (w / 2 - 0.0425), 0.26, ft]} color={color} radius={0.01} />
+      ))}
+      <Box size={[w - 0.1, 0.05, 0.045]} position={[0, 0.475, ft]} color={color} radius={0.008} />
+      <Box size={[w - 0.1, 0.06, 0.045]} position={[0, 0.15, ft]} color={color} radius={0.008} />
+      <Box size={[0.05, 0.27, 0.05]} position={[0, 0.315, ft]} color={color} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[(w - 0.22) / 2, 0.27, 0.022]} position={[s * ((w - 0.22) / 4 + 0.025), 0.315, ft]} material={latticeMaterial(color, (w - 0.22) / 2, 0.27)} />
+      ))}
+    </>
+  )
+}
+
+/** Upholstered headboard: a padded panel on two legs, buttons in a diamond grid. */
+function TuftedHead({ w, back, head, color }: { w: number; back: number; head: number; color: string }) {
+  const h = head - 0.3
+  const cols = Math.max(4, Math.round(w / 0.24))
+  const buttons: [number, number][] = []
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < cols - (r % 2); c++) buttons.push([(c - (cols - 1 - (r % 2)) / 2) * ((w - 0.2) / (cols - 1)), head - 0.18 - r * 0.17])
+  }
+  const dark = shade(color, 0.7)
+  return (
+    <>
+      <Box size={[w + 0.04, h, 0.12]} position={[0, head - h / 2, back + 0.07]} color={color} radius={0.05} />
+      {buttons.map(([x, y]) => (
+        <Ball key={`${x}-${y}`} r={0.012} position={[x, y, back + 0.13]} color={dark} shadow={false} />
+      ))}
+    </>
+  )
+}
+
 export function Nightstand({ v }: { v: Visual }) {
-  // Open compartment below, drawer on top (model/containers.ts: 0 lower compartment, 1 drawer)
+  // Lower compartment, drawer on top (model/containers.ts: 0 lower compartment, 1 drawer). Item.variant 'lattice' closes
+  // the compartment with a carved lattice door; Item.body colors the whole piece (unset: the original white and pale blue).
+  const body = v.opts.body
+  const color = body ?? C.white
   return (
     <group>
-      <Carcass w={0.45} h={0.48} d={0.4} color={C.white} shelves={[0.27]} />
-      <Drawer w={0.41} h={0.17} d={0.36} at={[0, 0.365, -0.01]} open={partOpen(v, 1)} color={C.brandPale} />
+      <Carcass w={0.45} h={0.48} d={0.4} color={color} shelves={[0.27]} />
+      <Drawer w={0.41} h={0.17} d={0.36} at={[0, 0.365, -0.01]} open={partOpen(v, 1)} color={body ? shade(body, 0.96) : C.brandPale} />
+      {v.opts.variant === 'lattice' && (
+        <SwingDoor w={0.41} h={0.23} at={[0, 0.15, 0.209]} hinge="l" open={partOpen(v, 0)} color={color} material={latticeMaterial(color, 0.41, 0.23)} handle={0.05} />
+      )}
+    </group>
+  )
+}
+
+/** Narrow console table (sofa or bed-end table): top, apron, four legs and a low shelf. Length Item.len, colors top / body. */
+export function ConsoleTable({ v }: { v: Visual }) {
+  const [, d] = CATALOG.consoleTable.size
+  const len = v.opts.len ?? CATALOG.consoleTable.size[0]
+  const top = v.opts.top ?? '#6b4a34'
+  const body = v.opts.body ?? '#6b4a34'
+  return (
+    <group>
+      <Box size={[len, 0.035, d]} position={[0, 0.7425, 0]} color={top} radius={0.008} />
+      <Box size={[len - 0.06, 0.08, d - 0.06]} position={[0, 0.685, 0]} color={body} />
+      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => <Box key={`${sx}${sz}`} size={[0.045, 0.725, 0.045]} position={[sx * (len / 2 - 0.04), 0.3625, sz * (d / 2 - 0.04)]} color={body} />))}
+      <Box size={[len - 0.1, 0.025, d - 0.06]} position={[0, 0.18, 0]} color={top} />
     </group>
   )
 }
