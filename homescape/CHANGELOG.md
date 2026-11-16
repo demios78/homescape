@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.28 (demios78 fork)
+
+- New furniture: a tall wall shelf unit with books, a doll and brick models.
+
 ## 0.2.1-dm.27 (demios78 fork)
 
 - New: an embroidered folding chair and a hand-painted three-legged side table.
