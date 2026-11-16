@@ -2,6 +2,7 @@ import { DEFAULT_MOUNT_Y } from '@/model/rules'
 import type { ComponentType } from 'react'
 import type { ItemKind } from '@/model/types'
 import * as A from './appliances'
+import * as B from './bricks'
 import * as Dc from './decor'
 import * as D from './devices'
 import * as F from './furniture'
@@ -95,6 +96,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   mirror: Dc.Mirror,
   shutterMirror: Dc.ShutterMirror,
   chevalMirror: Dc.ChevalMirror,
+  brickModel: B.BrickModel,
   soapDispenser: Dc.SoapDispenser,
   shower: F.Shower,
   fishbowl: Dc.Fishbowl,

@@ -599,7 +599,7 @@ function FurnitureOptions({ item }: { item: Item }) {
                 key={k}
                 type="button"
                 className={seg((item.variant ?? opt.variantDef ?? opt.variants![0][0]) === k)}
-                onClick={() => tryPatch({ variant: k, ...(opt.variantLen ? { len: opt.variantLen[k] } : {}), ...(item.kind === 'tv' ? { y: tvHeight(item, k) } : {}) }, true, label)}
+                onClick={() => tryPatch({ variant: k, ...(opt.variantLen ? { len: opt.variantLen[k] } : {}), ...(opt.variantLen2 ? { len2: opt.variantLen2[k] } : {}), ...(item.kind === 'tv' ? { y: tvHeight(item, k) } : {}) }, true, label)}
               >
                 {label}
               </button>

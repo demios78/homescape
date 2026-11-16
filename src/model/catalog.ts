@@ -159,6 +159,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   fishbowl: { label: t('Fishbowl'), group: 'decor', domains: ['light', 'switch', 'button'], size: [0.28, 0.28], labelY: 0.38 },
   // Carved frame with an arched mirror and two spindle shutters; wall-hung (rules.ts > WALL_SPAN)
   shutterMirror: { label: t('Carved shutter mirror'), group: 'decor', domains: [], size: [0.95, 0.06], labelY: 2.35, wall: true },
+  // Built brick display model (Item.variant picks it; BRICK_MODEL_SIZE sets the footprint); on a shelf, desk or the floor
+  brickModel: { label: t('Brick model'), group: 'decor', domains: [], size: [0.44, 0.32], labelY: 0.5 },
   // Free-standing oval mirror tilting between two turned posts
   chevalMirror: { label: t('Cheval mirror'), group: 'decor', domains: [], size: [0.62, 0.45], labelY: 1.7 },
   mirror: { label: t('Mirror'), group: 'decor', domains: [], size: [0.56, 0.05], labelY: 2.05, wall: true },
@@ -429,6 +431,17 @@ export const WICKER_COLORS: [string, string][] = [
   [t('Weathered'), '#9c8a78'],
   [t('Black'), '#2e2c2a'],
 ]
+/** Brick model footprints (m): length along the nose (x) and width, at real size. */
+export const BRICK_MODEL_SIZE: Record<string, [number, number]> = {
+  falcon: [0.44, 0.32],
+  xwing: [0.44, 0.36],
+  tie: [0.26, 0.26],
+  uwing: [0.34, 0.32],
+  n1: [0.33, 0.24],
+  helicarrier: [0.45, 0.3],
+  concorde: [1.05, 0.43],
+  coaster: [0.9, 0.32],
+}
 /** Dark wood finishes (writing desk, nightstand, shutter mirror). */
 export const DARK_WOODS: [string, string][] = [
   [t('Dark wood'), '#5a3a28'],
@@ -523,6 +536,8 @@ export const OPTIONS: Partial<
       variantDef?: string
       /** Length per variant (Item.len): a power strip's length changes with its outlet count, and so does its footprint */
       variantLen?: Record<string, number>
+      /** Depth (Item.len2) written with the variant */
+      variantLen2?: Record<string, number>
       /** Short note below the settings section of the card */
       note?: string
       /** LED options (Item.led value, label); the first is "none" */
@@ -760,6 +775,22 @@ export const OPTIONS: Partial<
     body: t('Wood finish'),
     bodyList: [[t('Weathered oak'), '#8a7563'], ...DARK_WOODS.slice(1), [t('White'), '#efece6']],
     bodyDef: '#8a7563',
+  },
+  brickModel: {
+    variantLabel: t('Model'),
+    variants: [
+      ['falcon', t('Millennium Falcon')],
+      ['xwing', t('X-wing')],
+      ['tie', t('TIE fighter')],
+      ['uwing', t('U-wing')],
+      ['n1', t('N-1 starfighter')],
+      ['helicarrier', t('Helicarrier')],
+      ['concorde', t('Concorde')],
+      ['coaster', t('Loop coaster')],
+    ],
+    variantDef: 'falcon',
+    variantLen: Object.fromEntries(Object.entries(BRICK_MODEL_SIZE).map(([k, s]) => [k, s[0]])),
+    variantLen2: Object.fromEntries(Object.entries(BRICK_MODEL_SIZE).map(([k, s]) => [k, s[1]])),
   },
   chevalMirror: {
     body: t('Frame color'),
@@ -1178,7 +1209,7 @@ export const windowSize = (it: { len?: number; len2?: number }) => ({ w: it.len 
 export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, number] {
   const [w, d] = CATALOG[kind].size
   // The second size only for kinds that use it as depth (ceiling strip, rug); the L arm of a counter is computed separately.
-  if (kind === 'ceilingStrip' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed') return [len ?? w, len2 ?? d]
+  if (kind === 'ceilingStrip' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel') return [len ?? w, len2 ?? d]
   // A ceiling fan is round: the blade span in both directions
   if (kind === 'ceilingFan') return [len ?? w, len ?? d]
   return [len ?? w, d]
