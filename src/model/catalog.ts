@@ -1014,6 +1014,14 @@ export const OPTIONS: Partial<
   },
   bicycle: { variantLabel: t('Type'), variants: [['bike', t('Bicycle')], ['ebike', t('E-bike')]], variantDef: 'bike', body: t('Bike frame color'), bodyList: ACCENT_COLORS },
   motorcycle: { variantLabel: t('Type'), variants: [['motorbike', t('Motorcycle')], ['scooter', t('Scooter')]], variantDef: 'motorbike', body: t('Color'), bodyList: ACCENT_COLORS },
+  coffeeTable: {
+    variantLabel: t('Top'),
+    variants: [
+      ['plain', t('Plain')],
+      ['lego', t('Brick baseplates')],
+    ],
+    variantDef: 'plain',
+  },
   studioLight: {
     variantLabel: t('Placement'),
     variants: [

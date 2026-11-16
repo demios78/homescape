@@ -1289,3 +1289,62 @@ function rngT(seed: number) {
     return x / 4294967296
   }
 }
+
+/**
+ * Brick baseplate table top (the whole top, x across, y = depth from the back): blue baseplates with studs, a green plate
+ * at the back left and a gray train track loop with sleepers on the right.
+ */
+export function baseplateTopTexture() {
+  return base(
+    'baseplate-top',
+    (g, s) => {
+      const H = s / 2
+      g.fillStyle = '#1f5fbf'
+      g.fillRect(0, 0, s, H)
+      g.fillStyle = '#3c9a3c'
+      g.beginPath()
+      g.moveTo(0, 0)
+      g.lineTo(s * 0.52, 0)
+      g.lineTo(s * 0.46, H * 0.62)
+      g.lineTo(0, H * 0.8)
+      g.closePath()
+      g.fill()
+      // studs: a light dot with a dark edge every 8 px
+      for (let y = 4; y < H; y += 8) {
+        for (let x = 4; x < s; x += 8) {
+          g.fillStyle = 'rgba(0,0,0,0.18)'
+          g.beginPath()
+          g.arc(x + 0.6, y + 0.8, 2.6, 0, Math.PI * 2)
+          g.fill()
+          g.fillStyle = 'rgba(255,255,255,0.22)'
+          g.beginPath()
+          g.arc(x, y, 2.4, 0, Math.PI * 2)
+          g.fill()
+        }
+      }
+      // track loop: sleepers then two rails along a stadium shape
+      const cx = s * 0.66
+      const cy = H * 0.55
+      const rx = s * 0.26
+      const ry = H * 0.32
+      const path = () => {
+        g.beginPath()
+        g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2)
+      }
+      g.strokeStyle = '#6f7278'
+      g.lineWidth = 16
+      g.setLineDash([3, 4])
+      path()
+      g.stroke()
+      g.setLineDash([])
+      g.strokeStyle = '#a7aab0'
+      g.lineWidth = 2.5
+      for (const d of [-5, 5]) {
+        g.beginPath()
+        g.ellipse(cx, cy, rx + d, ry + d, 0, 0, Math.PI * 2)
+        g.stroke()
+      }
+    },
+    512,
+  )
+}

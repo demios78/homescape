@@ -11,7 +11,7 @@ import { markShadows } from '../frame'
 import { Glow, StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { beadboardTexture, carvedPanelTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, wickerLatticeTexture, wickerTexture } from './textures'
+import { baseplateTopTexture, beadboardTexture, carvedPanelTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, wickerLatticeTexture, wickerTexture } from './textures'
 import { gainOf, type Visual } from './visual'
 
 /*
@@ -689,7 +689,36 @@ export function IroningBoard({ v }: { v: Visual }) {
   )
 }
 
-export function CoffeeTable() {
+/**
+ * Brick play table (coffee table variant 'lego'): a dark wooden coffee table with a lower shelf, its top covered with
+ * glued baseplates (blue with a green plate and a train track loop, baseplateTopTexture). Same footprint and top height as
+ * the coffee table, so models on it keep their place.
+ */
+function LegoTable() {
+  const wood = '#4a2e22'
+  const top = useMemo(() => {
+    const t = baseplateTopTexture().clone()
+    t.repeat.set(1, 0.5)
+    t.offset.set(0, 0.5)
+    t.needsUpdate = true
+    return new THREE.MeshStandardMaterial({ map: t, roughness: 0.55 })
+  }, [])
+  useEffect(() => () => top.dispose(), [top])
+  return (
+    <group>
+      <Box size={[1.1, 0.05, 0.6]} position={[0, 0.395, 0]} color={wood} />
+      <Box size={[1.08, 0.02, 0.58]} position={[0, 0.43, 0]} material={top} />
+      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => <Box key={`${sx}${sz}`} size={[0.06, 0.37, 0.06]} position={[sx * 0.51, 0.185, sz * 0.26]} color={wood} />))}
+      {[-1, 1].map((s) => (
+        <Box key={`a${s}`} size={[0.98, 0.07, 0.025]} position={[0, 0.335, s * 0.27]} color={wood} shadow={false} />
+      ))}
+      <Box size={[1.0, 0.025, 0.5]} position={[0, 0.1, 0]} color={wood} />
+    </group>
+  )
+}
+
+export function CoffeeTable({ v }: { v: Visual }) {
+  if (v.opts.variant === 'lego') return <LegoTable />
   return (
     <group>
       <Box size={[1.1, 0.07, 0.6]} position={[0, 0.4, 0]} color={C.kraft} radius={0.03} />
