@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.26 (demios78 fork)
+
+- New: a tufted velvet sofa, glass and iron coffee and end tables, and a brick lighthouse model.
+
 ## 0.2.1-dm.25 (demios78 fork)
 
 - New: a carved wingback chair; chair, plant and floor lamp models (folding bistro, cane plant, column lamp).
