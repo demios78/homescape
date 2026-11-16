@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.7 (demios78 fork)
+
+- New decor: brick display models (Millennium Falcon, X-wing, TIE fighter, U-wing, N-1 starfighter, Helicarrier,
+  Concorde and a loop coaster), each at its real size; pick the model in the card.
+
 ## 0.2.1-dm.6 (demios78 fork)
 
 - New furniture: a carved shutter mirror for the wall, a fold-top writing desk, a three-drawer nightstand and a
