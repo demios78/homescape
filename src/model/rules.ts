@@ -18,7 +18,7 @@ export type Layer = 'floor' | 'wall' | 'ceiling' | 'rug' | 'top'
  * Wall-mounted items: their height is adjustable (Item.y = offset up/down from the default; for an LED strip the strip's
  * height above the floor). Items standing on the floor against a wall (cabinet, counter, fridge) are not in this list.
  */
-export const WALL_MOUNTED: ItemKind[] = ['wallLight', 'ledStrip', 'mirrorLight', 'acUnit', 'camera', 'motionSensor', 'tempSensor', 'alarmPanel', 'wallSwitch', 'plug', 'window', 'painting', 'pegboard', 'mirror', 'mirrorCabinet', 'wallFan', 'thermostat', 'waterHeater', 'boiler', 'towelWarmer', 'projectorScreen', 'wallPanel', 'doorbell', 'siren', 'powerMeter', 'waterValve', 'awning', 'evCharger', 'toolWall']
+export const WALL_MOUNTED: ItemKind[] = ['wallLight', 'ledStrip', 'mirrorLight', 'acUnit', 'camera', 'motionSensor', 'tempSensor', 'alarmPanel', 'wallSwitch', 'plug', 'window', 'painting', 'pegboard', 'mirror', 'mirrorCabinet', 'wallFan', 'thermostat', 'waterHeater', 'boiler', 'towelWarmer', 'projectorScreen', 'wallPanel', 'doorbell', 'siren', 'powerMeter', 'waterValve', 'awning', 'evCharger', 'toolWall', 'shutterMirror']
 
 /**
  * Items that can optionally hang on a wall (Item.mount 'wall', e.g. a power strip). While hung they behave like wall
@@ -50,6 +50,7 @@ const WALL_SPAN: Record<string, [number, number]> = {
   pegboard: [1.02, 1.58],
   'mirror:tall': [0.25, 1.87],
   'mirror:small': [1.267, 1.833],
+  shutterMirror: [1.12, 2.17],
   mirrorCabinet: [1.137, 1.85],
   wallFan: [1.853, 2.264],
   'tv:wall': [0.89, 1.71],
@@ -106,6 +107,8 @@ export const SURFACE_Y: Partial<Record<ItemKind, number>> = {
   roundTable: 0.47,
   tvUnit: 0.5,
   nightstand: 0.48,
+  bedsideChest: 0.72,
+  writingDesk: 0.96,
   kitchenCounter: 0.91,
   shoeCabinet: 0.9,
   drawerUnit: 0.72,
@@ -132,7 +135,7 @@ export const APPLIANCE_STACK: ItemKind[] = ['washer', 'dryer', 'dishwasher']
  * Chairs can tuck under tables and desks, a drawer unit under a desk. A power strip on the floor can go under a table or a
  * coffee table (partly under it is no collision).
  */
-const TUCKS: Partial<Record<ItemKind, ItemKind[]>> = { chair: ['diningTable', 'desk'], gamingChair: ['desk', 'diningTable'], shellChair: ['desk', 'diningTable'], taskChair: ['desk', 'diningTable'], drawerUnit: ['desk'], powerStrip: ['desk', 'diningTable', 'coffeeTable', 'roundTable'] }
+const TUCKS: Partial<Record<ItemKind, ItemKind[]>> = { chair: ['diningTable', 'desk', 'writingDesk'], gamingChair: ['desk', 'diningTable', 'writingDesk'], shellChair: ['desk', 'diningTable', 'writingDesk'], taskChair: ['desk', 'diningTable', 'writingDesk'], drawerUnit: ['desk'], powerStrip: ['desk', 'diningTable', 'coffeeTable', 'roundTable'] }
 
 /**
  * Ceiling items (ceiling layer: no collision with floor and wall items). The pergola / gazebo is in this layer too, like a

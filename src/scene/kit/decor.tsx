@@ -5,7 +5,7 @@ import { useAmbient, useLitMaterial } from './effects'
 import { C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
 import { useScreen } from './screens'
-import { artTexture, keyboardTexture, pegboardTexture } from './textures'
+import { artTexture, keyboardTexture, pegboardTexture, shutterFrameTexture } from './textures'
 import { monitorOn, type Visual } from './visual'
 
 /*
@@ -149,6 +149,141 @@ export function Mirror({ v }: P) {
       <mesh material={glass} position={[0, 1.06, 0.0045]}>
         <planeGeometry args={[0.5, 1.56]} />
       </mesh>
+    </group>
+  )
+}
+
+/* ---------- carved shutter mirror ---------- */
+
+/** Mirror opening: a rectangle whose top rises into a soft arch in the middle (local x, y from its bottom center) */
+let shutterGlassGeo: THREE.ShapeGeometry | null = null
+function shutterGlass() {
+  if (!shutterGlassGeo) {
+    const sh = new THREE.Shape()
+    sh.moveTo(-0.21, 0)
+    sh.lineTo(0.21, 0)
+    sh.lineTo(0.21, 0.42)
+    sh.lineTo(0.15, 0.42)
+    sh.quadraticCurveTo(0.12, 0.48, 0, 0.48)
+    sh.quadraticCurveTo(-0.12, 0.48, -0.15, 0.42)
+    sh.lineTo(-0.21, 0.42)
+    sh.closePath()
+    shutterGlassGeo = new THREE.ShapeGeometry(sh, 12)
+  }
+  return shutterGlassGeo
+}
+
+/** One spindle shutter, hinged at its local origin and extending toward e (+1 or -1 along x) */
+function Shutter({ e, wood }: { e: number; wood: THREE.Material }) {
+  const W = 0.21
+  const H = 0.48
+  return (
+    <group>
+      <Box size={[0.03, H, 0.025]} position={[e * 0.015, H / 2, 0]} material={wood} />
+      <Box size={[0.03, H, 0.025]} position={[e * (W - 0.015), H / 2, 0]} material={wood} />
+      <Box size={[W, 0.04, 0.025]} position={[e * (W / 2), 0.02, 0]} material={wood} />
+      <Box size={[W, 0.035, 0.025]} position={[e * (W / 2), 0.24, 0]} material={wood} />
+      <Box size={[W, 0.06, 0.025]} position={[e * (W / 2), H - 0.03, 0]} material={wood} />
+      {[0.05, 0.075, 0.1, 0.125, 0.15].map((x) => (
+        <Cyl key={x} r={0.007} h={H - 0.08} position={[e * (x + 0.005), H / 2, 0]} material={wood} segments={8} shadow={false} />
+      ))}
+    </group>
+  )
+}
+
+/**
+ * Carved shutter mirror (like an antique Indonesian window frame): a wide carved frame on the wall with an arched mirror in
+ * the middle and two spindle shutters that open outward. Frame Item.body; shutters Item.variant 'open' (default) or
+ * 'closed'. Center at 1.645 m (rules.ts > WALL_SPAN), back against the wall at local -z.
+ */
+export function ShutterMirror({ v }: P) {
+  const color = v.opts.body ?? '#7a4e32'
+  const glass = useMirrorMaterial()
+  const face = useMemo(() => {
+    const map = shutterFrameTexture()
+    return new THREE.MeshStandardMaterial({ color, map, roughness: 0.75 })
+  }, [color])
+  useEffect(() => () => face.dispose(), [face])
+  const wood = mat(color, { roughness: 0.7 })
+  const open = v.opts.variant !== 'closed'
+  const B = 1.12
+  return (
+    <group position={[0, B, 0]}>
+      <Box size={[0.95, 1.05, 0.035]} position={[0, 0.525, -0.0125]} material={face} />
+      {/* raised molding around the opening */}
+      <Box size={[0.5, 0.03, 0.03]} position={[0, 0.245, 0.012]} material={wood} />
+      <Box size={[0.03, 0.52, 0.03]} position={[-0.25, 0.5, 0.012]} material={wood} />
+      <Box size={[0.03, 0.52, 0.03]} position={[0.25, 0.5, 0.012]} material={wood} />
+      <mesh geometry={shutterGlass()} material={glass} position={[0, 0.26, 0.006]} />
+      <group position={[-0.235, 0.26, 0.022]} rotation-y={open ? -2.2 : 0}>
+        <Shutter e={1} wood={wood} />
+      </group>
+      <group position={[0.235, 0.26, 0.022]} rotation-y={open ? 2.2 : 0}>
+        <Shutter e={-1} wood={wood} />
+      </group>
+    </group>
+  )
+}
+
+/* ---------- cheval mirror ---------- */
+
+/** Oval frame ring and glass (meters, centered), built once */
+let chevalGeo: readonly [THREE.ExtrudeGeometry, THREE.ShapeGeometry] | null = null
+function chevalOval() {
+  if (!chevalGeo) {
+    const ring = new THREE.Shape()
+    ring.absellipse(0, 0, 0.24, 0.62, 0, Math.PI * 2, false, 0)
+    const hole = new THREE.Path()
+    hole.absellipse(0, 0, 0.2, 0.58, 0, Math.PI * 2, true, 0)
+    ring.holes.push(hole)
+    const frame = new THREE.ExtrudeGeometry(ring, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.006, bevelSegments: 2, curveSegments: 48 })
+    frame.translate(0, 0, -0.015)
+    const glass = new THREE.ShapeGeometry(new THREE.Shape().absellipse(0, 0, 0.2, 0.58, 0, Math.PI * 2, false, 0), 48)
+    chevalGeo = [frame, glass] as const
+  }
+  return chevalGeo
+}
+
+/** Turned post: a slim column with rings and a ball finial */
+function TurnedPost({ x, wood }: { x: number; wood: THREE.Material }) {
+  return (
+    <group position={[x, 0, 0]}>
+      <Cyl r={0.02} h={0.98} position={[0, 0.6, 0]} material={wood} segments={12} />
+      {[0.3, 0.36, 0.62, 0.68].map((y) => (
+        <Cyl key={y} r={0.028} h={0.03} position={[0, y, 0]} material={wood} segments={12} shadow={false} />
+      ))}
+      <Cyl r={0.026} rTop={0.03} h={0.1} position={[0, 0.48, 0]} material={wood} segments={12} />
+      <Box size={[0.045, 0.06, 0.045]} position={[0, 1.04, 0]} material={wood} />
+      <Ball r={0.028} position={[0, 1.1, 0]} material={wood} detail={1} />
+    </group>
+  )
+}
+
+/**
+ * Cheval mirror (like a painted kids' standing mirror): an oval mirror tilting between two turned posts on splayed feet,
+ * with a stretcher low between them. Paint Item.body. Stands on the floor; front faces +z.
+ */
+export function ChevalMirror({ v }: P) {
+  const color = v.opts.body ?? '#e79bbd'
+  const wood = mat(color, { roughness: 0.55 })
+  const glass = useMirrorMaterial()
+  const [frame, pane] = chevalOval()
+  return (
+    <group>
+      {[-1, 1].map((s) => (
+        <group key={s}>
+          <Box size={[0.04, 0.045, 0.42]} position={[s * 0.28, 0.035, 0]} radius={0.01} material={wood} />
+          <Box size={[0.04, 0.05, 0.12]} position={[s * 0.28, 0.08, 0]} material={wood} />
+          <TurnedPost x={s * 0.28} wood={wood} />
+          <Cyl r={0.012} h={0.04} position={[s * 0.255, 0.95, 0]} rotation-z={Math.PI / 2} color={C.inkSoft} segments={8} shadow={false} />
+        </group>
+      ))}
+      <Box size={[0.54, 0.04, 0.03]} position={[0, 0.17, 0]} material={wood} />
+      <group position={[0, 0.9, 0]} rotation-x={-0.08}>
+        <mesh geometry={frame} material={wood} castShadow />
+        <mesh geometry={pane} material={glass} position={[0, 0, 0.001]} />
+        <mesh geometry={pane} material={wood} position={[0, 0, -0.001]} rotation-y={Math.PI} />
+      </group>
     </group>
   )
 }

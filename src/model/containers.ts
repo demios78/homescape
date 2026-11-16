@@ -35,6 +35,11 @@ export const INTERIOR: Partial<Record<ItemKind, Compartment[]>> = {
     { label: t('Bottom compartment'), y: 0.06, h: 0.45, z0: -0.27, z1: 0.27 },
     { label: t('Top compartment'), y: 0.55, h: 1.47, z0: -0.27, z1: 0.27 },
   ],
+  bedsideChest: [
+    { label: t('Bottom drawer'), y: 0.12, h: 0.15, z0: -0.15, z1: 0.15, drawer: true },
+    { label: t('Middle drawer'), y: 0.32, h: 0.15, z0: -0.15, z1: 0.15, drawer: true },
+    { label: t('Top drawer'), y: 0.52, h: 0.15, z0: -0.15, z1: 0.15, drawer: true },
+  ],
   storageBench: [
     { label: t('Bottom shelf'), y: 0.07, h: 0.18, z0: -0.17, z1: 0.17 },
     { label: t('Top shelf'), y: 0.28, h: 0.15, z0: -0.17, z1: 0.17 },

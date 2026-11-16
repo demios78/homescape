@@ -96,6 +96,10 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   wickerWing: { label: t('Wicker wing chair'), group: 'furniture', domains: [], size: [0.86, 0.78], labelY: 1.4 },
   // Board on crossed legs with an iron; a bound plug or switch is the iron
   ironingBoard: { label: t('Ironing board'), group: 'appliance', domains: ['switch'], size: [1.37, 0.4], labelY: 1.3 },
+  // Fold-top secretary on crossed legs; lid Item.variant (open or closed); chairs tuck under it
+  writingDesk: { label: t('Fold-top writing desk'), group: 'furniture', domains: [], size: [0.76, 0.5], labelY: 1.25, wall: true },
+  // Nightstand with three drawers (model/containers.ts > INTERIOR); a lamp stands on top
+  bedsideChest: { label: t('Three-drawer nightstand'), group: 'furniture', domains: [], size: [0.66, 0.42], labelY: 0.95, wall: true },
   coffeeTable: { label: t('Coffee table'), group: 'furniture', domains: [], size: [1.1, 0.6], labelY: 0.7 },
   consoleTable: { label: t('Console table'), group: 'furniture', domains: [], size: [1.2, 0.35], labelY: 1 },
   roundTable: { label: t('Round side table'), group: 'furniture', domains: [], size: [0.6, 0.6], labelY: 0.7 },
@@ -153,6 +157,10 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   painting: { label: t('Painting'), group: 'decor', domains: [], size: [0.8, 0.05], labelY: 2.05, wall: true },
   aquarium: { label: t('Aquarium'), group: 'decor', domains: ['light', 'switch', 'sensor', 'button'], size: [1, 0.42], labelY: 1.45 },
   fishbowl: { label: t('Fishbowl'), group: 'decor', domains: ['light', 'switch', 'button'], size: [0.28, 0.28], labelY: 0.38 },
+  // Carved frame with an arched mirror and two spindle shutters; wall-hung (rules.ts > WALL_SPAN)
+  shutterMirror: { label: t('Carved shutter mirror'), group: 'decor', domains: [], size: [0.95, 0.06], labelY: 2.35, wall: true },
+  // Free-standing oval mirror tilting between two turned posts
+  chevalMirror: { label: t('Cheval mirror'), group: 'decor', domains: [], size: [0.62, 0.45], labelY: 1.7 },
   mirror: { label: t('Mirror'), group: 'decor', domains: [], size: [0.56, 0.05], labelY: 2.05, wall: true },
   soapDispenser: { label: t('Soap dispenser'), group: 'bath', domains: [], size: [0.08, 0.08], labelY: 0.25 },
   // Smart home devices (everything a smart home may have, with its controls); models in kit/smart.tsx
@@ -420,6 +428,12 @@ export const WICKER_COLORS: [string, string][] = [
   [t('Natural'), '#c9a26a'],
   [t('Weathered'), '#9c8a78'],
   [t('Black'), '#2e2c2a'],
+]
+/** Dark wood finishes (writing desk, nightstand, shutter mirror). */
+export const DARK_WOODS: [string, string][] = [
+  [t('Dark wood'), '#5a3a28'],
+  [t('Walnut'), '#6b4a34'],
+  [t('Natural'), '#b08860'],
 ]
 /** Carved wood finishes (storage bench). */
 export const CARVED_COLORS: [string, string][] = [
@@ -731,6 +745,43 @@ export const OPTIONS: Partial<
   wickerChair: { body: t('Frame color'), bodyList: WICKER_COLORS, bodyDef: '#f2efe8', top: t('Cushion color'), topList: CUSHION_COLORS, topDef: CUSHION_FLORAL },
   shellChair: { body: t('Seat color'), bodyList: FABRIC_COLORS, bodyDef: '#f0cfcd' },
   taskChair: { body: t('Seat color'), bodyList: FABRIC_COLORS, bodyDef: '#93a79b', top: t('Base color'), topList: WICKER_COLORS.filter(([, c]) => c === '#f2efe8' || c === '#2e2c2a'), topDef: '#f2efe8' },
+  writingDesk: {
+    variantLabel: t('Lid'),
+    variants: [
+      ['open', t('Open')],
+      ['closed', t('Closed')],
+    ],
+    variantDef: 'open',
+    body: t('Wood finish'),
+    bodyList: DARK_WOODS,
+    bodyDef: '#5a3a28',
+  },
+  bedsideChest: {
+    body: t('Wood finish'),
+    bodyList: [[t('Weathered oak'), '#8a7563'], ...DARK_WOODS.slice(1), [t('White'), '#efece6']],
+    bodyDef: '#8a7563',
+  },
+  chevalMirror: {
+    body: t('Frame color'),
+    bodyList: [
+      [t('Pink'), '#e79bbd'],
+      [t('White'), '#f1ede6'],
+      [t('Natural'), '#b08860'],
+      [t('Black'), '#2e2c2a'],
+    ],
+    bodyDef: '#e79bbd',
+  },
+  shutterMirror: {
+    variantLabel: t('Shutters'),
+    variants: [
+      ['open', t('Open')],
+      ['closed', t('Closed')],
+    ],
+    variantDef: 'open',
+    body: t('Frame color'),
+    bodyList: [[t('Dark wood'), '#7a4e32'], ...DARK_WOODS.slice(1), [t('Whitewash'), '#cfcac2']],
+    bodyDef: '#7a4e32',
+  },
   storageBench: { body: t('Wood finish'), bodyList: CARVED_COLORS, bodyDef: '#cfcac2', top: t('Cushion color'), topList: BENCH_CUSHION_COLORS, topDef: '#dfe5ea' },
   wickerWing: { body: t('Frame color'), bodyList: WICKER_COLORS, bodyDef: '#9c8a78', top: t('Cushion color'), topList: [[t('Mauve'), '#9d8796'], ...CUSHION_COLORS], topDef: '#9d8796' },
   ironingBoard: {
@@ -769,6 +820,7 @@ export const OPTIONS: Partial<
     variants: [
       ['classic', t('Classic')],
       ['globe', t('Globe')],
+      ['frame', t('Wood frame')],
     ],
     variantDef: 'classic',
     top: t('Shade color'),

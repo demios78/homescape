@@ -423,6 +423,96 @@ export function TaskChair({ v }: { v: Visual }) {
   )
 }
 
+/* ---------- fold-top writing desk, three-drawer nightstand ---------- */
+
+/** Writing desk side cheek: a slanted profile in (z, y), extruded 2 cm along -x (built once) */
+let cheekGeo: THREE.ExtrudeGeometry | null = null
+function deskCheek() {
+  if (!cheekGeo) {
+    const sh = new THREE.Shape()
+    sh.moveTo(-0.25, 0.78)
+    sh.lineTo(0.25, 0.78)
+    sh.lineTo(0.25, 0.81)
+    sh.lineTo(-0.05, 0.95)
+    sh.lineTo(-0.25, 0.95)
+    sh.closePath()
+    cheekGeo = new THREE.ExtrudeGeometry(sh, { depth: 0.02, bevelEnabled: false })
+    // shape x becomes local z; the extrusion runs along -x
+    cheekGeo.rotateY(-Math.PI / 2)
+  }
+  return cheekGeo
+}
+
+/**
+ * Fold-top writing desk (like a campaign secretary on an X base): a wooden case on black crossed legs; the slanted lid opens
+ * flat into a writing surface in front of two small drawers, under a shelf with a gallery back. Lid Item.variant 'open'
+ * (default) or 'closed', wood Item.body. Chairs tuck under it; small items stand on the top shelf.
+ */
+export function WritingDesk({ v }: { v: Visual }) {
+  const wood = v.opts.body ?? '#5a3a28'
+  const legs = '#262220'
+  const W = CATALOG.writingDesk.size[0]
+  const D = CATALOG.writingDesk.size[1]
+  const open = v.opts.variant !== 'closed'
+  const lid = shade(wood, 1.12)
+  const bar = Math.atan2(0.42, 0.6)
+  return (
+    <group>
+      {/* crossed legs on both sides, foot bars, a stretcher */}
+      {[-1, 1].map((sx) => (
+        <group key={sx} position={[sx * (W / 2 - 0.04), 0, 0]}>
+          <Box size={[0.035, 0.732, 0.035]} position={[0, 0.32, 0]} rotation-x={bar} color={legs} />
+          <Box size={[0.035, 0.732, 0.035]} position={[0, 0.32, 0]} rotation-x={-bar} color={legs} />
+          <Box size={[0.045, 0.03, D - 0.04]} position={[0, 0.015, 0]} color={legs} />
+          <Box size={[0.045, 0.03, D - 0.04]} position={[0, 0.605, 0]} color={legs} />
+        </group>
+      ))}
+      <Box size={[W - 0.1, 0.03, 0.03]} position={[0, 0.32, 0]} color={legs} />
+      {/* case, drawers behind the writing surface, side cheeks */}
+      <Box size={[W, 0.16, D]} position={[0, 0.7, 0]} color={wood} />
+      <Box size={[W - 0.04, 0.12, 0.2]} position={[0, 0.84, -0.15]} color={wood} />
+      {[-1, 1].map((sx) => (
+        <group key={sx}>
+          <Box size={[0.33, 0.1, 0.012]} position={[sx * 0.175, 0.84, -0.044]} color={shade(wood, 1.08)} shadow={false} />
+          <Ball r={0.012} position={[sx * 0.175, 0.84, -0.034]} color={C.inkSoft} detail={1} shadow={false} />
+        </group>
+      ))}
+      <mesh geometry={deskCheek()} position={[-W / 2 + 0.02, 0, 0]} castShadow material={mat(wood)} />
+      <mesh geometry={deskCheek()} position={[W / 2, 0, 0]} castShadow material={mat(wood)} />
+      {open ? (
+        <Box size={[W - 0.04, 0.02, 0.33]} position={[0, 0.79, 0.115]} color={lid} />
+      ) : (
+        <Box size={[W - 0.04, 0.02, 0.335]} position={[0, 0.875, 0.1]} rotation-x={Math.atan2(0.15, 0.3)} color={lid} />
+      )}
+      {/* top shelf with a gallery back and a front lip */}
+      <Box size={[W, 0.02, 0.22]} position={[0, 0.95, -0.14]} color={wood} />
+      <Box size={[W, 0.18, 0.02]} position={[0, 1.03, -0.24]} color={wood} />
+      <Box size={[W, 0.03, 0.015]} position={[0, 0.975, -0.035]} color={wood} shadow={false} />
+    </group>
+  )
+}
+
+/**
+ * Three-drawer nightstand (like a farmhouse bedside chest): a top with a small overhang, three drawers on a plinth with
+ * bracket feet. Wood Item.body. Drawers open like any cabinet (model/containers.ts > INTERIOR); a lamp stands on top.
+ */
+export function BedsideChest({ v }: { v: Visual }) {
+  const wood = v.opts.body ?? '#8a7563'
+  const [W, D] = CATALOG.bedsideChest.size
+  const front = shade(wood, 1.06)
+  return (
+    <group>
+      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => <Box key={`${sx}${sz}`} size={[0.06, 0.05, 0.06]} position={[sx * (W / 2 - 0.04), 0.025, sz * (D / 2 - 0.04)]} color={shade(wood, 0.9)} />))}
+      <Box size={[W - 0.02, 0.05, D - 0.02]} position={[0, 0.075, 0]} color={shade(wood, 0.95)} />
+      <Carcass w={W - 0.04} h={0.6} d={D - 0.04} y={0.1} color={wood} />
+      <Box size={[W, 0.025, D]} position={[0, 0.7075, 0]} color={wood} radius={0.006} />
+      {[0, 1, 2].map((i) => (
+        <Drawer key={i} w={W - 0.1} h={0.18} d={D - 0.08} at={[0, 0.2 + i * 0.2, 0.03]} open={partOpen(v, i)} color={front} />
+      ))}
+    </group>
+  )
+}
+
 /* ---------- storage bench, wicker wing chair, ironing board ---------- */
 
 /** Storage bench: height of the cabinet top (the cushion sits on it) */

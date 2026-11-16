@@ -280,6 +280,28 @@ export function TableLamp({ v }: P) {
         <Glow position={[0, 0.19, 0]} color={v.color} opacity={k} size={0.9} />
       </group>
     )
+  if (v.opts.variant === 'frame') {
+    // two open wooden rectangles crossing at right angles, a drum shade with a chrome finial
+    const wood = mat(v.opts.body ?? '#2b211c', { roughness: 0.6 })
+    const frame = (rot: number) => (
+      <group rotation-y={rot}>
+        <Box size={[0.035, 0.36, 0.035]} position={[-0.1, 0.18, 0]} material={wood} />
+        <Box size={[0.035, 0.36, 0.035]} position={[0.1, 0.18, 0]} material={wood} />
+        <Box size={[0.235, 0.035, 0.035]} position={[0, 0.0175, 0]} material={wood} />
+        <Box size={[0.235, 0.035, 0.035]} position={[0, 0.3425, 0]} material={wood} />
+      </group>
+    )
+    return (
+      <group>
+        {frame(0)}
+        {frame(Math.PI / 2)}
+        <Cyl r={0.018} h={0.06} position={[0, 0.39, 0]} color={C.ink} segments={12} shadow={false} />
+        <Cyl r={0.21} rTop={0.185} h={0.24} position={[0, 0.5, 0]} material={shade} segments={40} shadow={false} />
+        <Ball r={0.016} position={[0, 0.64, 0]} material={mat('#d6d9de', { metalness: 0.7, roughness: 0.2 })} detail={1} shadow={false} />
+        <Glow position={[0, 0.48, 0]} color={v.color} opacity={k} size={1.1} />
+      </group>
+    )
+  }
   return (
     <group>
       <Cyl r={0.07} rTop={0.065} h={0.018} position={[0, 0.009, 0]} material={mat(body, { roughness: 0.3 })} segments={28} />

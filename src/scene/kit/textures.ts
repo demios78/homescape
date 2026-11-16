@@ -1158,6 +1158,126 @@ export function leafPrintTexture() {
   }, 256)
 }
 
+/**
+ * Carved shutter mirror frame (like an antique Indonesian window frame): two scrollwork panels across the top, a carved
+ * lintel over the mirror, vine strips down both sides, a bottom panel with four-petal flowers, grooves around every panel.
+ * Light tones, tinted by the frame color. The tile covers the whole 0.95 x 1.05 m face (x, y in meters from bottom left).
+ */
+export function shutterFrameTexture() {
+  return base('shutter-frame', (g, s) => {
+    const W = 0.95
+    const H = 1.05
+    const px = (x: number) => (x / W) * s
+    const py = (y: number) => ((H - y) / H) * s
+    const r = rngT(5)
+    g.fillStyle = '#e2cdb6'
+    g.fillRect(0, 0, s, s)
+    // grain
+    for (let i = 0; i < 90; i++) {
+      g.strokeStyle = `rgba(120, 90, 60, ${0.06 + r() * 0.08})`
+      g.lineWidth = 1 + r() * 2
+      const y = r() * s
+      g.beginPath()
+      g.moveTo(0, y)
+      g.bezierCurveTo(s * 0.3, y + (r() - 0.5) * 12, s * 0.7, y + (r() - 0.5) * 12, s, y + (r() - 0.5) * 8)
+      g.stroke()
+    }
+    const panel = (x0: number, y0: number, x1: number, y1: number) => {
+      g.fillStyle = '#7a6250'
+      g.fillRect(px(x0), py(y1), px(x1) - px(x0), py(y0) - py(y1))
+      g.strokeStyle = '#a58a72'
+      g.lineWidth = s * 0.006
+      g.strokeRect(px(x0) - 3, py(y1) - 3, px(x1) - px(x0) + 6, py(y0) - py(y1) + 6)
+    }
+    const carve = '#ecdccb'
+    const leaf = (x: number, y: number, len: number, a: number) => {
+      g.save()
+      g.translate(x, y)
+      g.rotate(a)
+      g.fillStyle = carve
+      g.beginPath()
+      g.moveTo(0, 0)
+      g.quadraticCurveTo(len * 0.5, -len * 0.45, len, 0)
+      g.quadraticCurveTo(len * 0.5, len * 0.45, 0, 0)
+      g.fill()
+      g.restore()
+    }
+    // horizontal vine: a wave with leaves on alternate sides and curls
+    const vineH = (x0: number, x1: number, yc: number, amp: number) => {
+      g.strokeStyle = carve
+      g.lineWidth = s * 0.008
+      g.beginPath()
+      for (let x = x0; x <= x1; x += 0.005) {
+        const y = yc + Math.sin(((x - x0) / (x1 - x0)) * Math.PI * 4) * amp
+        if (x === x0) g.moveTo(px(x), py(y))
+        else g.lineTo(px(x), py(y))
+      }
+      g.stroke()
+      for (let k = 0; k < 8; k++) {
+        const x = x0 + ((k + 0.5) / 8) * (x1 - x0)
+        const y = yc + Math.sin(((x - x0) / (x1 - x0)) * Math.PI * 4) * amp
+        leaf(px(x), py(y), s * 0.045, k % 2 ? -0.9 : 0.9 + Math.PI)
+        leaf(px(x), py(y), s * 0.03, k % 2 ? -2.2 : 2.2 + Math.PI)
+      }
+    }
+    const vineV = (xc: number, y0: number, y1: number, amp: number) => {
+      g.strokeStyle = carve
+      g.lineWidth = s * 0.008
+      g.beginPath()
+      for (let y = y0; y <= y1; y += 0.005) {
+        const x = xc + Math.sin(((y - y0) / (y1 - y0)) * Math.PI * 5) * amp
+        if (y === y0) g.moveTo(px(x), py(y))
+        else g.lineTo(px(x), py(y))
+      }
+      g.stroke()
+      for (let k = 0; k < 9; k++) {
+        const y = y0 + ((k + 0.5) / 9) * (y1 - y0)
+        const x = xc + Math.sin(((y - y0) / (y1 - y0)) * Math.PI * 5) * amp
+        leaf(px(x), py(y), s * 0.035, k % 2 ? -0.6 : Math.PI + 0.6)
+      }
+    }
+    const flower = (x: number, y: number) => {
+      for (let i = 0; i < 4; i++) leaf(px(x), py(y), s * 0.04, (i * Math.PI) / 2 + Math.PI / 4)
+    }
+    // top band: two panels
+    panel(0.07, 0.885, 0.46, 0.985)
+    panel(0.49, 0.885, 0.88, 0.985)
+    vineH(0.08, 0.45, 0.935, 0.018)
+    vineH(0.5, 0.87, 0.935, 0.018)
+    // lintel over the mirror
+    panel(0.2, 0.75, 0.75, 0.855)
+    vineH(0.21, 0.74, 0.8, 0.022)
+    // side strips
+    panel(0.06, 0.25, 0.15, 0.85)
+    panel(0.8, 0.25, 0.89, 0.85)
+    vineV(0.105, 0.27, 0.83, 0.015)
+    vineV(0.845, 0.27, 0.83, 0.015)
+    // lattice blocks under the strips
+    for (const x0 of [0.06, 0.8]) {
+      panel(x0, 0.08, x0 + 0.09, 0.22)
+      g.strokeStyle = carve
+      g.lineWidth = s * 0.006
+      for (let i = 1; i < 3; i++) {
+        g.beginPath()
+        g.moveTo(px(x0 + (i * 0.09) / 3), py(0.08))
+        g.lineTo(px(x0 + (i * 0.09) / 3), py(0.22))
+        g.stroke()
+      }
+      for (let j = 1; j < 4; j++) {
+        g.beginPath()
+        g.moveTo(px(x0), py(0.08 + (j * 0.14) / 4))
+        g.lineTo(px(x0 + 0.09), py(0.08 + (j * 0.14) / 4))
+        g.stroke()
+      }
+    }
+    // bottom panel with flowers
+    panel(0.2, 0.08, 0.75, 0.22)
+    g.fillStyle = '#c9b29b'
+    g.fillRect(px(0.2), py(0.22), px(0.75) - px(0.2), py(0.08) - py(0.22))
+    for (const x of [0.29, 0.41, 0.54, 0.66]) flower(x, 0.15)
+  }, 512)
+}
+
 function rngT(seed: number) {
   let x = seed >>> 0 || 1
   return () => {
