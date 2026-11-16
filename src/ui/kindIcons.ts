@@ -300,6 +300,7 @@ export const KIND_ICON: Record<ItemKind, LucideIcon> = {
   toolWall: Wrench,
   storageRack: Columns3,
   brickDrawers: Columns3,
+  displayShelf: Columns3,
   stairs: Rows4,
   garageDoor: Warehouse,
   streetLamp: Lamp,

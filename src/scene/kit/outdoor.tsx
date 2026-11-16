@@ -2202,6 +2202,150 @@ function storageRackGeometry() {
   })
 }
 
+/* ---------- display bookcase ---------- */
+
+const DS_D = 0.35
+const DS_H = 2.33
+/** Shelf heights (top faces) from the floor; the top board closes the case */
+const DS_SHELVES = [0.1, 0.44, 0.78, 1.12, 1.46, 1.8, 2.1]
+const SET_BOX = ['#2a5fb0', '#d85fa8', '#f2cd37', '#1d1e22', '#36b0c9', '#7cc43a', '#e8833a', '#f4f4f2', '#c8323c']
+
+/** Display bookcase contents (built once per width), vertex colored: set boxes, cars, a ship, pictures, minifigures, plants */
+function displayShelfGeometry(W: number) {
+  return cached(`displayShelf-${W.toFixed(2)}`, () => {
+    const r = rng(73)
+    const frame: Part[] = []
+    const stuff: Part[] = []
+    const white = '#f4f4f2'
+    const navy = '#1d2742'
+    const bay = (W - 0.12) / 2
+    // frame: sides, middle post, top, plinth, navy back
+    for (const x of [-W / 2 + 0.03, W / 2 - 0.03, 0]) frame.push({ g: boxG(x === 0 ? 0.06 : 0.06, DS_H, DS_D), p: [x, DS_H / 2, 0], c: white })
+    frame.push({ g: boxG(W, 0.08, DS_D + 0.03), p: [0, DS_H - 0.04, 0.01], c: white })
+    frame.push({ g: boxG(W, 0.08, DS_D), p: [0, 0.04, 0], c: white })
+    frame.push({ g: boxG(W - 0.06, DS_H - 0.1, 0.01), p: [0, DS_H / 2, -DS_D / 2 + 0.006], c: navy })
+    for (const b of [-1, 1]) {
+      const cx = b * (bay / 2 + 0.03)
+      for (const y of DS_SHELVES.slice(1)) frame.push({ g: boxG(bay, 0.025, DS_D - 0.02), p: [cx, y - 0.0125, 0.005], c: white })
+    }
+    const put = (cx: number, y: number, w: number) => {
+      // fills a shelf span [cx - w/2, cx + w/2] at height y with items
+      let x = cx - w / 2 + 0.02
+      const end = cx + w / 2 - 0.02
+      while (x < end - 0.06) {
+        const k = r()
+        if (y > 2) {
+          // top shelf: Lego set boxes standing up
+          const bw = 0.06 + r() * 0.1
+          const bh = 0.18 + r() * 0.08
+          if (x + bw > end) break
+          stuff.push({ g: boxG(bw, bh, 0.22), p: [x + bw / 2, y + bh / 2, 0], c: SET_BOX[Math.floor(r() * SET_BOX.length)] })
+          stuff.push({ g: boxG(bw * 0.9, 0.03, 0.005), p: [x + bw / 2, y + bh - 0.03, 0.111], c: '#f2f2f2' })
+          x += bw + 0.005
+        } else if (k < 0.22) {
+          // car: a long low body with a cabin and four dark wheels
+          const cw = 0.24 + r() * 0.14
+          if (x + cw > end) break
+          const col = ['#f2f2f2', '#9aa0a8', '#c8323c', '#2a5fb0'][Math.floor(r() * 4)]
+          stuff.push({ g: boxG(cw, 0.05, 0.1), p: [x + cw / 2, y + 0.035, 0.04], c: col })
+          stuff.push({ g: boxG(cw * 0.5, 0.04, 0.09), p: [x + cw * 0.45, y + 0.08, 0.04], c: col })
+          for (const fx of [0.18, 0.82]) for (const fz of [-1, 1]) stuff.push({ g: cylG(0.02, 0.012, 10), p: [x + cw * fx, y + 0.02, 0.04 + fz * 0.05], r: [Math.PI / 2, 0, 0], c: '#1d1e22' })
+          x += cw + 0.03
+        } else if (k < 0.32) {
+          // ship: a brown hull, a mast and a cream sail
+          const sw = 0.26
+          if (x + sw > end) break
+          stuff.push({ g: boxG(sw, 0.06, 0.1), p: [x + sw / 2, y + 0.04, 0.03], c: '#7a4a2a' })
+          stuff.push({ g: boxG(0.012, 0.22, 0.012), p: [x + sw / 2, y + 0.18, 0.03], c: '#5a3a24' })
+          stuff.push({ g: boxG(0.14, 0.12, 0.004), p: [x + sw / 2, y + 0.2, 0.03], c: '#eadfc4' })
+          x += sw + 0.03
+        } else if (k < 0.48) {
+          // picture or poster leaning on the back
+          const pw = 0.12 + r() * 0.12
+          const ph = 0.12 + r() * 0.12
+          if (x + pw > end) break
+          stuff.push({ g: boxG(pw, ph, 0.012), p: [x + pw / 2, y + ph / 2 + 0.005, -DS_D / 2 + 0.03], r: [-0.08, 0, 0], c: '#f4f4f2' })
+          stuff.push({ g: boxG(pw - 0.02, ph - 0.02, 0.004), p: [x + pw / 2, y + ph / 2 + 0.005, -DS_D / 2 + 0.038], r: [-0.08, 0, 0], c: ['#3c9a3c', '#2a5fb0', '#c8a640', '#8a5fa8', '#e8833a'][Math.floor(r() * 5)] })
+          x += pw + 0.02
+        } else if (k < 0.72) {
+          // a row of minifigures
+          const n = 3 + Math.floor(r() * 5)
+          for (let i = 0; i < n && x < end - 0.03; i++) {
+            const c = SET_BOX[Math.floor(r() * SET_BOX.length)]
+            stuff.push({ g: boxG(0.016, 0.03, 0.01), p: [x + 0.01, y + 0.015, 0.06], c })
+            stuff.push({ g: cylG(0.006, 0.01, 8), p: [x + 0.01, y + 0.036, 0.06], c: '#f2cd37' })
+            x += 0.026
+          }
+          x += 0.02
+        } else if (k < 0.86) {
+          // a built model: a stack of colored blocks
+          const mw = 0.1 + r() * 0.12
+          if (x + mw > end) break
+          let yy = y
+          for (let i = 0; i < 3; i++) {
+            const h = 0.03 + r() * 0.06
+            stuff.push({ g: boxG(mw * (1 - i * 0.2), h, 0.1 * (1 - i * 0.15)), p: [x + mw / 2, yy + h / 2, 0], c: SET_BOX[Math.floor(r() * SET_BOX.length)] })
+            yy += h
+          }
+          x += mw + 0.03
+        } else {
+          x += 0.05 + r() * 0.08
+        }
+      }
+    }
+    for (const b of [-1, 1]) {
+      const cx = b * (bay / 2 + 0.03)
+      DS_SHELVES.forEach((y, i) => {
+        if (i === 0 && b < 0) {
+          // bottom left: plants and glass flasks under the grow light
+          stuff.push({ g: cylG(0.07, 0.12, 14), p: [cx - bay * 0.3, y + 0.06, 0], c: '#f4f4f2' })
+          stuff.push({ g: icoG(0.08, 1), p: [cx - bay * 0.3, y + 0.17, 0], c: '#4c9a3a' })
+          stuff.push({ g: cylG(0.05, 0.1, 12), p: [cx - bay * 0.05, y + 0.05, 0.02], c: '#cfe0e6' })
+          stuff.push({ g: icoG(0.06, 1), p: [cx + bay * 0.25, y + 0.07, 0], c: '#d9534f' })
+          return
+        }
+        put(cx, y, bay)
+      })
+    }
+    return { frame: merge(frame), stuff: merge(stuff) }
+  })
+}
+
+/**
+ * Built-in display bookcase (like a wall of white shelves with a navy back): two bays of seven shelves full of brick
+ * models (set boxes on top, cars, a ship, pictures, minifigures) and plants under a grow light at the bottom left.
+ * Width Item.len (default 2.4 m), 2.33 m tall, back against the wall. The main bound entity lights the models (spots under
+ * the top shelf, a blue accent strip); the first extra entity is the grow light (a warm strip under the shelf above the
+ * bottom left one). Room light: roomLights.ts.
+ */
+export function DisplayShelf({ v }: P) {
+  const W = v.opts.len ?? 2.4
+  const g = displayShelfGeometry(W)
+  const lit = v.on && !v.unavailable
+  const grow = v.related[0] ? isActive(v.related[0]) : false
+  const bay = (W - 0.12) / 2
+  const spot = mat('#fff6e0', { emissive: '#fff6e0', emissiveIntensity: lit ? 1.6 : 0.05 })
+  const blue = mat('#5a8cff', { emissive: '#5a8cff', emissiveIntensity: lit ? 1.8 : 0.05 })
+  const warm = mat('#ffe7c2', { emissive: '#ffe7c2', emissiveIntensity: grow ? 2 : 0.05 })
+  return (
+    <group>
+      <M g={g.frame} m={vcMat(0.7)} />
+      <M g={g.stuff} m={vcMat(0.6)} shadow={false} />
+      {/* model lights: spots under the shelf below the top one in the left bay, a blue strip on the next shelf */}
+      {[-0.35, 0, 0.35].map((f) => (
+        <group key={f}>
+          <Box size={[0.04, 0.012, 0.04]} position={[-(bay / 2 + 0.03) + f * bay, DS_SHELVES[5] - 0.032, 0.05]} material={spot} shadow={false} />
+          {lit && <Glow position={[-(bay / 2 + 0.03) + f * bay, DS_SHELVES[5] - 0.06, 0.08]} color="#fff6e0" opacity={0.6} size={0.18} />}
+        </group>
+      ))}
+      <Box size={[bay * 0.9, 0.008, 0.01]} position={[-(bay / 2 + 0.03), DS_SHELVES[4] - 0.03, DS_D / 2 - 0.02]} material={blue} shadow={false} />
+      {/* grow light strip under the shelf above the bottom left one */}
+      <Box size={[bay * 0.9, 0.01, 0.02]} position={[-(bay / 2 + 0.03), DS_SHELVES[1] - 0.03, 0.1]} material={warm} shadow={false} />
+      {grow && <Glow position={[-(bay / 2 + 0.03), DS_SHELVES[1] - 0.12, 0.12]} color="#ffe7c2" opacity={0.7} size={0.5} />}
+    </group>
+  )
+}
+
 /* ---------- clear drawer tower ---------- */
 
 const BD_W = 1.2

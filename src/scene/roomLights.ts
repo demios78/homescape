@@ -252,6 +252,8 @@ const SPEC: Partial<Record<ItemKind, { at: [number, number, number]; range: numb
   pendant: { at: [0, 1.85, 0], range: 'room', power: 3.6, type: 0 },
   // Floor lamps and sconces light the room more
   floorLamp: { at: [0, 1.5, 0], range: 8, power: 4.6, type: 0 },
+  // Display bookcase model lights: spots under the top shelf
+  displayShelf: { at: [0, 1.85, 0.12], range: 4, power: 2.4, type: 0 },
   // Softbox front (standing; hung from the ceiling it sits lower, see computeRoomLights)
   studioLight: { at: [0, 1.7, 0.35], range: 7, power: 5, type: 0 },
   deskLamp: { at: [0, 0.27, 0.1], range: 2.6, power: 1.3, type: 0 },
@@ -458,6 +460,12 @@ export function computeRoomLights(level: Level, entities: Record<string, HassEnt
 
   for (const it of level.items) {
     const e = it.entityId ? entities[it.entityId] : undefined
+    // Display bookcase: the first extra entity is the grow light under the shelf above the bottom one (left bay)
+    if (it.kind === 'displayShelf') {
+      const g = it.extras?.[0] ? entities[it.extras[0]] : undefined
+      const W = it.len ?? 2.4
+      if (g && isActive(g)) push(it, [-W / 4, 0.32, 0.12], 3, 2.2, 0, _c.set('#ffe7c2'))
+    }
     const spec = SPEC[it.kind]
     if (spec) {
       // A street lamp without a linked entity turns on by itself at night

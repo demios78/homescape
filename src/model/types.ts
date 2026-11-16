@@ -132,6 +132,7 @@ export type ItemKind =
   | 'toolWall'
   | 'storageRack'
   | 'brickDrawers'
+  | 'displayShelf'
   | 'stairs'
   | 'garageDoor'
   // front of the house and street (kit/street.tsx)

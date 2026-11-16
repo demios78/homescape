@@ -176,6 +176,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   toolWall: O.ToolWall,
   storageRack: O.StorageRack,
   brickDrawers: O.BrickDrawers,
+  displayShelf: O.DisplayShelf,
   stairs: O.Stairs,
   garageDoor: O.GarageDoor,
   // Front yard and street; models in kit/street.tsx
