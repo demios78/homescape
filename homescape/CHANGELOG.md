@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.23 (demios78 fork)
+
+- New furniture: a display bookcase full of brick models, with model lights and a grow light.
+
 ## 0.2.1-dm.22 (demios78 fork)
 
 - Coffee tables can be resized (length and depth).
