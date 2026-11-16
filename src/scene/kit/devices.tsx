@@ -1345,7 +1345,7 @@ function SlidingDoor({ v }: P) {
 }
 
 /** One French door leaf (W wide, hinge at local x 0, extending to +x): white stiles and rails around 2 × 5 glass panes, a brass knob */
-function FrenchLeaf({ W, glass }: { W: number; glass: THREE.Material }) {
+function FrenchLeaf({ W, glass, cols = 2 }: { W: number; glass: THREE.Material; cols?: number }) {
   const H = 2.12
   const T = 0.04
   const stile = 0.1
@@ -1361,8 +1361,10 @@ function FrenchLeaf({ W, glass }: { W: number; glass: THREE.Material }) {
       <Box size={[gw, rail, T]} position={[W / 2, H - rail / 2, 0]} color={C.white} />
       <Box size={[gw, bottom, T]} position={[W / 2, bottom / 2, 0]} color={C.white} />
       <Box size={[gw, gh, 0.008]} position={[W / 2, bottom + gh / 2, 0]} material={glass} shadow={false} />
-      {/* muntins: one vertical bar, four horizontal bars (2 × 5 panes) */}
-      <Box size={[bar, gh, T * 0.8]} position={[W / 2, bottom + gh / 2, 0]} color={C.white} shadow={false} />
+      {/* muntins: cols × 5 panes */}
+      {Array.from({ length: cols - 1 }, (_, i) => (
+        <Box key={`v${i}`} size={[bar, gh, T * 0.8]} position={[stile + (gw * (i + 1)) / cols, bottom + gh / 2, 0]} color={C.white} shadow={false} />
+      ))}
       {[1, 2, 3, 4].map((i) => (
         <Box key={i} size={[gw, bar, T * 0.8]} position={[W / 2, bottom + (gh * i) / 5, 0]} color={C.white} shadow={false} />
       ))}
@@ -1448,7 +1450,65 @@ function CasedOpening({ v }: P) {
   )
 }
 
+/**
+ * Glass door with fixed side panels (Item.variant 'patio', like a sunroom door to a deck): a single glazed leaf (3 × 5
+ * panes, brass knob) in the middle of a frame as wide as Item.len, between two floor-length fixed glass panels (3 × 6
+ * panes). The leaf hinges and swings like a plain door (Item.hinge, Item.swing; open with a door sensor or someone passing).
+ */
+function PatioDoor({ v }: P) {
+  const fps = useView((s) => s.fps)
+  const root = useRef<THREE.Group>(null)
+  const tall = useRef<THREE.Group>(null)
+  const W = v.opts.len ?? 2.5
+  const DW = 0.9
+  const side = (W - DW - 0.12) / 2
+  const { open, sensedOpen } = doorState(v)
+  const passing = useDoorTraffic((s) => (v.at ? Boolean(s.open[doorKey(v.at.x, v.at.z)]) : false))
+  const leaf = useEased(open || passing ? -Math.PI / 2 + 0.08 : 0)
+  const glass = fps ? mat(C.glass, { opacity: 0.15, roughness: 0.05 }) : mat(C.glass, { opacity: 0.45, roughness: 0.1 })
+  useWallHeight(root, v.interior, (h) => {
+    if (tall.current) tall.current.scale.y = Math.max(0.02, h / FULL_H)
+  })
+  const panel = (x: number) => (
+    <group position={[x, 0, EDGE_Z]}>
+      <Box size={[side, 2.12, 0.008]} position={[0, 1.08, 0]} material={glass} shadow={false} />
+      {[1, 2].map((i) => (
+        <Box key={`c${i}`} size={[0.03, 2.08, 0.03]} position={[-side / 2 + (side * i) / 3, 1.08, 0]} color={C.white} shadow={false} />
+      ))}
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Box key={`r${i}`} size={[side, 0.03, 0.03]} position={[0, 0.04 + (2.08 * i) / 6, 0]} color={C.white} shadow={false} />
+      ))}
+      <Box size={[side, 0.08, 0.1]} position={[0, 0.04, 0]} color={C.white} shadow={false} />
+    </group>
+  )
+  return (
+    <group ref={root}>
+      <group ref={tall}>
+        <Box size={[0.08, 2.19, 0.24]} position={[-W / 2, 1.095, EDGE_Z]} color={C.white} />
+        <Box size={[0.08, 2.19, 0.24]} position={[W / 2, 1.095, EDGE_Z]} color={C.white} />
+        <Box size={[W + 0.08, 0.08, 0.24]} position={[0, 2.19, EDGE_Z]} color={C.white} />
+        {[-1, 1].map((s) => (
+          <Box key={s} size={[0.08, 2.15, 0.2]} position={[s * (DW / 2 + 0.03), 1.075, EDGE_Z]} color={C.white} />
+        ))}
+        {panel(-(DW / 2 + 0.07 + side / 2))}
+        {panel(DW / 2 + 0.07 + side / 2)}
+        <Mirror x={v.hingeRight} z={v.swingOut}>
+          <group ref={leaf} position={[-DW / 2 + 0.02, 0, -0.12]}>
+            <FrenchLeaf W={DW - 0.04} glass={glass} cols={3} />
+          </group>
+        </Mirror>
+      </group>
+      <Box size={[DW, 0.012, v.interior ? 0.42 : 0.22]} position={[0, 0.006, EDGE_Z]} color={C.woodFloor} shadow={false} />
+      <Mirror x={v.hingeRight} z={v.swingOut}>
+        {(v.interior || v.edit) && !fps && <SwingArc at={[-DW / 2 + 0.02, 0.012, -0.12]} r={DW - 0.04} strong={v.edit} />}
+        {sensedOpen && <Box size={[DW, 0.01, DW]} position={[0, 0.008, 0.4]} material={mat(C.sun, { opacity: 0.25 })} shadow={false} />}
+      </Mirror>
+    </group>
+  )
+}
+
 export function Door({ v }: P) {
+  if (v.opts.variant === 'patio') return <PatioDoor v={v} />
   if (v.opts.variant === 'opening') return <CasedOpening v={v} />
   if (v.opts.variant === 'sliding') return <SlidingDoor v={v} />
   if (v.opts.variant === 'french') return <FrenchDoor v={v} />
@@ -1810,11 +1870,16 @@ function HungSashes({ v, W, B, H, glass }: P & { W: number; B: number; H: number
     markShadows(1)
     state.invalidate()
   })
-  const cols = W >= 0.9 ? 4 : 3
-  const rows = 3
-  const sw = W - 0.08
-  const pane = (y: number, z: number) => (
-    <>
+  // A window 2 m or wider is a set of side-by-side units (about 85 cm each) with a mullion between them
+  const units = W >= 2 ? Math.max(2, Math.round(W / 0.85)) : 1
+  const MULL = 0.07
+  const uw = (W - (units - 1) * MULL) / units
+  const cx = (i: number) => -W / 2 + uw / 2 + i * (uw + MULL)
+  const cols = uw >= 0.9 ? 4 : units > 1 ? 2 : 3
+  const rows = units > 1 ? 2 : 3
+  const sw = uw - 0.08
+  const sash = (x: number, y: number, z: number) => (
+    <group key={x} position={[x, 0, 0]}>
       <Box size={[sw - 0.1, sh - 0.1, 0.008]} position={[0, y, z]} material={glass} shadow={false} />
       <Box size={[sw, 0.05, 0.04]} position={[0, y + sh / 2 - 0.025, z]} color={C.white} shadow={false} />
       <Box size={[sw, 0.06, 0.04]} position={[0, y - sh / 2 + 0.03, z]} color={C.white} shadow={false} />
@@ -1822,14 +1887,18 @@ function HungSashes({ v, W, B, H, glass }: P & { W: number; B: number; H: number
         <Box key={s} size={[0.05, sh, 0.04]} position={[s * (sw / 2 - 0.025), y, z]} color={C.white} shadow={false} />
       ))}
       <Grid w={sw - 0.1} h={sh - 0.1} cols={cols} rows={rows} y={y} z={z} />
-    </>
+    </group>
   )
+  const pane = (y: number, z: number) => <>{Array.from({ length: units }, (_, i) => sash(cx(i), y, z))}</>
   const shutterW = Math.min(0.5, W * 0.42)
   const outer = EDGE_Z - 0.065
   return (
     <>
       {pane(B + H * 0.75, EDGE_Z - 0.02)}
       <group ref={lower}>{pane(B + H * 0.25, EDGE_Z + 0.03)}</group>
+      {Array.from({ length: units - 1 }, (_, i) => (
+        <Box key={`m${i}`} size={[MULL, H, 0.2]} position={[cx(i) + uw / 2 + MULL / 2, B + H / 2, EDGE_Z]} color={C.white} />
+      ))}
       {/* inside casing: wide white trim around the opening on the inner wall face */}
       {[-1, 1].map((s) => (
         <Box key={s} size={[0.09, H + 0.18, 0.02]} position={[s * (W / 2 + 0.045), B + H / 2 + 0.03, EDGE_Z + WALL_IN + 0.01]} color={C.white} shadow={false} />

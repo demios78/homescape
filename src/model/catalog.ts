@@ -1024,9 +1024,10 @@ export const OPTIONS: Partial<
       ['sliding', t('Sliding (closet)')],
       ['french', t('French doors')],
       ['opening', t('Open doorway')],
+      ['patio', t('Glass door with side panels')],
     ],
     variantDef: 'hinged',
-    variantLen: { hinged: undefined as unknown as number, sliding: 1.6, french: 1.2, opening: 0.9 },
+    variantLen: { hinged: undefined as unknown as number, sliding: 1.6, french: 1.2, opening: 0.9, patio: 2.5 },
   },
   garageDoor: { note: t("Bind the garage door's motor (cover) or door sensor: the panels slide up as far as it is open.") },
   pegboard: { body: t('Panel color') },
@@ -1167,7 +1168,7 @@ export const OPTIONS: Partial<
 
 /** Kinds with adjustable length: length (local x) limits (m); the card shows label when given */
 export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; label?: string; onlyVariant?: string[] }>> = {
-  door: { min: 0.6, max: 3, label: t('Door width'), onlyVariant: ['sliding', 'french', 'opening'] },
+  door: { min: 0.6, max: 3, label: t('Door width'), onlyVariant: ['sliding', 'french', 'opening', 'patio'] },
   desk: { min: 0.8, max: 2.6 },
   consoleTable: { min: 0.6, max: 2.2, label: t('Table length') },
   storageBench: { min: 0.8, max: 2, label: t('Bench length') },
@@ -1243,6 +1244,12 @@ export const OPENING_W = 0.9
 
 /** Width of a sliding door (m), undefined for other doors */
 export const slidingWidth = (it: DoorLike) => (it.kind === 'door' && it.variant === 'sliding' ? (it.len ?? SLIDING_DOOR_W) : undefined)
+
+/** Default width of a glass door with fixed side panels (Item.variant 'patio', width Item.len: door leaf + both panels) */
+export const PATIO_DOOR_W = 2.5
+
+/** Width of a glass door with side panels (m), undefined for other doors */
+export const patioWidth = (it: DoorLike) => (it.kind === 'door' && it.variant === 'patio' ? (it.len ?? PATIO_DOOR_W) : undefined)
 
 /** Width of an open doorway (m), undefined for other doors */
 export const openingWidth = (it: DoorLike) => (it.kind === 'door' && it.variant === 'opening' ? (it.len ?? OPENING_W) : undefined)
