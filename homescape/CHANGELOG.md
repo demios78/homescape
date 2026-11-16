@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.10 (demios78 fork)
+
+- Doors can be sliding closet doors: two white bypass panels, 1-3 m wide, no swing area.
+
 ## 0.2.1-dm.9 (demios78 fork)
 
 - Stairs can be closed underneath (a closet under the stairs): basement stairs below them get no railing on the
