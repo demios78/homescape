@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.22 (demios78 fork)
+
+- Coffee tables can be resized (length and depth).
+
 ## 0.2.1-dm.21 (demios78 fork)
 
 - Coffee tables can have a brick baseplate top (blue plates, a green plate, a train track loop).
