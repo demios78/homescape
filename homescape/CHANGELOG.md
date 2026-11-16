@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.19 (demios78 fork)
+
+- New decor: a minifigure wall clock that shows the real time.
+
 ## 0.2.1-dm.18 (demios78 fork)
 
 - New light: a studio softbox on a tripod, standing on the floor or hung from the ceiling.
