@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.4 (demios78 fork)
+
+- New furniture: a loveseat (striped or plain fabric), a wicker armchair with a floral or plain cushion, a scalloped
+  shell chair and an upholstered task chair. The shell and task chairs tuck under desks. Colors can be chosen.
+
 ## 0.2.1-dm.3 (demios78 fork)
 
 - New furniture: a daybed with three drawers that pulls out into a king. Choose Twin or King in its card; the back
