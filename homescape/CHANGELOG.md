@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.2 (demios78 fork)
+
+- New furniture: a twin loft bed with a ladder on either side, a guard rail and open space below. Frame and bedding
+  colors can be chosen.
+
 ## 0.2.1-dm.1 (demios78 fork)
 
 - Beds come in Twin, Full, Queen and King sizes, with five headboard styles: flat, framed panels, padded, arched and
