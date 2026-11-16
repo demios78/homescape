@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { deviceClass, isActive, lightColor, lightLevel } from '@/ha/derive'
+import { isActive, lightColor, lightLevel, opensDoor } from '@/ha/derive'
 import type { HassEntity } from '@/ha/types'
 import { bindingsOf, ledOf, ledSource } from '@/model/bindings'
 import { BEAM, bedModel } from '@/model/catalog'
@@ -242,7 +242,7 @@ function doorOpen(door: Item, entities: Record<string, HassEntity>) {
   const bound = bindingsOf(door)
     .map((id) => entities[id])
     .filter((e): e is HassEntity => Boolean(e))
-  const contacts = bound.filter((e) => e.entity_id.startsWith('cover.') || (e.entity_id.startsWith('binary_sensor.') && ['door', 'window', 'opening', 'garage_door'].includes(deviceClass(e))))
+  const contacts = bound.filter((e) => opensDoor(e, door.driven))
   if (contacts.length) return contacts.some((e) => isActive(e))
   return !bound.some((e) => e.entity_id.startsWith('lock.') && e.state === 'locked')
 }
@@ -328,7 +328,7 @@ function shadePass(win: Item, entities: Record<string, HassEntity>) {
 function outerOpen(door: Item, entities: Record<string, HassEntity>) {
   return bindingsOf(door)
     .map((id) => entities[id])
-    .some((e) => Boolean(e) && (e!.entity_id.startsWith('cover.') || (e!.entity_id.startsWith('binary_sensor.') && ['door', 'window', 'opening', 'garage_door'].includes(deviceClass(e)))) && isActive(e!))
+    .some((e) => Boolean(e) && opensDoor(e!, door.driven) && isActive(e!))
 }
 
 /** Room diagonal + 1 m (at least 5): range of lights that fill the room */
@@ -481,7 +481,7 @@ export function computeRoomLights(level: Level, entities: Record<string, HassEnt
         // One light per fixture lens; it lights all open areas within range (the pole's sidewalk, the road, the crosswalk)
         const heads = STREET_LAMP[it.variant ?? 'single'] ?? STREET_LAMP.single
         for (const at of heads) push(it, at, spec.range, spec.power, 0, _c)
-      } else push(it, spec.at, spec.range, spec.power, spec.type, _c.set(lightColor(e)).multiplyScalar(level), it.kind === 'ledStrip' && it.len ? it.len / 2 : spec.half)
+      } else push(it, spec.at, spec.range, spec.power, spec.type, _c.set(it.tint ?? lightColor(e)).multiplyScalar(level), it.kind === 'ledStrip' && it.len ? it.len / 2 : spec.half)
       continue
     }
     // Under-counter LED: onto the front of the counter, from below the wall cabinets (source chosen on the card, or the main entity)

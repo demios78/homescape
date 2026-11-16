@@ -4,7 +4,7 @@ import { canToggle, toggle, turnOffAll } from '@/ha/actions'
 import { friendlyName, isActive, relativeTime, stateLabel } from '@/ha/derive'
 import { useHa } from '@/ha/store'
 import { bindingsOf, boundAnywhere, emitsLight, isBound, ledOf, ledSource } from '@/model/bindings'
-import { BEAM, BED_SIZES, bedModel, BODY_COLORS, CATALOG, CONSOLE_LEN, consoleModel, DAYBED_DEPTH, ITEM_PRESETS, OPTIONS, RESIZABLE, RESIZABLE2, sizeOf, TOP_COLORS } from '@/model/catalog'
+import { BEAM, BED_SIZES, bedModel, BODY_COLORS, CATALOG, CONSOLE_LEN, consoleModel, DAYBED_DEPTH, ITEM_PRESETS, LIGHT_TINTS, OPTIONS, RESIZABLE, RESIZABLE2, sizeOf, TINTABLE, TOP_COLORS } from '@/model/catalog'
 import { kindFor, modelName, variantFor } from '@/model/generate'
 import { doorSides, isOutdoor, isStreetSurface, rectsOf, roomArea, roomAt, wallLengthAt, wallSnap, type Side } from '@/model/geometry'
 import { groupFamily, groupMates, heatingSummary } from '@/model/groups'
@@ -188,7 +188,7 @@ function ItemView({ item, room }: { item: Item; room?: Room }) {
 /* ---------- item: edit ---------- */
 
 /** Color chips: the selected one gets a brand blue ring. */
-function Swatches({ list, value, onPick }: { list: [string, string][]; value?: string; onPick: (hex: string) => void }) {
+function Swatches({ list, value, onPick, children }: { list: [string, string][]; value?: string; onPick: (hex: string) => void; children?: React.ReactNode }) {
   return (
     <div className="flex flex-wrap gap-2">
       {list.map(([name, hex]) => (
@@ -202,6 +202,7 @@ function Swatches({ list, value, onPick }: { list: [string, string][]; value?: s
           style={{ background: hex }}
         />
       ))}
+      {children}
     </div>
   )
 }
@@ -400,6 +401,46 @@ function LightIntensity({ item }: { item: Item }) {
       </div>
       <input id={`intensity-${item.id}`} type="range" min={10} max={300} step={5} value={pct} onPointerDown={() => checkpoint()} onChange={(e) => set(Number(e.target.value), false)} />
       <span className="text-[11px] text-ink-3">{t('Every product is differently bright: match the light in the scene to the real one. The brightness in Home Assistant applies on top.')}</span>
+    </div>
+  )
+}
+
+/**
+ * Light color (Item.tint) of TINTABLE kinds: a preset chip or any color from the color input. Automatic removes the
+ * field, and the strip follows the bound light's color in Home Assistant again.
+ */
+function LightTint({ item }: { item: Item }) {
+  if (!TINTABLE.includes(item.kind)) return null
+  const { updateItem, checkpoint } = useLayout.getState()
+  const custom = item.tint && !LIGHT_TINTS.some(([, hex]) => hex === item.tint)
+  return (
+    <div className="grid gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[12px] font-semibold text-ink-2">{t('Light color')}</span>
+        {item.tint && (
+          <button type="button" id={`tint-auto-${item.id}`} onClick={() => updateItem(item.id, { tint: undefined })} className="rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-brand hover:bg-brand-50">
+            {t('Automatic')}
+          </button>
+        )}
+      </div>
+      <Swatches list={LIGHT_TINTS} value={item.tint} onPick={(hex) => updateItem(item.id, { tint: hex })}>
+        <label
+          title={t('Custom')}
+          className={`relative size-7 cursor-pointer overflow-hidden rounded-full ring-offset-2 ring-offset-[var(--surface-solid)] ${custom ? 'ring-2 ring-brand' : 'ring-1 ring-line hover:ring-ink-3'}`}
+          style={{ background: custom ? item.tint : 'conic-gradient(#ff4040, #ffd84a, #3fe07a, #3fd8ff, #3f6bff, #ff5cc8, #ff4040)' }}
+        >
+          <input
+            id={`tint-${item.id}`}
+            type="color"
+            aria-label={t('Custom')}
+            value={item.tint ?? '#ffd29a'}
+            onClick={() => checkpoint()}
+            onChange={(e) => updateItem(item.id, { tint: e.target.value }, false)}
+            className="absolute inset-0 size-full cursor-pointer opacity-0"
+          />
+        </label>
+      </Swatches>
+      {!item.tint && <span className="text-[11px] text-ink-3">{t('Automatic follows the color of the bound light in Home Assistant.')}</span>}
     </div>
   )
 }
@@ -801,6 +842,24 @@ function AquariumFeed({ item }: { item: Item }) {
 }
 
 /** Opening direction of a door or window: hinge side and the side it opens to (room names on an inner door). */
+/**
+ * Door "driven" checkbox (Item.driven): a bound light or plug opens the door while it is on and closes it while it is off,
+ * like a door sensor (ha/derive.ts > opensDoor). Off removes the field.
+ */
+function DoorDriven({ item }: { item: Item }) {
+  if (item.kind !== 'door' || item.variant === 'opening') return null
+  const { updateItem } = useLayout.getState()
+  return (
+    <div className="grid gap-1">
+      <label className="flex min-h-10 items-center gap-2 text-[12.5px] font-semibold text-ink-2">
+        <input id={`door-driven-${item.id}`} type="checkbox" checked={Boolean(item.driven)} onChange={(e) => updateItem(item.id, { driven: e.target.checked || undefined })} />
+        {t('Open and close with a bound light or plug')}
+      </label>
+      <span className="text-[11px] text-ink-3">{t('On opens the door, off closes it, like a door sensor.')}</span>
+    </div>
+  )
+}
+
 function OpeningEdit({ item }: { item: Item }) {
   const rooms = useLayout((s) => activeLevel(s)?.rooms)
   const { updateItem } = useLayout.getState()
@@ -949,12 +1008,14 @@ function ItemEdit({ item, room }: { item: Item; room?: Room }) {
         </label>
 
         {(item.kind === 'door' || item.kind === 'window') && !(item.kind === 'door' && (item.variant === 'sliding' || item.variant === 'opening')) && <OpeningEdit item={item} />}
+        <DoorDriven item={item} />
         <HeatingKind item={item} />
         <Placement item={item} />
         <WindowPresets item={item} />
         <MountHeight item={item} />
         <FurnitureOptions item={item} />
         <LightIntensity item={item} />
+        <LightTint item={item} />
         <BeamAngle item={item} />
 
         <GroupInfo item={item} />

@@ -89,12 +89,12 @@ function ItemNodeImpl({ item, entity, related, night, levelId, still = false }: 
   const aimed = useFps((s) => s.aim?.itemId === item.id)
   const hingeRight = item.hinge === 'right'
   const swingOut = item.swing === 'out'
-  const { len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam } = item
+  const { len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, driven } = item
   // Built-in sink of the kitchen counter (model/counter.ts): in the middle unless there is a separate sink next to it
   const sinkAt = useLayout((s) => (item.kind === 'kitchenCounter' ? (counterSink(lvOf(s)?.items ?? [], item) ?? undefined) : undefined))
   const opts = useMemo(
-    () => ({ len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, sinkAt }),
-    [len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, sinkAt],
+    () => ({ len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, sinkAt, driven }),
+    [len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, sinkAt, driven],
   )
   useCursor(hover && interactive && !busy())
   // If the quick on/off pill opens on this item, it is placed by this group's body (scene/QuickAnchor.tsx)
@@ -164,7 +164,7 @@ function ItemNodeImpl({ item, entity, related, night, levelId, still = false }: 
       on,
       // The light intensity factor (Item.intensity) is applied to the shown level: bulbs, strips and glows shine with it.
       level: (isLightKind(item.kind) ? lightLevel(entity) : on ? 1 : 0) * (intensity ?? 1),
-      color: lightColor(entity),
+      color: item.tint ?? lightColor(entity),
       unavailable: isUnavailable(entity),
       state: entity.state,
       attrs: entity.attributes,
@@ -173,7 +173,7 @@ function ItemNodeImpl({ item, entity, related, night, levelId, still = false }: 
       open: open ? 1 : 0,
       openParts,
     }
-  }, [entity, item.entityId, item.kind, item.x, item.z, item.rot, item.y, night, related, interior, hingeRight, swingOut, edit, opts, intensity, open, openParts])
+  }, [entity, item.entityId, item.kind, item.tint, item.x, item.z, item.rot, item.y, night, related, interior, hingeRight, swingOut, edit, opts, intensity, open, openParts])
 
   const y = item.y ?? DEFAULT_Y[item.kind] ?? 0
   // The model is not re-rendered unless its look changes (selection, hover and floor change only update this node)

@@ -59,6 +59,8 @@ export interface ItemOpts {
   beam?: number
   /** Built-in sink of a kitchen counter: its center on the counter's local x (omitted when there is none; model/counter.ts) */
   sinkAt?: number
+  /** Door driven by a bound light or plug (Item.driven) */
+  driven?: boolean
 }
 
 /**

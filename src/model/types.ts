@@ -321,6 +321,16 @@ export interface Item {
    * multiplied by it; the HA brightness applies on top. Products differ in brightness, so the user adjusts it.
    */
   intensity?: number
+  /**
+   * Light color chosen on the card (hex; only `catalog.ts > TINTABLE` kinds). Used instead of the color Home Assistant
+   * reports, for the glow and the light cast into the room. When not given, the bound light's color.
+   */
+  tint?: string
+  /**
+   * Door only: a bound light or plug (ha/derive.ts > DOOR_DRIVERS) opens and closes the door, on meaning open, like a
+   * door sensor. Checkbox on the door's card; off when not given.
+   */
+  driven?: boolean
   /** Hung on the wall (only for rules.ts > MOUNTABLE kinds: power strip). When not given, on the floor or a surface. */
   mount?: 'wall'
   /** Beam angle of a downlight (degrees, full cone; 20-150 on the card, 90 when not given). */

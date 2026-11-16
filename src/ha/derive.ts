@@ -249,3 +249,16 @@ export function isReading(e?: HassEntity) {
 }
 
 export const deviceClass = (e?: HassEntity) => String(e?.attributes.device_class ?? '')
+
+/** Domains that drive a door when bound to it, on meaning open: a light or plug standing in for a door sensor. */
+export const DOOR_DRIVERS = ['light', 'switch', 'input_boolean']
+
+/**
+ * Does this entity, bound to a door, decide whether the door is open: a cover, a door / window / opening sensor, or, when
+ * the door's "driven" checkbox is on (Item.driven), a light or plug (DOOR_DRIVERS). Such a door follows HA and does not
+ * open for walkers.
+ */
+export function opensDoor(e: HassEntity, driven?: boolean) {
+  const d = domainOf(e.entity_id)
+  return d === 'cover' || (Boolean(driven) && DOOR_DRIVERS.includes(d)) || (d === 'binary_sensor' && ['door', 'window', 'opening', 'garage_door'].includes(deviceClass(e)))
+}

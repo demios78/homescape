@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { deviceClass, domainOf, isActive } from '@/ha/derive'
+import { deviceClass, domainOf, DOOR_DRIVERS, isActive } from '@/ha/derive'
 import { useHa } from '@/ha/store'
 import type { Entities, HassEntity } from '@/ha/types'
 import { currentWeather } from '@/ha/weather'
@@ -451,6 +451,8 @@ function onEntities(prev: Entities, next: Entities) {
     else if (it.kind === 'doorbell') shot = dom !== 'binary_sensor' || b.state === 'on' ? 'dingDong' : null
     else if (it.kind === 'smartButton') shot = 'button'
     else if (!changed) continue
+    // A light or plug driving a door (Item.driven, ha/derive.ts > DOOR_DRIVERS) sounds like the door, not a switch
+    else if (it.kind === 'door' && it.driven && DOOR_DRIVERS.includes(dom)) shot = is ? 'doorOpen' : 'doorClose'
     else if (dom === 'light') shot = clicks++ < 3 ? 'click' : null
     else if (dom === 'lock') shot = b.state === 'locked' ? 'lock' : b.state === 'unlocked' || b.state === 'open' ? 'unlock' : null
     else if (dom === 'binary_sensor' && isAperture(it.kind)) {

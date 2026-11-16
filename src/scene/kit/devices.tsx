@@ -2,7 +2,7 @@ import { Billboard } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { deviceClass, domainOf, friendlyName, isActive, lightColor, lightLevel, num } from '@/ha/derive'
+import { deviceClass, domainOf, DOOR_DRIVERS, friendlyName, isActive, lightColor, lightLevel, num, opensDoor } from '@/ha/derive'
 import { isSocketEntity, SOCKET_DOMAINS, socketCount } from '@/model/bindings'
 import { BEAM, consoleModel, STRIP_PITCH, STRIP_WALL_Y, stripWidth, WINDOW_BOTTOM, windowSize } from '@/model/catalog'
 import { APERTURE_INSET, inRoom, roomAt, WALL_CUT_H, WALL_H, WALL_IN, WALL_INNER_H, wallRuns, type Side } from '@/model/geometry'
@@ -1342,13 +1342,14 @@ function SwingArc({ at, r, strong, outline = false }: { at: [number, number, num
   )
 }
 
-/** Door state from the main and related entities: whether the door sensor / cover is open, lock state. */
+/**
+ * Door state from the main and related entities: whether the door sensor / cover is open, lock state. With the door's
+ * "driven" checkbox on (Item.driven), a bound light or plug (ha/derive.ts > DOOR_DRIVERS) drives it like a sensor: on is open.
+ */
 function doorState(v: Visual) {
-  const contacts = v.related.filter((e) => {
-    const d = domainOf(e.entity_id)
-    return d === 'cover' || (d === 'binary_sensor' && ['door', 'window', 'opening', 'garage_door'].includes(deviceClass(e)))
-  })
-  const mainContact = v.domain === 'binary_sensor' || v.domain === 'cover'
+  const driven = v.opts.driven
+  const contacts = v.related.filter((e) => opensDoor(e, driven))
+  const mainContact = v.domain === 'binary_sensor' || v.domain === 'cover' || (Boolean(driven) && DOOR_DRIVERS.includes(v.domain ?? ''))
   const lock = v.domain === 'lock' ? v.state : v.related.find((e) => domainOf(e.entity_id) === 'lock')?.state
   const hasContact = mainContact || contacts.length > 0
   const sensedOpen = (mainContact && v.on) || contacts.some((e) => isActive(e))

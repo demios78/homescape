@@ -318,6 +318,23 @@ export const BODY_COLORS: [string, string][] = [
   [t('Mint'), '#8fd8bd'],
 ]
 
+/** Light kinds whose light color can be chosen on the card (Item.tint). */
+export const TINTABLE: ItemKind[] = ['ceilingStrip']
+
+/** Light colors offered on the card (Item.tint); any other color comes from the color input. */
+export const LIGHT_TINTS: [string, string][] = [
+  [t('Warm white'), '#ffd29a'],
+  [t('White'), '#fff4e6'],
+  [t('Cool white'), '#dfe9ff'],
+  [t('Red'), '#ff4040'],
+  [t('Orange'), '#ff8a2a'],
+  [t('Yellow'), '#ffd84a'],
+  [t('Green'), '#3fe07a'],
+  [t('Blue'), '#3f6bff'],
+  [t('Purple'), '#9a5cff'],
+  [t('Pink'), '#ff5cc8'],
+]
+
 /** Bright accent colors (like the stripes of the gaming chair). */
 export const ACCENT_COLORS: [string, string][] = [
   [t('Red'), '#e2564b'],

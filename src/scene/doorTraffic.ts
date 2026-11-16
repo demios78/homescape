@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { play } from '@/audio/engine'
-import { deviceClass, domainOf, isActive } from '@/ha/derive'
+import { domainOf, isActive, opensDoor } from '@/ha/derive'
 import { useHa } from '@/ha/store'
 import { bindingsOf } from '@/model/bindings'
 import { exteriorSide } from '@/model/geometry'
@@ -55,12 +55,7 @@ function sweep() {
 function controlled(d: Item) {
   const ents = useHa.getState().entities
   const bound = bindingsOf(d).map((id) => ents[id]).filter(Boolean)
-  return bound.some(
-    (e) =>
-      domainOf(e.entity_id) === 'cover' ||
-      (domainOf(e.entity_id) === 'binary_sensor' && ['door', 'window', 'opening', 'garage_door'].includes(deviceClass(e) ?? '')) ||
-      (domainOf(e.entity_id) === 'lock' && e.state === 'locked'),
-  )
+  return bound.some((e) => opensDoor(e, d.driven) || (domainOf(e.entity_id) === 'lock' && e.state === 'locked'))
 }
 
 /**
@@ -72,7 +67,7 @@ function drawnOpen(level: Level, d: Item) {
   if (d.variant === 'opening') return true
   const ents = useHa.getState().entities
   const bound = bindingsOf(d).map((id) => ents[id]).filter(Boolean)
-  const contacts = bound.filter((e) => domainOf(e.entity_id) === 'cover' || (domainOf(e.entity_id) === 'binary_sensor' && ['door', 'window', 'opening', 'garage_door'].includes(deviceClass(e) ?? '')))
+  const contacts = bound.filter((e) => opensDoor(e, d.driven))
   if (contacts.length) return contacts.some(isActive)
   if (bound.some((e) => domainOf(e.entity_id) === 'lock' && e.state === 'locked')) return false
   return !exteriorSide(d, level.rooms)
