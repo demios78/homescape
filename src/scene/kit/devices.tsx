@@ -1290,7 +1290,66 @@ function doorState(v: Visual) {
   return { open, sensedOpen, lock }
 }
 
+/**
+ * Sliding closet door (Item.variant 'sliding'): two white bypass panels on two tracks in a frame as wide as Item.len, each a
+ * little over half the opening, with recessed panels and a finger pull. Open (a bound door sensor, or someone passing): the
+ * front panel slides over the back one. Without a sensor it is drawn closed. The hinge setting picks which panel is in front.
+ */
+function SlidingDoor({ v }: P) {
+  const root = useRef<THREE.Group>(null)
+  const tall = useRef<THREE.Group>(null)
+  const front = useRef<THREE.Group>(null)
+  const W = v.opts.len ?? 1.6
+  const { sensedOpen } = doorState(v)
+  const passing = useDoorTraffic((s) => (v.at ? Boolean(s.open[doorKey(v.at.x, v.at.z)]) : false))
+  const pw = W / 2 + 0.03
+  // the front panel's x: closed at W/4, open over the back panel at -W/4 (eased; frames only while it moves)
+  const target = sensedOpen || passing ? -W / 4 + 0.03 : W / 4
+  const invalidate = useThree((s) => s.invalidate)
+  useEffect(() => invalidate(), [target, invalidate])
+  useFrame((state, dt) => {
+    const g = front.current
+    if (!g) return
+    const d = target - g.position.x
+    if (Math.abs(d) < 0.0005) return
+    g.position.x += d * Math.min(1, dt * 5)
+    markShadows(1)
+    state.invalidate()
+  })
+  useWallHeight(root, v.interior, (h) => {
+    if (tall.current) tall.current.scale.y = Math.max(0.02, h / FULL_H)
+  })
+  const panel = (key: string) => (
+    <group key={key}>
+      <Box size={[pw, 2.1, 0.03]} position={[0, 1.07, 0]} color={C.white} radius={0.008} />
+      {[0.62, 1.55].map((y, i) => (
+        <Box key={y} size={[pw - 0.16, i ? 0.95 : 0.7, 0.006]} position={[0, y, 0.016]} color={C.offWhite} shadow={false} />
+      ))}
+      <Box size={[0.025, 0.12, 0.004]} position={[pw / 2 - 0.06, 1.0, 0.017]} color={C.inkSoft} shadow={false} />
+    </group>
+  )
+  return (
+    <group ref={root}>
+      <group ref={tall} scale-x={v.hingeRight ? -1 : 1}>
+        <Box size={[0.08, 2.19, 0.24]} position={[-W / 2, 1.095, EDGE_Z]} color={C.white} />
+        <Box size={[0.08, 2.19, 0.24]} position={[W / 2, 1.095, EDGE_Z]} color={C.white} />
+        <Box size={[W + 0.08, 0.08, 0.24]} position={[0, 2.19, EDGE_Z]} color={C.white} />
+        <group position={[-W / 4, 0, EDGE_Z - 0.03]}>{panel('back')}</group>
+        <group ref={front} position={[W / 4, 0, EDGE_Z + 0.03]}>
+          {panel('front')}
+        </group>
+      </group>
+      <Box size={[W, 0.012, 0.12]} position={[0, 0.006, EDGE_Z]} color={C.woodFloor} shadow={false} />
+    </group>
+  )
+}
+
 export function Door({ v }: P) {
+  if (v.opts.variant === 'sliding') return <SlidingDoor v={v} />
+  return <HingedDoor v={v} />
+}
+
+function HingedDoor({ v }: P) {
   // No swing arc (floor plan mark) in walk mode
   const fps = useView((s) => s.fps)
   const root = useRef<THREE.Group>(null)

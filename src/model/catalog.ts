@@ -1013,6 +1013,15 @@ export const OPTIONS: Partial<
     variantDef: 'open',
     note: t('Put the stairs on the lower level: in first-person walk mode you climb them to the level above. The room with the stairs is drawn without a ceiling.'),
   },
+  door: {
+    variantLabel: t('Type'),
+    variants: [
+      ['hinged', t('Hinged')],
+      ['sliding', t('Sliding (closet)')],
+    ],
+    variantDef: 'hinged',
+    variantLen: { hinged: undefined as unknown as number, sliding: 1.6 },
+  },
   garageDoor: { note: t("Bind the garage door's motor (cover) or door sensor: the panels slide up as far as it is open.") },
   pegboard: { body: t('Panel color') },
   deskPalm: { body: t('Pot color'), bodyDef: '#ffffff' },
@@ -1151,7 +1160,8 @@ export const OPTIONS: Partial<
 }
 
 /** Kinds with adjustable length: length (local x) limits (m); the card shows label when given */
-export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; label?: string }>> = {
+export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; label?: string; onlyVariant?: string }>> = {
+  door: { min: 1, max: 3, label: t('Door width'), onlyVariant: 'sliding' },
   desk: { min: 0.8, max: 2.6 },
   consoleTable: { min: 0.6, max: 2.2, label: t('Table length') },
   storageBench: { min: 0.8, max: 2, label: t('Bench length') },
@@ -1214,6 +1224,12 @@ export const WINDOW_BOTTOM = 0.9
 export const windowSize = (it: { len?: number; len2?: number }) => ({ w: it.len ?? 1.2, h: it.len2 ?? 1.2 })
 
 /** The item's real footprint: the adjusted length if there is one. */
+/** Default width of a sliding closet door (Item.variant 'sliding', width Item.len) */
+export const SLIDING_DOOR_W = 1.6
+
+/** Width of a sliding door (m), undefined for a hinged door */
+export const slidingWidth = (it: { kind: string; variant?: string; len?: number }) => (it.kind === 'door' && it.variant === 'sliding' ? (it.len ?? SLIDING_DOOR_W) : undefined)
+
 export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, number] {
   const [w, d] = CATALOG[kind].size
   // The second size only for kinds that use it as depth (ceiling strip, rug); the L arm of a counter is computed separately.
