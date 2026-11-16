@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.6 (demios78 fork)
+
+- New furniture: a carved shutter mirror for the wall, a fold-top writing desk, a three-drawer nightstand and a
+  standing cheval mirror; the table lamp gets a wood frame model. Colors can be chosen.
+
 ## 0.2.1-dm.5 (demios78 fork)
 
 - New furniture: a storage bench with carved doors that open and a seat cushion, a wicker wing chair and an ironing
