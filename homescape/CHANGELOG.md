@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.14 (demios78 fork)
+
+- Doors can be a glass door with fixed floor-length side panels.
+- Double-hung windows 2 m or wider show as a set of side-by-side windows.
+
 ## 0.2.1-dm.13 (demios78 fork)
 
 - Doors can be open doorways: a cased opening without a door, 0.6-3 m wide.
