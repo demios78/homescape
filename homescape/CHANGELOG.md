@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.12 (demios78 fork)
+
+- Windows can be double-hung (wooden sashes with a grid), optionally with black shutters outside.
+- New window covering: pleated two-tone drapes down to the floor.
+
 ## 0.2.1-dm.11 (demios78 fork)
 
 - Doors can be French doors: a pair of white glazed leaves (2 x 5 panes each), 1-3 m wide.
