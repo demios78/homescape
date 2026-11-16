@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.29 (demios78 fork)
+
+- The tall wall shelf has visible side panels and a back.
+
 ## 0.2.1-dm.28 (demios78 fork)
 
 - New furniture: a tall wall shelf unit with books, a doll and brick models.
