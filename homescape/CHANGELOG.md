@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.5 (demios78 fork)
+
+- New furniture: a storage bench with carved doors that open and a seat cushion, a wicker wing chair and an ironing
+  board (bind the iron's plug and its light glows while on). Colors can be chosen.
+
 ## 0.2.1-dm.4 (demios78 fork)
 
 - New furniture: a loveseat (striped or plain fabric), a wicker armchair with a floral or plain cushion, a scalloped
