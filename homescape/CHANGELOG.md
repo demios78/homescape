@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.3 (demios78 fork)
+
+- New furniture: a daybed with three drawers that pulls out into a king. Choose Twin or King in its card; the back
+  stays against the wall. Frame and bedding colors can be chosen.
+
 ## 0.2.1-dm.2 (demios78 fork)
 
 - New furniture: a twin loft bed with a ladder on either side, a guard rail and open space below. Frame and bedding
