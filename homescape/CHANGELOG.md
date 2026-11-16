@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.30 (demios78 fork)
+
+- The tall wall shelf is open at the sides.
+
 ## 0.2.1-dm.29 (demios78 fork)
 
 - The tall wall shelf has visible side panels and a back.
