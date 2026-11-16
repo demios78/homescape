@@ -1344,8 +1344,91 @@ function SlidingDoor({ v }: P) {
   )
 }
 
+/** One French door leaf (W wide, hinge at local x 0, extending to +x): white stiles and rails around 2 × 5 glass panes, a brass knob */
+function FrenchLeaf({ W, glass }: { W: number; glass: THREE.Material }) {
+  const H = 2.12
+  const T = 0.04
+  const stile = 0.1
+  const rail = 0.12
+  const bottom = 0.26
+  const gw = W - stile * 2
+  const gh = H - rail - bottom
+  const bar = 0.035
+  return (
+    <group>
+      <Box size={[stile, H, T]} position={[stile / 2, H / 2, 0]} color={C.white} />
+      <Box size={[stile, H, T]} position={[W - stile / 2, H / 2, 0]} color={C.white} />
+      <Box size={[gw, rail, T]} position={[W / 2, H - rail / 2, 0]} color={C.white} />
+      <Box size={[gw, bottom, T]} position={[W / 2, bottom / 2, 0]} color={C.white} />
+      <Box size={[gw, gh, 0.008]} position={[W / 2, bottom + gh / 2, 0]} material={glass} shadow={false} />
+      {/* muntins: one vertical bar, four horizontal bars (2 × 5 panes) */}
+      <Box size={[bar, gh, T * 0.8]} position={[W / 2, bottom + gh / 2, 0]} color={C.white} shadow={false} />
+      {[1, 2, 3, 4].map((i) => (
+        <Box key={i} size={[gw, bar, T * 0.8]} position={[W / 2, bottom + (gh * i) / 5, 0]} color={C.white} shadow={false} />
+      ))}
+      {[-1, 1].map((sz) => (
+        <Ball key={sz} r={0.028} position={[W - 0.07, 1.0, sz * 0.04]} color="#c9a227" detail={1} shadow={false} />
+      ))}
+    </group>
+  )
+}
+
+/**
+ * French doors (Item.variant 'french'): a pair of white glazed leaves (2 × 5 panes each) in a frame as wide as Item.len,
+ * hinged at both jambs and opening toward each other's middle, into the room (or out with Item.swing). Open and closed
+ * like any door: a bound sensor or cover, else open on an interior wall; someone passing opens them.
+ */
+function FrenchDoor({ v }: P) {
+  const fps = useView((s) => s.fps)
+  const root = useRef<THREE.Group>(null)
+  const tall = useRef<THREE.Group>(null)
+  const W = v.opts.len ?? 1.2
+  const lw = W / 2 - 0.04
+  const { open, sensedOpen } = doorState(v)
+  const passing = useDoorTraffic((s) => (v.at ? Boolean(s.open[doorKey(v.at.x, v.at.z)]) : false))
+  const a = open || passing ? Math.PI / 2 - 0.12 : 0
+  const left = useEased(-a)
+  const right = useEased(a)
+  const glass = fps ? mat(C.glass, { opacity: 0.15, roughness: 0.05 }) : mat(C.glass, { opacity: 0.45, roughness: 0.1 })
+  useWallHeight(root, v.interior, (h) => {
+    if (tall.current) tall.current.scale.y = Math.max(0.02, h / FULL_H)
+  })
+  return (
+    <group ref={root}>
+      <group ref={tall}>
+        <Box size={[0.08, 2.19, 0.24]} position={[-W / 2, 1.095, EDGE_Z]} color={C.white} />
+        <Box size={[0.08, 2.19, 0.24]} position={[W / 2, 1.095, EDGE_Z]} color={C.white} />
+        <Box size={[W + 0.08, 0.08, 0.24]} position={[0, 2.19, EDGE_Z]} color={C.white} />
+        <Mirror x={false} z={v.swingOut}>
+          <group ref={left} position={[-W / 2 + 0.04, 0, -0.12]}>
+            <FrenchLeaf W={lw} glass={glass} />
+          </group>
+          <group ref={right} position={[W / 2 - 0.04, 0, -0.12]}>
+            <group scale-x={-1}>
+              <FrenchLeaf W={lw} glass={glass} />
+            </group>
+          </group>
+        </Mirror>
+      </group>
+      <Box size={[W - 0.08, 0.012, v.interior ? 0.42 : 0.22]} position={[0, 0.006, EDGE_Z]} color={C.woodFloor} shadow={false} />
+      <Mirror x={false} z={v.swingOut}>
+        {(v.interior || v.edit) && !fps && (
+          <>
+            <SwingArc at={[-W / 2 + 0.04, 0.012, -0.12]} r={lw} strong={v.edit} />
+            <group scale-x={-1}>
+              <SwingArc at={[-W / 2 + 0.04, 0.012, -0.12]} r={lw} strong={v.edit} />
+            </group>
+          </>
+        )}
+        {sensedOpen && <Box size={[W - 0.1, 0.01, lw]} position={[0, 0.008, lw / 2 - 0.05]} material={mat(C.sun, { opacity: 0.25 })} shadow={false} />}
+      </Mirror>
+    </group>
+  )
+}
+
 export function Door({ v }: P) {
   if (v.opts.variant === 'sliding') return <SlidingDoor v={v} />
+  if (v.opts.variant === 'french') return <FrenchDoor v={v} />
   return <HingedDoor v={v} />
 }
 

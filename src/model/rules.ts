@@ -1,5 +1,5 @@
 import { t } from '@/i18n'
-import { CATALOG, sizeOf, slidingWidth, WINDOW_BOTTOM, windowSize } from './catalog'
+import { CATALOG, frenchWidth, sizeOf, slidingWidth, WINDOW_BOTTOM, windowSize } from './catalog'
 import { inRoom, rectsOf, roomAt, WALL_H, WALL_IN } from './geometry'
 import type { Item, ItemKind, Level, Rect, Room } from './types'
 
@@ -226,13 +226,15 @@ export function footprints(s: Shape, shrink = 0): Box2[] {
  * A door's passage area: the opening's width (0.92 m), 0.9 m to the side the leaf opens to, 0.35 m to the other side
  * (the wall line is at local z = -0.21). No floor or wall item may go there; rugs, ceiling and tabletop items are fine.
  */
-export function doorZone(x: number, z: number, rot: number, swing: 'in' | 'out' = 'in', slide?: number): Box2 {
+export function doorZone(x: number, z: number, rot: number, swing: 'in' | 'out' = 'in', slide?: number, french?: number): Box2 {
   const c = Math.cos(rot)
   const s = Math.sin(rot)
   // For a door opening outward the area is mirrored at the wall line. A sliding door (slide: its width) does not swing:
-  // only standing room in front of it, across its width.
-  const [z0, z1] = slide ? [-0.21, 0.5] : swing === 'out' ? [-0.21 - 0.9, -0.21 + 0.35] : [-0.21 - 0.35, 0.9]
-  const hw = slide ? slide / 2 - 0.04 : 0.46
+  // only standing room in front of it, across its width. French doors (french: their width) swing two leaves of half
+  // the width each.
+  const reach = french ? french / 2 - 0.04 : 0.9
+  const [z0, z1] = slide ? [-0.21, 0.5] : swing === 'out' ? [-0.21 - reach, -0.21 + 0.35] : [-0.21 - 0.35, french ? -0.21 + reach : 0.9]
+  const hw = slide ? slide / 2 - 0.04 : french ? french / 2 - 0.04 : 0.46
   const pts = [
     [-hw, z0],
     [hw, z0],
@@ -255,8 +257,8 @@ type Cand = Shape & { y?: number; swing?: 'in' | 'out' }
 /** Whether this item blocks a door's passage area (the automatic plan moves furniture away from doors). */
 export function blocksDoor(items: Item[], cand: Cand) {
   if (FREE_NEAR_DOOR.includes(layerOf(cand.kind, cand.y, cand.variant, cand.mount))) return false
-  const boxes = cand.kind === 'door' ? [doorZone(cand.x, cand.z, cand.rot, cand.swing, slidingWidth(cand))] : footprints(cand, 0.04)
-  return items.some((it) => it.kind === 'door' && anyOverlap(boxes, [doorZone(it.x, it.z, it.rot, it.swing, slidingWidth(it))]))
+  const boxes = cand.kind === 'door' ? [doorZone(cand.x, cand.z, cand.rot, cand.swing, slidingWidth(cand), frenchWidth(cand))] : footprints(cand, 0.04)
+  return items.some((it) => it.kind === 'door' && anyOverlap(boxes, [doorZone(it.x, it.z, it.rot, it.swing, slidingWidth(it), frenchWidth(it))]))
 }
 
 /** The surface under a point (the highest one). only: only these kinds count as surfaces (appliance stacking). */
@@ -328,8 +330,8 @@ export function checkItem(level: Level, cand: Cand, ignoreId?: string, onWall = 
       // A door may open onto stairs (a basement door at the top of the basement stairs)
       if (cand.kind === 'stairs' || it.kind === 'stairs') continue
       if (FREE_NEAR_DOOR.includes(layerOf(it.kind, it.y, it.variant, it.mount)) || FREE_NEAR_DOOR.includes(layer)) continue
-      const a = cand.kind === 'door' ? [doorZone(cand.x, cand.z, cand.rot, cand.swing, slidingWidth(cand))] : boxes
-      const b = it.kind === 'door' ? [doorZone(it.x, it.z, it.rot, it.swing, slidingWidth(it))] : footprints(it, 0.04)
+      const a = cand.kind === 'door' ? [doorZone(cand.x, cand.z, cand.rot, cand.swing, slidingWidth(cand), frenchWidth(cand))] : boxes
+      const b = it.kind === 'door' ? [doorZone(it.x, it.z, it.rot, it.swing, slidingWidth(it), frenchWidth(it))] : footprints(it, 0.04)
       if (anyOverlap(a, b)) return { ok: false, reason: cand.kind === 'door' ? t('Doorway blocked by {name}', { name }) : t('Blocks a doorway') }
       continue
     }

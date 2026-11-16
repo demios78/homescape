@@ -1018,9 +1018,10 @@ export const OPTIONS: Partial<
     variants: [
       ['hinged', t('Hinged')],
       ['sliding', t('Sliding (closet)')],
+      ['french', t('French doors')],
     ],
     variantDef: 'hinged',
-    variantLen: { hinged: undefined as unknown as number, sliding: 1.6 },
+    variantLen: { hinged: undefined as unknown as number, sliding: 1.6, french: 1.2 },
   },
   garageDoor: { note: t("Bind the garage door's motor (cover) or door sensor: the panels slide up as far as it is open.") },
   pegboard: { body: t('Panel color') },
@@ -1160,8 +1161,8 @@ export const OPTIONS: Partial<
 }
 
 /** Kinds with adjustable length: length (local x) limits (m); the card shows label when given */
-export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; label?: string; onlyVariant?: string }>> = {
-  door: { min: 1, max: 3, label: t('Door width'), onlyVariant: 'sliding' },
+export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; label?: string; onlyVariant?: string[] }>> = {
+  door: { min: 1, max: 3, label: t('Door width'), onlyVariant: ['sliding', 'french'] },
   desk: { min: 0.8, max: 2.6 },
   consoleTable: { min: 0.6, max: 2.2, label: t('Table length') },
   storageBench: { min: 0.8, max: 2, label: t('Bench length') },
@@ -1227,8 +1228,16 @@ export const windowSize = (it: { len?: number; len2?: number }) => ({ w: it.len 
 /** Default width of a sliding closet door (Item.variant 'sliding', width Item.len) */
 export const SLIDING_DOOR_W = 1.6
 
-/** Width of a sliding door (m), undefined for a hinged door */
-export const slidingWidth = (it: { kind: string; variant?: string; len?: number }) => (it.kind === 'door' && it.variant === 'sliding' ? (it.len ?? SLIDING_DOOR_W) : undefined)
+/** Default width of a pair of French doors (Item.variant 'french', width Item.len) */
+export const FRENCH_DOOR_W = 1.2
+
+type DoorLike = { kind: string; variant?: string; len?: number }
+
+/** Width of a sliding door (m), undefined for other doors */
+export const slidingWidth = (it: DoorLike) => (it.kind === 'door' && it.variant === 'sliding' ? (it.len ?? SLIDING_DOOR_W) : undefined)
+
+/** Width of a pair of French doors (m), undefined for other doors */
+export const frenchWidth = (it: DoorLike) => (it.kind === 'door' && it.variant === 'french' ? (it.len ?? FRENCH_DOOR_W) : undefined)
 
 export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, number] {
   const [w, d] = CATALOG[kind].size

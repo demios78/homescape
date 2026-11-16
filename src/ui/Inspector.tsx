@@ -446,7 +446,7 @@ function tvHeight(item: Item, variant: string) {
 /** Settings of items like desks and cabinets: length, drawers, top and body color. */
 function FurnitureOptions({ item }: { item: Item }) {
   const opt = OPTIONS[item.kind]
-  const range = RESIZABLE[item.kind]?.onlyVariant && RESIZABLE[item.kind]?.onlyVariant !== item.variant ? undefined : RESIZABLE[item.kind]
+  const range = RESIZABLE[item.kind]?.onlyVariant && !RESIZABLE[item.kind]?.onlyVariant?.includes(item.variant ?? '') ? undefined : RESIZABLE[item.kind]
   const range2 = RESIZABLE2[item.kind]
   const { updateItem, checkpoint } = useLayout.getState()
   if (!opt && !range) return null
