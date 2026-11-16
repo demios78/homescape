@@ -34,6 +34,7 @@ const COMPANION: Partial<Record<ItemKind, string[]>> = {
   door: ['door', 'opening', 'garage_door', 'lock', 'motion', 'battery'],
   window: ['window', 'opening', 'cover', 'battery'],
   bed: ['occupancy', 'presence', 'temperature', 'light'],
+  loftBed: ['occupancy', 'presence', 'temperature'],
   fridge: ['power', 'energy', 'temperature', 'door'],
   stove: ['power', 'gas', 'smoke'],
   sink: ['moisture'],

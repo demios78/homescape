@@ -604,6 +604,80 @@ function ArchedBed({ w, d, head, color }: { w: number; d: number; head: number; 
   )
 }
 
+/**
+ * Twin loft bed (like a white youth low loft): square posts, slatted ends with a raised center panel and an arched cap
+ * (head end taller), the deck at about 0.92 m with open space below, a guard rail on the ladder side from the head to
+ * the ladder, and a ladder near the foot. Item.variant: ladder on the 'right' (default) or 'left' side, as seen from the
+ * foot. Frame color Item.body, bedding Item.top. Head end at local -z; the footprint includes the ladder.
+ */
+export function LoftBed({ v }: { v: Visual }) {
+  const s = v.opts.variant === 'left' ? -1 : 1
+  const [W, d] = CATALOG.loftBed.size
+  const fw = 1.07
+  const fx = -s * (W - fw) / 2
+  const color = v.opts.body ?? '#f3f1ec'
+  const sheet = v.opts.top ?? '#f6f4ef'
+  const deck = 0.92
+  const top = deck + 0.18
+  const ladderZ = d / 2 - 0.55
+  const guardFrom = -d / 2 + 0.1
+  const guardTo = ladderZ - 0.22
+  const dd = d * 0.6
+  return (
+    <group>
+      <LoftEnd z={-d / 2 + 0.04} x={fx} w={fw} h={1.68} deck={deck} color={color} />
+      <LoftEnd z={d / 2 - 0.04} x={fx} w={fw} h={1.42} deck={deck} color={color} />
+      {/* side rails and slat deck */}
+      {[-1, 1].map((k) => (
+        <Box key={k} size={[0.04, 0.14, d - 0.16]} position={[fx + k * (fw / 2 - 0.04), deck - 0.07, 0]} color={color} radius={0.008} />
+      ))}
+      <Box size={[fw - 0.12, 0.03, d - 0.16]} position={[fx, deck - 0.03, 0]} color={shade(color, 0.8)} />
+      {/* stretcher under the deck on the wall side */}
+      <Box size={[0.04, 0.08, d - 0.16]} position={[fx - s * (fw / 2 - 0.04), 0.55, 0]} color={color} radius={0.008} />
+      {/* guard rail: two boards between end posts */}
+      {[guardFrom + 0.025, guardTo - 0.025].map((z) => (
+        <Box key={z} size={[0.03, 0.42, 0.05]} position={[fx + s * (fw / 2 - 0.02), deck + 0.21, z]} color={color} radius={0.006} />
+      ))}
+      {[deck + 0.24, deck + 0.38].map((y) => (
+        <Box key={y} size={[0.025, 0.07, guardTo - guardFrom]} position={[fx + s * (fw / 2 - 0.005), y, (guardFrom + guardTo) / 2]} color={color} radius={0.006} />
+      ))}
+      {/* ladder: two rails up to grab height, three rungs */}
+      {[-1, 1].map((k) => (
+        <Box key={k} size={[0.045, 1.42, 0.05]} position={[s * (W / 2 - 0.0225), 0.71, ladderZ + k * 0.19]} color={color} radius={0.008} />
+      ))}
+      {[0.3, 0.6, deck + 0.06].map((y) => (
+        <Box key={y} size={[0.04, 0.035, 0.34]} position={[s * (W / 2 - 0.025), y, ladderZ]} color={color} radius={0.006} />
+      ))}
+      {/* mattress, pillow, duvet */}
+      <Box size={[fw - 0.12, 0.18, d - 0.18]} position={[fx, deck + 0.09, 0]} color={C.white} radius={0.05} />
+      <Box size={[0.6, 0.11, 0.36]} position={[fx, top + 0.05, -d / 2 + 0.3]} color={C.offWhite} radius={0.05} />
+      <Box size={[fw - 0.1, 0.05, dd]} position={[fx, top + 0.02, d / 2 - 0.1 - dd / 2]} color={sheet} material={sheet === BED_FLORAL ? floralMaterial(fw - 0.1, dd) : undefined} radius={0.025} />
+    </group>
+  )
+}
+
+/** One end of the loft bed: corner posts, an arched cap, slats with a raised center panel above the deck, a rail below. */
+function LoftEnd({ z, x, w, h, deck, color }: { z: number; x: number; w: number; h: number; deck: number; color: string }) {
+  const m = mat(color)
+  const panelH = h - 0.12 - deck
+  return (
+    <group position={[x, 0, z]}>
+      {[-1, 1].map((k) => (
+        <Box key={k} size={[0.075, h - 0.04, 0.075]} position={[k * (w / 2 - 0.0375), (h - 0.04) / 2, 0]} color={color} radius={0.01} />
+      ))}
+      <mesh geometry={archGeometry(w - 0.02, 0.08, 0.04, 0.045)} material={m} position={[0, h - 0.12, 0]} castShadow receiveShadow />
+      <Box size={[w - 0.1, 0.1, 0.04]} position={[0, deck - 0.02, 0]} color={color} radius={0.008} />
+      {[-0.36, -0.22, 0.22, 0.36].map((sx) => (
+        <Box key={sx} size={[0.055, panelH, 0.025]} position={[sx * (w / 1.07), deck + panelH / 2, 0]} color={color} radius={0.005} />
+      ))}
+      <Box size={[0.22, panelH, 0.03]} position={[0, deck + panelH / 2, 0]} color={color} radius={0.006} />
+      {[-1, 1].map((k) => (
+        <Box key={k} size={[0.13, Math.min(0.15, panelH - 0.1), 0.012]} position={[0, deck + panelH / 2, k * 0.02]} color={shade(color, 0.95)} radius={0.004} shadow={false} />
+      ))}
+    </group>
+  )
+}
+
 /** Carved lattice panel material: one per color and panel size, the carving repeating about every 38 cm. */
 const latticeMats = new Map<string, THREE.MeshStandardMaterial>()
 function latticeMaterial(color: string, w: number, h: number) {

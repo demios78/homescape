@@ -89,6 +89,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   // Doormat with adjustable size; walked on like a rug
   doormat: { label: t('Doormat'), group: 'furniture', domains: [], size: [0.75, 0.45], labelY: 0.15 },
   bed: { label: t('Bed'), group: 'furniture', domains: [], size: [1.7, 2.1], labelY: 1.2 },
+  // Twin loft bed: the mattress at about 1.1 m, a ladder on one long side; footprint includes the ladder
+  loftBed: { label: t('Loft bed'), group: 'furniture', domains: [], size: [1.12, 2.05], labelY: 1.9 },
   nightstand: { label: t('Nightstand'), group: 'furniture', domains: [], size: [0.45, 0.4], labelY: 0.8 },
   wardrobe: { label: t('Wardrobe'), group: 'furniture', domains: [], size: [1.4, 0.6], labelY: 2.3, wall: true },
   desk: { label: t('Desk'), group: 'furniture', domains: [], size: [1.4, 0.7], labelY: 1 },
@@ -511,6 +513,21 @@ export const OPTIONS: Partial<
       ['back', t('From behind')],
     ],
     ledHint: t("Pick the light or plug that drives the headboard light below: it lights up with it and takes the light's color. Strip is a horizontal LED on the front of the headboard; from behind is a hidden light washing the wall."),
+  },
+  // Ladder side as seen from the foot of the bed, looking at the headboard
+  loftBed: {
+    variantLabel: t('Ladder'),
+    variants: [
+      ['right', t('Right side')],
+      ['left', t('Left side')],
+    ],
+    variantDef: 'right',
+    top: t('Bedding color'),
+    topList: BEDDING_COLORS,
+    topDef: '#f6f4ef',
+    body: t('Frame color'),
+    bodyList: BED_FRAME_COLORS,
+    bodyDef: '#f3f1ec',
   },
   diffuser: {
     body: t('Body'),

@@ -51,6 +51,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   rug: F.Rug,
   doormat: F.Doormat,
   bed: F.Bed,
+  loftBed: F.LoftBed,
   nightstand: F.Nightstand,
   wardrobe: F.Wardrobe,
   desk: F.Desk,

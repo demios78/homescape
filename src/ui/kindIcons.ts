@@ -174,6 +174,7 @@ export const KIND_ICON: Record<ItemKind, LucideIcon> = {
   rug: Square,
   doormat: RectangleHorizontal,
   bed: BedDouble,
+  loftBed: BedSingle,
   nightstand: Box,
   wardrobe: Archive,
   desk: Briefcase,
