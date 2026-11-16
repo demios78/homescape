@@ -1,5 +1,5 @@
-import { useFrame } from '@react-three/fiber'
-import { useEffect, useMemo, useRef } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useAmbient, useLitMaterial } from './effects'
 import { C } from './palette'
@@ -602,6 +602,87 @@ export function DeskPalm({ v }: { v: Visual }) {
           <mesh geometry={geo} material={l.dark ? leafDark : leaf} rotation-z={l.up} scale={[l.len, l.len, l.len]} castShadow />
         </group>
       ))}
+    </group>
+  )
+}
+
+/* ---------- minifigure wall clock ---------- */
+
+/** Minifigure outfits (torso, legs, hair or helmet, accent): knights, an astronaut, a gold figure, townspeople */
+const FIGS: [string, string, string, string][] = [
+  ['#2fa4a6', '#2fa4a6', '#2fa4a6', '#f2f2f2'],
+  ['#2f8fd8', '#2f8fd8', '#2a5fb0', '#7cc43a'],
+  ['#c8a640', '#c8a640', '#c8a640', '#5dbb63'],
+  ['#5a5f68', '#5a4636', '#5a4636', '#2b6a5a'],
+  ['#2a5fb0', '#f2cd37', '#1d1e22', '#f2f2f2'],
+  ['#4b3a2e', '#3d3d3d', '#5a4636', '#2b6a5a'],
+  ['#1d1e22', '#7a5434', '#1d1e22', '#d93636'],
+  ['#e8e8e8', '#e8e8e8', '#f2cd37', '#2f6fd0'],
+  ['#8c2f2f', '#9aa0a8', '#5a3a24', '#d93636'],
+  ['#2a5fb0', '#e8e8e8', '#9aa0a8', '#f2cd37'],
+  ['#b03020', '#1d1e22', '#b03020', '#f2cd37'],
+  ['#6b6f78', '#6b6f78', '#9aa0a8', '#e8e8e8'],
+]
+
+/** A minifigure about 5 cm tall standing on a white 1 × 2 brick ledge (local origin: ledge top, figure facing +z) */
+function Minifig({ fig }: { fig: [string, string, string, string] }) {
+  const [torso, legs, hair, accent] = fig
+  const skin = '#f2cd37'
+  return (
+    <group>
+      <Box size={[0.034, 0.012, 0.022]} position={[0, -0.006, 0.004]} color="#f4f4f2" shadow={false} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.008, 0.018, 0.01]} position={[s * 0.0045, 0.009, 0.004]} color={legs} shadow={false} />
+      ))}
+      <Box size={[0.018, 0.017, 0.01]} position={[0, 0.0265, 0.004]} color={torso} shadow={false} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.005, 0.014, 0.006]} position={[s * 0.0115, 0.026, 0.006]} color={torso} shadow={false} />
+      ))}
+      <Cyl r={0.0055} h={0.01} position={[0, 0.04, 0.004]} color={skin} segments={10} shadow={false} />
+      <Cyl r={0.0062} h={0.005} position={[0, 0.0465, 0.004]} color={hair} segments={10} shadow={false} />
+      <Box size={[0.008, 0.008, 0.004]} position={[0.016, 0.026, 0.009]} color={accent} shadow={false} />
+    </group>
+  )
+}
+
+/**
+ * Minifigure wall clock (like a frameless DIY clock): a black center disc with long black hour and minute hands that show
+ * the real time (updated every 20 s), and twelve minifigures on small white brick ledges as the hours, straight on the wall.
+ * Diameter Item.len2 (default 0.8 m), centered 1.55 m up; the back is against the wall (local -z).
+ */
+export function MinifigClock({ v }: P) {
+  const D = v.opts.len2 ?? 0.8
+  const R = D / 2 - 0.03
+  const invalidate = useThree((s) => s.invalidate)
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => {
+      setNow(new Date())
+      invalidate()
+    }, 20000)
+    return () => clearInterval(id)
+  }, [invalidate])
+  const min = now.getMinutes() + now.getSeconds() / 60
+  const hour = (now.getHours() % 12) + min / 60
+  const black = '#16171a'
+  return (
+    <group position={[0, 1.55, -0.03]}>
+      <Cyl r={0.085} h={0.012} position={[0, 0, 0.006]} rotation-x={Math.PI / 2} color={black} segments={32} />
+      <group position={[0, 0, 0.016]} rotation-z={(-hour / 12) * Math.PI * 2}>
+        <Box size={[0.02, R * 0.62, 0.004]} position={[0, R * 0.24, 0]} color={black} shadow={false} />
+      </group>
+      <group position={[0, 0, 0.021]} rotation-z={(-min / 60) * Math.PI * 2}>
+        <Box size={[0.012, R * 0.98, 0.004]} position={[0, R * 0.39, 0]} color={black} shadow={false} />
+      </group>
+      <Cyl r={0.006} h={0.008} position={[0, 0, 0.025]} rotation-x={Math.PI / 2} color="#c9c9c9" segments={10} shadow={false} />
+      {FIGS.map((fig, i) => {
+        const a = (i / 12) * Math.PI * 2
+        return (
+          <group key={i} position={[Math.sin(a) * R, Math.cos(a) * R - 0.02, 0.012]} scale={1.25}>
+            <Minifig fig={fig} />
+          </group>
+        )
+      })}
     </group>
   )
 }

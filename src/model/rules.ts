@@ -18,7 +18,7 @@ export type Layer = 'floor' | 'wall' | 'ceiling' | 'rug' | 'top'
  * Wall-mounted items: their height is adjustable (Item.y = offset up/down from the default; for an LED strip the strip's
  * height above the floor). Items standing on the floor against a wall (cabinet, counter, fridge) are not in this list.
  */
-export const WALL_MOUNTED: ItemKind[] = ['wallLight', 'ledStrip', 'mirrorLight', 'acUnit', 'camera', 'motionSensor', 'tempSensor', 'alarmPanel', 'wallSwitch', 'plug', 'window', 'painting', 'pegboard', 'mirror', 'mirrorCabinet', 'wallFan', 'thermostat', 'waterHeater', 'boiler', 'towelWarmer', 'projectorScreen', 'wallPanel', 'doorbell', 'siren', 'powerMeter', 'waterValve', 'awning', 'evCharger', 'toolWall', 'shutterMirror']
+export const WALL_MOUNTED: ItemKind[] = ['minifigClock', 'wallLight', 'ledStrip', 'mirrorLight', 'acUnit', 'camera', 'motionSensor', 'tempSensor', 'alarmPanel', 'wallSwitch', 'plug', 'window', 'painting', 'pegboard', 'mirror', 'mirrorCabinet', 'wallFan', 'thermostat', 'waterHeater', 'boiler', 'towelWarmer', 'projectorScreen', 'wallPanel', 'doorbell', 'siren', 'powerMeter', 'waterValve', 'awning', 'evCharger', 'toolWall', 'shutterMirror']
 
 /**
  * Items that can optionally hang on a wall (Item.mount 'wall', e.g. a power strip). While hung they behave like wall
@@ -77,6 +77,8 @@ const WALL_SPAN: Record<string, [number, number]> = {
 function spanOf(kind: ItemKind, variant?: string, len2?: number): [number, number] {
   // Window: bottom edge 0.9 (sill 3 cm below), curtain rail 10 cm on top; height Item.len2
   if (kind === 'window') return [WINDOW_BOTTOM - 0.03, WINDOW_BOTTOM + windowSize({ len2 }).h + 0.1]
+  // Minifigure clock: centered at 1.55 m, as tall as its diameter (Item.len2)
+  if (kind === 'minifigClock') return [1.55 - (len2 ?? 0.8) / 2, 1.55 + (len2 ?? 0.8) / 2]
   return WALL_SPAN[kind === 'mirror' ? `mirror:${variant ?? 'tall'}` : kind === 'tv' ? 'tv:wall' : kind] ?? [0, WALL_H]
 }
 

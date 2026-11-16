@@ -165,6 +165,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   brickModel: { label: t('Brick model'), group: 'decor', domains: ['switch', 'light'], size: [0.44, 0.32], labelY: 0.5 },
   // Free-standing oval mirror tilting between two turned posts
   chevalMirror: { label: t('Cheval mirror'), group: 'decor', domains: [], size: [0.62, 0.45], labelY: 1.7 },
+  // Frameless wall clock: a center disc and hands, minifigures on small brick ledges as the hours; diameter Item.len2
+  minifigClock: { label: t('Minifigure wall clock'), group: 'decor', domains: [], size: [0.8, 0.06], labelY: 2.15, wall: true },
   mirror: { label: t('Mirror'), group: 'decor', domains: [], size: [0.56, 0.05], labelY: 2.05, wall: true },
   soapDispenser: { label: t('Soap dispenser'), group: 'bath', domains: [], size: [0.08, 0.08], labelY: 0.25 },
   // Smart home devices (everything a smart home may have, with its controls); models in kit/smart.tsx
@@ -1207,6 +1209,7 @@ export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; lab
 export const RESIZABLE2: Partial<Record<ItemKind, { min: number; max: number; label: string; def: number; onlyL?: boolean }>> = {
   kitchenCounter: { min: 1.2, max: 4, label: t('L arm length (from the corner)'), def: 1.8, onlyL: true },
   stairs: { min: 0, max: 3, label: t('Open well beside the stairs (right side)'), def: 0 },
+  minifigClock: { min: 0.4, max: 1.2, label: t('Clock size'), def: 0.8 },
   window: { min: 0.5, max: 2.3, label: t('Window height'), def: 1.2 },
   rug: { min: 0.5, max: 5, label: t('Rug length'), def: 1.8 },
   doormat: { min: 0.3, max: 1.5, label: t('Doormat length'), def: 0.45 },
@@ -1274,6 +1277,8 @@ export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, nu
   if (kind === 'ceilingStrip' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel') return [len ?? w, len2 ?? d]
   // A ceiling fan is round: the blade span in both directions
   if (kind === 'ceilingFan') return [len ?? w, len ?? d]
+  // The minifigure clock is round: its diameter (Item.len2) is its width on the wall
+  if (kind === 'minifigClock') return [len2 ?? w, d]
   return [len ?? w, d]
 }
 

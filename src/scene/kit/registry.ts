@@ -97,6 +97,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   mirror: Dc.Mirror,
   shutterMirror: Dc.ShutterMirror,
   chevalMirror: Dc.ChevalMirror,
+  minifigClock: Dc.MinifigClock,
   brickModel: B.BrickModel,
   soapDispenser: Dc.SoapDispenser,
   shower: F.Shower,
