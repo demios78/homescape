@@ -16,6 +16,7 @@ import type { Visual } from './visual'
 export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   pendant: D.Pendant,
   floorLamp: D.FloorLamp,
+  studioLight: D.StudioLight,
   deskLamp: D.DeskLamp,
   wallLight: D.WallLight,
   ledStrip: D.LedStrip,

@@ -252,6 +252,8 @@ const SPEC: Partial<Record<ItemKind, { at: [number, number, number]; range: numb
   pendant: { at: [0, 1.85, 0], range: 'room', power: 3.6, type: 0 },
   // Floor lamps and sconces light the room more
   floorLamp: { at: [0, 1.5, 0], range: 8, power: 4.6, type: 0 },
+  // Softbox front (standing; hung from the ceiling it sits lower, see computeRoomLights)
+  studioLight: { at: [0, 1.7, 0.35], range: 7, power: 5, type: 0 },
   deskLamp: { at: [0, 0.27, 0.1], range: 2.6, power: 1.3, type: 0 },
   wallLight: { at: [0, 1.98, 0.2], range: 8, power: 5, type: 0 },
   // LED strips are stronger (otherwise counter and bedroom LEDs look far too dim). half: of the default 2 m; a strip with
@@ -464,7 +466,8 @@ export function computeRoomLights(level: Level, entities: Record<string, HassEnt
       const level = auto ? 1 : lightLevel(e)
       if (level <= 0) continue
       // A recessed spot set to all directions (Item.variant 'omni') lights the whole room like a chandelier
-      if (it.kind === 'downlight' && it.variant === 'omni') push(it, [0, 2.5, 0], 'room', 3.2, 0, _c.set(lightColor(e)).multiplyScalar(level))
+      if (it.kind === 'studioLight' && it.variant === 'ceiling') push(it, [0, 1.35, 0.35], spec.range, spec.power, 0, _c.set(lightColor(e)).multiplyScalar(level))
+      else if (it.kind === 'downlight' && it.variant === 'omni') push(it, [0, 2.5, 0], 'room', 3.2, 0, _c.set(lightColor(e)).multiplyScalar(level))
       else if (it.kind === 'streetLamp') {
         _c.set(auto ? STREET_LAMP_AUTO : lightColor(e)).multiplyScalar(level)
         // One light per fixture lens; it lights all open areas within range (the pole's sidewalk, the road, the crosswalk)

@@ -43,6 +43,8 @@ const LIGHTISH = ['light', 'switch']
 export const CATALOG: Record<ItemKind, KindMeta> = {
   pendant: { label: t('Pendant light'), group: 'light', domains: LIGHTISH, size: [0.7, 0.7], labelY: 2.9 },
   floorLamp: { label: t('Floor lamp'), group: 'light', domains: LIGHTISH, size: [0.5, 0.5], labelY: 2 },
+  // Softbox on a tripod: standing on the floor or hung from the ceiling (Item.variant 'floor' | 'ceiling')
+  studioLight: { label: t('Studio light'), group: 'light', domains: LIGHTISH, size: [0.8, 0.8], labelY: 2.2 },
   deskLamp: { label: t('Desk lamp'), group: 'light', domains: LIGHTISH, size: [0.3, 0.3], labelY: 0.7 },
   wallLight: { label: t('Wall light'), group: 'light', domains: LIGHTISH, size: [0.4, 0.25], labelY: 2.3, wall: true },
   ledStrip: { label: t('LED strip'), group: 'light', domains: LIGHTISH, size: [2, 0.2], labelY: 2.6, wall: true },
@@ -1008,6 +1010,14 @@ export const OPTIONS: Partial<
   },
   bicycle: { variantLabel: t('Type'), variants: [['bike', t('Bicycle')], ['ebike', t('E-bike')]], variantDef: 'bike', body: t('Bike frame color'), bodyList: ACCENT_COLORS },
   motorcycle: { variantLabel: t('Type'), variants: [['motorbike', t('Motorcycle')], ['scooter', t('Scooter')]], variantDef: 'motorbike', body: t('Color'), bodyList: ACCENT_COLORS },
+  studioLight: {
+    variantLabel: t('Placement'),
+    variants: [
+      ['floor', t('On the floor')],
+      ['ceiling', t('Hung from the ceiling')],
+    ],
+    variantDef: 'floor',
+  },
   stairs: {
     variantLabel: t('Underneath'),
     variants: [
@@ -1277,7 +1287,7 @@ export const consoleModel = (variant?: string) => ({ brand: variant?.startsWith(
 /** Beam angle of a downlight (degrees, full cone): limits of the card slider and the default (Item.beam). */
 export const BEAM = { min: 20, max: 150, def: 90 }
 
-export const LIGHT_KINDS: ItemKind[] = ['pendant', 'floorLamp', 'deskLamp', 'wallLight', 'ledStrip', 'mirrorLight', 'downlight', 'ceilingStrip', 'ceilingLight', 'trackLight', 'tableLamp', 'gardenLight', 'stringLights', 'streetLamp']
+export const LIGHT_KINDS: ItemKind[] = ['pendant', 'floorLamp', 'studioLight', 'deskLamp', 'wallLight', 'ledStrip', 'mirrorLight', 'downlight', 'ceilingStrip', 'ceilingLight', 'trackLight', 'tableLamp', 'gardenLight', 'stringLights', 'streetLamp']
 
 export function isLightKind(kind: ItemKind) {
   return LIGHT_KINDS.includes(kind)

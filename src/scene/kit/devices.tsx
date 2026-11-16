@@ -54,6 +54,56 @@ export function FloorLamp({ v }: P) {
   )
 }
 
+/**
+ * Studio light: a square softbox (black fabric, white diffuser front facing +z, tilted down) on a black tripod stand.
+ * Item.variant 'floor': the tripod stands on the floor with the softbox at about 1.7 m; 'ceiling': the tripod legs press
+ * flat against the ceiling and the pole hangs down to the softbox at about 1.35 m. The diffuser lights in the bound light's
+ * color; the room light comes from roomLights.ts.
+ */
+export function StudioLight({ v }: P) {
+  const front = useLitMaterial(C.white, v.on, v.color, v.level, 1.3)
+  const hung = v.opts.variant === 'ceiling'
+  const black = '#1d1e22'
+  const hub = hung ? 2.38 : 0.6
+  const head = hung ? 1.35 : 1.7
+  const legs = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3]
+  const legEnd = (a: number, r: number, y: number): [number, number, number] => [Math.sin(a) * r, y, -Math.cos(a) * r]
+  return (
+    <group>
+      {/* tripod: three legs from the hub to the floor (standing) or flat along the ceiling (hung), braces to the pole */}
+      {legs.map((a) => {
+        const [ex, ey, ez] = legEnd(a, 0.4, hung ? 2.57 : 0.02)
+        const len = Math.hypot(ex, ey - hub, ez)
+        const mid: [number, number, number] = [ex / 2, (ey + hub) / 2, ez / 2]
+        const dir = new THREE.Vector3(ex, ey - hub, ez).normalize()
+        const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir)
+        return (
+          <group key={a}>
+            <mesh position={mid} quaternion={q} castShadow>
+              <cylinderGeometry args={[0.012, 0.012, len, 8]} />
+              <meshStandardMaterial color={black} roughness={0.5} />
+            </mesh>
+            <Box size={[0.03, 0.02, 0.03]} position={[ex, hung ? 2.585 : 0.01, ez]} color={black} shadow={false} />
+          </group>
+        )
+      })}
+      {/* pole from the hub to the softbox, with two lock collars */}
+      <Cyl r={0.016} h={Math.abs(hub - head)} position={[0, (hub + head) / 2, 0]} color={black} segments={10} />
+      {[0.35, 0.7].map((f) => (
+        <Cyl key={f} r={0.024} h={0.04} position={[0, hub + (head - hub) * f, 0]} color={black} segments={10} shadow={false} />
+      ))}
+      {/* softbox: a square frustum (wide end forward) with a white diffuser, tilted down toward the room */}
+      <group position={[0, head, 0.12]} rotation-x={0.35}>
+        <group rotation-x={Math.PI / 2}>
+          <Cyl r={0.06} rTop={0.36} h={0.38} rotation-y={Math.PI / 4} color={black} segments={4} />
+        </group>
+        <Box size={[0.5, 0.5, 0.012]} position={[0, 0, 0.195]} material={front} shadow={false} />
+        <Box size={[0.1, 0.1, 0.08]} position={[0, 0, -0.22]} color={black} shadow={false} />
+      </group>
+    </group>
+  )
+}
+
 export function DeskLamp({ v }: P) {
   const head = useLitMaterial(C.sun, v.on, v.color, v.level, 1)
   return (

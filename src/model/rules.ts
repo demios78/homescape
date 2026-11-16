@@ -150,6 +150,8 @@ export function layerOf(kind: ItemKind, y?: number, variant?: string, mount?: It
   if (mount === 'wall' && MOUNTABLE.includes(kind)) return 'wall'
   // A wall TV is in the wall layer: no collision with the unit below or the console/lamp on it.
   if (kind === 'tv' && variant === 'wall') return 'wall'
+  // A studio light hung from the ceiling clears the furniture below
+  if (kind === 'studioLight' && variant === 'ceiling') return 'ceiling'
   if (CEILING.includes(kind)) return 'ceiling'
   if (WALL_MOUNTED.includes(kind)) return 'wall'
   if (y != null && y > 0.05) return 'top'

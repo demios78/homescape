@@ -51,6 +51,7 @@ export type ItemKind =
   // lights
   | 'pendant'
   | 'floorLamp'
+  | 'studioLight'
   | 'deskLamp'
   | 'wallLight'
   | 'ledStrip'

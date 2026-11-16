@@ -139,6 +139,7 @@ import type { ItemKind } from '@/model/types'
 export const KIND_ICON: Record<ItemKind, LucideIcon> = {
   pendant: LampCeiling,
   floorLamp: LampFloor,
+  studioLight: Spotlight,
   deskLamp: LampDesk,
   wallLight: LampWallUp,
   ledStrip: Sparkles,
