@@ -133,6 +133,7 @@ export type ItemKind =
   | 'storageRack'
   | 'brickDrawers'
   | 'displayShelf'
+  | 'wallShelfUnit'
   | 'stairs'
   | 'garageDoor'
   // front of the house and street (kit/street.tsx)

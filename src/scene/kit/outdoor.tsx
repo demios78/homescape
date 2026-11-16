@@ -2346,6 +2346,78 @@ export function DisplayShelf({ v }: P) {
   )
 }
 
+/* ---------- tall wall shelf ---------- */
+
+const WS_W = 0.3
+const WS_D = 0.26
+const WS_Y0 = 0.65
+const WS_Y1 = 2.45
+
+/** Tall wall shelf parts (built once): white frame; contents vertex colored */
+function wallShelfGeometry() {
+  return cached('wallShelfUnit', () => {
+    const white = '#f4f4f2'
+    const frame: Part[] = []
+    const stuff: Part[] = []
+    const n = 5
+    const h = (WS_Y1 - WS_Y0) / n
+    for (const s of [-1, 1]) frame.push({ g: boxG(0.05, WS_Y1 - WS_Y0, WS_D), p: [s * (WS_W / 2 - 0.025), (WS_Y0 + WS_Y1) / 2, 0], c: white })
+    for (let i = 0; i <= n; i++) frame.push({ g: boxG(WS_W, 0.05, WS_D), p: [0, WS_Y0 + i * h, 0], c: white })
+    const shelf = (i: number) => WS_Y0 + i * h + 0.025
+    // bottom two: books lying in stacks
+    const r = rng(23)
+    const BOOK = ['#c8323c', '#2a5fb0', '#f2cd37', '#3c9a3c', '#e8e4d8', '#8a5fa8', '#e8833a']
+    for (const i of [0, 1]) {
+      let y = shelf(i)
+      for (let k = 0; k < 7; k++) {
+        const t = 0.025 + r() * 0.02
+        stuff.push({ g: boxG(0.19, t, 0.2 + r() * 0.03), p: [r() * 0.01, y + t / 2, 0.005], r: [0, (r() - 0.5) * 0.15, 0], c: BOOK[Math.floor(r() * BOOK.length)] })
+        y += t
+      }
+    }
+    // middle: a cloth doll sitting, in a yellow dress with a dark red shawl
+    {
+      const y = shelf(2)
+      stuff.push({ g: boxG(0.12, 0.1, 0.1), p: [0, y + 0.05, 0.02], c: '#e8b23a' })
+      stuff.push({ g: boxG(0.1, 0.1, 0.07), p: [0, y + 0.15, 0], c: '#3a5a9a' })
+      stuff.push({ g: icoG(0.045, 1), p: [0, y + 0.24, 0], c: '#f2d8c0' })
+      stuff.push({ g: boxG(0.1, 0.06, 0.06), p: [0.06, y + 0.12, 0.05], r: [0, 0, -0.5], c: '#8c1f2a' })
+    }
+    // brick A-frame cabin on a green plate
+    {
+      const y = shelf(3)
+      stuff.push({ g: boxG(0.22, 0.012, 0.2), p: [0, y + 0.006, 0], c: '#3c9a3c' })
+      stuff.push({ g: boxG(0.14, 0.08, 0.12), p: [0, y + 0.052, 0], c: '#a87444' })
+      for (const s of [-1, 1]) stuff.push({ g: boxG(0.012, 0.17, 0.14), p: [s * 0.045, y + 0.16, 0], r: [0, 0, s * 0.55], c: '#5a3a24' })
+      stuff.push({ g: boxG(0.05, 0.04, 0.004), p: [0, y + 0.13, 0.065], c: '#f2cd37' })
+    }
+    // top: brick trees with branches and leaves
+    {
+      const y = shelf(4)
+      for (const [x, c] of [[-0.06, '#7cc43a'], [0.06, '#c8a640']] as const) {
+        stuff.push({ g: cylG(0.012, 0.22, 6), p: [x, y + 0.11, 0], c: '#5a3a24' })
+        for (let k = 0; k < 5; k++) stuff.push({ g: icoG(0.035, 0), p: [x + (r() - 0.5) * 0.1, y + 0.18 + r() * 0.1, (r() - 0.5) * 0.08], c })
+      }
+    }
+    return { frame: merge(frame), stuff: merge(stuff) }
+  })
+}
+
+/**
+ * Tall wall shelf (like an IKEA LACK wall shelf unit hung upright): a slim white box 30 cm wide and 26 cm deep with five
+ * open compartments from 0.65 to 2.45 m, holding stacked books, a cloth doll, a brick A-frame cabin and brick trees.
+ * It may hang over the edge of a window (it stands in the floor layer, nothing below it). Back against the wall.
+ */
+export function WallShelfUnit() {
+  const g = wallShelfGeometry()
+  return (
+    <group>
+      <M g={g.frame} m={vcMat(0.6)} />
+      <M g={g.stuff} m={vcMat(0.7)} shadow={false} />
+    </group>
+  )
+}
+
 /* ---------- clear drawer tower ---------- */
 
 const BD_W = 1.2
