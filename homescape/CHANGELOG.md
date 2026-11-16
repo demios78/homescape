@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.32 (demios78 fork)
+
+- Coffee machine models: compact steel espresso machine and burr grinder.
+
 ## 0.2.1-dm.31 (demios78 fork)
 
 - New: a coffee bar hutch with glass cabinets, a wine rack and a granite counter.
