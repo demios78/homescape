@@ -1348,3 +1348,160 @@ export function baseplateTopTexture() {
     512,
   )
 }
+
+/** Embroidered chair back: a peach ground with a flowering branch, dark blue and rust blooms, a pastel bird */
+export function embroideredBackTexture() {
+  return base('embroidered-back', (g, s) => {
+    g.fillStyle = '#e9a98f'
+    g.fillRect(0, 0, s, s)
+    g.strokeStyle = '#2f4a2c'
+    g.lineWidth = 4
+    g.beginPath()
+    g.moveTo(s * 0.3, s)
+    g.bezierCurveTo(s * 0.32, s * 0.6, s * 0.25, s * 0.4, s * 0.3, s * 0.25)
+    g.moveTo(s * 0.32, s * 0.85)
+    g.bezierCurveTo(s * 0.5, s * 0.7, s * 0.6, s * 0.65, s * 0.85, s * 0.6)
+    g.stroke()
+    const leaf = (x: number, y: number, a: number) => {
+      g.save()
+      g.translate(x, y)
+      g.rotate(a)
+      g.fillStyle = '#2f4f3a'
+      g.beginPath()
+      g.ellipse(0, 0, s * 0.05, s * 0.018, 0, 0, Math.PI * 2)
+      g.fill()
+      g.restore()
+    }
+    for (let i = 0; i < 10; i++) leaf(s * (0.22 + (i % 2) * 0.16), s * (0.4 + i * 0.05), (i % 2 ? -1 : 1) * 0.6)
+    for (let i = 0; i < 6; i++) leaf(s * (0.45 + i * 0.07), s * (0.68 + (i % 2) * 0.06), (i % 2 ? -1 : 1) * 0.7)
+    const bloom = (x: number, y: number, r: number) => {
+      g.fillStyle = '#c4501f'
+      g.beginPath()
+      g.arc(x, y, r, 0, Math.PI * 2)
+      g.fill()
+      g.fillStyle = '#28337a'
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2
+        g.beginPath()
+        g.ellipse(x + Math.cos(a) * r * 0.55, y + Math.sin(a) * r * 0.55, r * 0.22, r * 0.12, a, 0, Math.PI * 2)
+        g.fill()
+      }
+    }
+    bloom(s * 0.27, s * 0.24, s * 0.1)
+    bloom(s * 0.47, s * 0.12, s * 0.07)
+    bloom(s * 0.8, s * 0.55, s * 0.07)
+    // bird
+    g.fillStyle = '#c9c7d6'
+    g.beginPath()
+    g.ellipse(s * 0.62, s * 0.4, s * 0.12, s * 0.06, -0.2, 0, Math.PI * 2)
+    g.fill()
+    g.fillStyle = '#5aa0c8'
+    g.beginPath()
+    g.ellipse(s * 0.63, s * 0.37, s * 0.06, s * 0.03, -0.2, 0, Math.PI * 2)
+    g.fill()
+    g.fillStyle = '#c45070'
+    g.beginPath()
+    g.moveTo(s * 0.72, s * 0.38)
+    g.lineTo(s * 0.86, s * 0.33)
+    g.lineTo(s * 0.8, s * 0.43)
+    g.closePath()
+    g.fill()
+  })
+}
+
+/** Embroidered chair seat: a lime ground covered in pink stitched dashes */
+export function dashSeatTexture() {
+  return base('dash-seat', (g, s) => {
+    g.fillStyle = '#c3cf7a'
+    g.fillRect(0, 0, s, s)
+    let seed = 9
+    const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647)
+    for (let i = 0; i < 160; i++) {
+      g.fillStyle = r() < 0.5 ? '#e8338a' : '#f25aa8'
+      g.save()
+      g.translate(r() * s, r() * s)
+      g.rotate(r() * Math.PI)
+      g.beginPath()
+      g.ellipse(0, 0, s * 0.025, s * 0.011, 0, 0, Math.PI * 2)
+      g.fill()
+      g.restore()
+    }
+  })
+}
+
+/** Hand-painted round table top: turquoise with a central medallion of two white birds, a flower ring and garlands */
+export function paintedTopTexture() {
+  return base(
+    'painted-top',
+    (g, s) => {
+      const c = s / 2
+      g.fillStyle = '#b48a5c'
+      g.fillRect(0, 0, s, s)
+      g.fillStyle = '#7fe0cf'
+      g.beginPath()
+      g.arc(c, c, s * 0.46, 0, Math.PI * 2)
+      g.fill()
+      // leaves around the medallion
+      g.fillStyle = '#8cc63f'
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2
+        g.save()
+        g.translate(c + Math.cos(a) * s * 0.25, c + Math.sin(a) * s * 0.25)
+        g.rotate(a)
+        g.beginPath()
+        g.ellipse(0, 0, s * 0.08, s * 0.035, 0, 0, Math.PI * 2)
+        g.fill()
+        g.restore()
+      }
+      g.fillStyle = '#b8242c'
+      g.beginPath()
+      g.arc(c, c, s * 0.2, 0, Math.PI * 2)
+      g.fill()
+      g.fillStyle = '#f2c230'
+      g.beginPath()
+      g.arc(c, c, s * 0.185, 0, Math.PI * 2)
+      g.fill()
+      g.fillStyle = '#22492c'
+      g.beginPath()
+      g.arc(c, c, s * 0.15, 0, Math.PI * 2)
+      g.fill()
+      // flower dots on the ring
+      for (let i = 0; i < 20; i++) {
+        const a = (i / 20) * Math.PI * 2
+        g.fillStyle = ['#ff8fb8', '#3a7ad9', '#e8833a'][i % 3]
+        g.beginPath()
+        g.arc(c + Math.cos(a) * s * 0.168, c + Math.sin(a) * s * 0.168, s * 0.011, 0, Math.PI * 2)
+        g.fill()
+      }
+      // two white birds
+      g.fillStyle = '#f4f4f0'
+      for (const [dx, dy, a] of [[-0.03, -0.04, -0.3], [0.03, 0.05, 0.3]]) {
+        g.save()
+        g.translate(c + dx * s, c + dy * s)
+        g.rotate(a)
+        g.beginPath()
+        g.ellipse(0, 0, s * 0.08, s * 0.035, 0, 0, Math.PI * 2)
+        g.fill()
+        g.restore()
+      }
+      // garlands near the rim
+      for (let k = 0; k < 4; k++) {
+        const a0 = (k / 4) * Math.PI * 2 + 0.4
+        for (let i = 0; i < 5; i++) {
+          const a = a0 + i * 0.12
+          const x = c + Math.cos(a) * s * 0.38
+          const y = c + Math.sin(a) * s * 0.38
+          g.fillStyle = '#2e8a3e'
+          g.beginPath()
+          g.ellipse(x + 6, y, s * 0.018, s * 0.008, a, 0, Math.PI * 2)
+          g.fill()
+          g.fillStyle = i % 2 ? '#f7a8c8' : '#e07a3a'
+          g.beginPath()
+          g.arc(x, y, s * 0.012, 0, Math.PI * 2)
+          g.fill()
+        }
+      }
+    },
+    512,
+  )
+}

@@ -11,7 +11,7 @@ import { markShadows } from '../frame'
 import { Glow, StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { baseplateTopTexture, beadboardTexture, carvedPanelTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, wickerLatticeTexture, wickerTexture } from './textures'
+import { baseplateTopTexture, beadboardTexture, carvedPanelTexture, dashSeatTexture, embroideredBackTexture, paintedTopTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, wickerLatticeTexture, wickerTexture } from './textures'
 import { gainOf, type Visual } from './visual'
 
 /*
@@ -863,7 +863,31 @@ export function CoffeeTable({ v }: { v: Visual }) {
 }
 
 /** Small round side table: wooden top, single leg, round base, a cup on top. Lamps and diffusers can stand on it. */
-export function RoundTable() {
+/** Hand-painted side table (round table variant 'painted'): a mango wood tray top painted turquoise with birds and flowers, three splayed tapered legs */
+function PaintedTable() {
+  const wood = mat('#c9a77a', { roughness: 0.7 })
+  const top = useMemo(() => new THREE.MeshStandardMaterial({ map: paintedTopTexture(), roughness: 0.5 }), [])
+  useEffect(() => () => top.dispose(), [top])
+  return (
+    <group>
+      <Cyl r={0.27} h={0.035} position={[0, 0.45, 0]} material={wood} segments={40} />
+      <mesh position={[0, 0.4685, 0]} rotation-x={-Math.PI / 2} material={top}>
+        <circleGeometry args={[0.255, 40]} />
+      </mesh>
+      {[0, 1, 2].map((i) => {
+        const a = (i / 3) * Math.PI * 2
+        return (
+          <group key={i} position={[Math.sin(a) * 0.14, 0.22, Math.cos(a) * 0.14]} rotation={[Math.cos(a) * 0.18, 0, -Math.sin(a) * 0.18]}>
+            <Cyl r={0.012} rTop={0.022} h={0.46} material={wood} segments={10} />
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+export function RoundTable({ v }: { v: Visual }) {
+  if (v.opts.variant === 'painted') return <PaintedTable />
   return (
     <group>
       <Cyl r={0.3} h={0.04} position={[0, 0.45, 0]} color={C.kraft} segments={40} />
@@ -1792,8 +1816,39 @@ function BistroChair() {
   )
 }
 
+/** Embroidered folding chair (chair variant 'embroidered'): pale wood X frame, a peach embroidered back with a bird, a lime seat with pink dashes, lilac piping */
+function EmbroideredChair() {
+  const wood = mat('#d8c39e', { roughness: 0.7 })
+  const back = useMemo(() => new THREE.MeshStandardMaterial({ map: embroideredBackTexture(), roughness: 0.9 }), [])
+  const seat = useMemo(() => new THREE.MeshStandardMaterial({ map: dashSeatTexture(), roughness: 0.9 }), [])
+  useEffect(() => () => {
+    back.dispose()
+    seat.dispose()
+  }, [back, seat])
+  return (
+    <group>
+      {[-0.22, 0.22].map((x) => (
+        <group key={x}>
+          <Box size={[0.035, 0.9, 0.035]} position={[x, 0.45, -0.04]} rotation-x={-0.28} material={wood} />
+          <Box size={[0.03, 0.5, 0.03]} position={[x, 0.22, 0.04]} rotation-x={0.5} material={wood} />
+        </group>
+      ))}
+      <Box size={[0.4, 0.03, 0.03]} position={[0, 0.12, 0.14]} material={wood} />
+      <Box size={[0.48, 0.05, 0.42]} position={[0, 0.43, 0.04]} material={wood} />
+      <Box size={[0.42, 0.07, 0.4]} position={[0, 0.48, 0.04]} material={seat} radius={0.02} />
+      <group position={[0, 0.74, -0.15]} rotation-x={-0.28}>
+        <Box size={[0.42, 0.42, 0.06]} material={back} radius={0.02} />
+        {[-1, 1].map((s) => (
+          <Box key={s} size={[0.012, 0.42, 0.065]} position={[s * 0.215, 0, 0]} color="#b9a6d2" shadow={false} />
+        ))}
+      </group>
+    </group>
+  )
+}
+
 export function Chair({ v }: { v: Visual }) {
   if (v.opts.variant === 'bistro') return <BistroChair />
+  if (v.opts.variant === 'embroidered') return <EmbroideredChair />
   return (
     <group>
       {legs4(0.44, 0.44, 0.44, C.ink, 0.022)}

@@ -1059,6 +1059,15 @@ export const OPTIONS: Partial<
     variants: [
       ['plain', t('Plain')],
       ['bistro', t('Folding bistro')],
+      ['embroidered', t('Embroidered folding')],
+    ],
+    variantDef: 'plain',
+  },
+  roundTable: {
+    variantLabel: t('Model'),
+    variants: [
+      ['plain', t('Plain')],
+      ['painted', t('Hand-painted on three legs')],
     ],
     variantDef: 'plain',
   },
