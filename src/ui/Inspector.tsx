@@ -948,7 +948,7 @@ function ItemEdit({ item, room }: { item: Item; room?: Room }) {
           />
         </label>
 
-        {(item.kind === 'door' || item.kind === 'window') && item.variant !== 'sliding' && <OpeningEdit item={item} />}
+        {(item.kind === 'door' || item.kind === 'window') && !(item.kind === 'door' && (item.variant === 'sliding' || item.variant === 'opening')) && <OpeningEdit item={item} />}
         <HeatingKind item={item} />
         <Placement item={item} />
         <WindowPresets item={item} />

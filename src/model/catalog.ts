@@ -1023,9 +1023,10 @@ export const OPTIONS: Partial<
       ['hinged', t('Hinged')],
       ['sliding', t('Sliding (closet)')],
       ['french', t('French doors')],
+      ['opening', t('Open doorway')],
     ],
     variantDef: 'hinged',
-    variantLen: { hinged: undefined as unknown as number, sliding: 1.6, french: 1.2 },
+    variantLen: { hinged: undefined as unknown as number, sliding: 1.6, french: 1.2, opening: 0.9 },
   },
   garageDoor: { note: t("Bind the garage door's motor (cover) or door sensor: the panels slide up as far as it is open.") },
   pegboard: { body: t('Panel color') },
@@ -1166,7 +1167,7 @@ export const OPTIONS: Partial<
 
 /** Kinds with adjustable length: length (local x) limits (m); the card shows label when given */
 export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; label?: string; onlyVariant?: string[] }>> = {
-  door: { min: 1, max: 3, label: t('Door width'), onlyVariant: ['sliding', 'french'] },
+  door: { min: 0.6, max: 3, label: t('Door width'), onlyVariant: ['sliding', 'french', 'opening'] },
   desk: { min: 0.8, max: 2.6 },
   consoleTable: { min: 0.6, max: 2.2, label: t('Table length') },
   storageBench: { min: 0.8, max: 2, label: t('Bench length') },
@@ -1237,8 +1238,14 @@ export const FRENCH_DOOR_W = 1.2
 
 type DoorLike = { kind: string; variant?: string; len?: number }
 
+/** Default width of an open doorway (Item.variant 'opening': a cased opening without a door leaf, width Item.len) */
+export const OPENING_W = 0.9
+
 /** Width of a sliding door (m), undefined for other doors */
 export const slidingWidth = (it: DoorLike) => (it.kind === 'door' && it.variant === 'sliding' ? (it.len ?? SLIDING_DOOR_W) : undefined)
+
+/** Width of an open doorway (m), undefined for other doors */
+export const openingWidth = (it: DoorLike) => (it.kind === 'door' && it.variant === 'opening' ? (it.len ?? OPENING_W) : undefined)
 
 /** Width of a pair of French doors (m), undefined for other doors */
 export const frenchWidth = (it: DoorLike) => (it.kind === 'door' && it.variant === 'french' ? (it.len ?? FRENCH_DOOR_W) : undefined)

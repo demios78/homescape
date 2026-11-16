@@ -1426,7 +1426,30 @@ function FrenchDoor({ v }: P) {
   )
 }
 
+/**
+ * Open doorway (Item.variant 'opening'): a cased opening without a door leaf, as wide as Item.len; white casing on both
+ * sides of the wall and a header. Always open (light and sound pass, nobody opens it).
+ */
+function CasedOpening({ v }: P) {
+  const root = useRef<THREE.Group>(null)
+  const tall = useRef<THREE.Group>(null)
+  const W = v.opts.len ?? 0.9
+  useWallHeight(root, v.interior, (h) => {
+    if (tall.current) tall.current.scale.y = Math.max(0.02, h / FULL_H)
+  })
+  return (
+    <group ref={root}>
+      <group ref={tall}>
+        <Box size={[0.08, 2.19, 0.24]} position={[-W / 2, 1.095, EDGE_Z]} color={C.white} />
+        <Box size={[0.08, 2.19, 0.24]} position={[W / 2, 1.095, EDGE_Z]} color={C.white} />
+        <Box size={[W + 0.08, 0.08, 0.24]} position={[0, 2.19, EDGE_Z]} color={C.white} />
+      </group>
+    </group>
+  )
+}
+
 export function Door({ v }: P) {
+  if (v.opts.variant === 'opening') return <CasedOpening v={v} />
   if (v.opts.variant === 'sliding') return <SlidingDoor v={v} />
   if (v.opts.variant === 'french') return <FrenchDoor v={v} />
   return <HingedDoor v={v} />

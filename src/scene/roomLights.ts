@@ -237,6 +237,8 @@ export interface RoomLight {
 
 /** Whether the door is open: by its door sensor or curtain if there is one, else open unless locked (an interior door is a passage). */
 function doorOpen(door: Item, entities: Record<string, HassEntity>) {
+  // An open doorway has no door leaf
+  if (door.variant === 'opening') return true
   const bound = bindingsOf(door)
     .map((id) => entities[id])
     .filter((e): e is HassEntity => Boolean(e))

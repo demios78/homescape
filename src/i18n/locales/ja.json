@@ -990,6 +990,7 @@
  "Open": "開いている",
  "Open cover": "カバーを開く",
  "Open doors / windows": "開いているドア / 窓",
+ "Open doorway": "開口部（ドアなし）",
  "Open it with the Homescape icon on the home screen. Sign in to Home Assistant there once: your home plan comes from Home Assistant.": "ホーム画面のHomescapeアイコンから開き、そこで一度Home Assistantにサインインしてください。間取りはHome Assistantから読み込まれます。",
  "Open panel": "パネルを開く",
  "Open shelf": "オープン棚",

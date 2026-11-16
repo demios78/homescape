@@ -69,6 +69,7 @@ function controlled(d: Item) {
  * to a porch or garden is exterior too.
  */
 function drawnOpen(level: Level, d: Item) {
+  if (d.variant === 'opening') return true
   const ents = useHa.getState().entities
   const bound = bindingsOf(d).map((id) => ents[id]).filter(Boolean)
   const contacts = bound.filter((e) => domainOf(e.entity_id) === 'cover' || (domainOf(e.entity_id) === 'binary_sensor' && ['door', 'window', 'opening', 'garage_door'].includes(deviceClass(e) ?? '')))

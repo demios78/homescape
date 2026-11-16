@@ -1,4 +1,4 @@
-import { CATALOG, frenchWidth, sizeOf, slidingWidth, WINDOW_BOTTOM, windowSize } from './catalog'
+import { CATALOG, frenchWidth, openingWidth, sizeOf, slidingWidth, WINDOW_BOTTOM, windowSize } from './catalog'
 import type { Item, Level, Rect, Room, RoomType } from './types'
 
 /*
@@ -343,8 +343,8 @@ export function apertureOf(it: Item) {
   const win = it.kind === 'window'
   const dy = win ? (it.y ?? 0) : 0
   const { w, h } = windowSize(it)
-  // Sliding closet doors and French doors are as wide as their Item.len
-  const slide = slidingWidth(it) ?? frenchWidth(it)
+  // Sliding closet doors, French doors and open doorways are as wide as their Item.len
+  const slide = slidingWidth(it) ?? frenchWidth(it) ?? openingWidth(it)
   const spec = win ? { half: w / 2 - 0.02, y0: WINDOW_BOTTOM + dy, y1: WINDOW_BOTTOM + h + dy } : slide ? { ...base, half: slide / 2 } : base
   const fx = Math.sin(it.rot)
   const fz = Math.cos(it.rot)
