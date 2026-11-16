@@ -175,6 +175,7 @@ export const KIND_ICON: Record<ItemKind, LucideIcon> = {
   taskChair: Armchair,
   storageBench: Archive,
   wickerWing: Armchair,
+  roundChair: Armchair,
   ironingBoard: Shirt,
   shutterMirror: Frame,
   writingDesk: Briefcase,

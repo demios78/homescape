@@ -215,6 +215,11 @@ export interface LocalRect {
 export function localFootprints(s: Omit<Shape, 'x' | 'z' | 'rot'>): LocalRect[] {
   const [w, d] = sizeOf(s.kind, s.len, s.len2)
   const main = { cx: 0, cz: 0, w, d }
+  // Sofa with a chaise: the three seat sofa plus the chaise reaching forward on one side (seen from the front)
+  if (s.kind === 'sofa' && (s.variant === 'chaiseLeft' || s.variant === 'chaiseRight')) {
+    const sx = s.variant === 'chaiseLeft' ? -1 : 1
+    return [main, { cx: sx * (w / 2 - 0.36), cz: d / 2 + 0.33, w: 0.72, d: 0.66 }]
+  }
   if (s.kind !== 'kitchenCounter' || (s.variant !== 'lLeft' && s.variant !== 'lRight')) return [main]
   const L = s.len ?? CATALOG.kitchenCounter.size[0]
   const D = CATALOG.kitchenCounter.size[1]

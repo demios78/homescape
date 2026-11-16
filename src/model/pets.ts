@@ -499,7 +499,8 @@ export function petPlaces(level: Level, species: Species): PetPlace[] {
       case 'armchair':
       case 'wickerChair':
       case 'wickerWing':
-        if (cat) add(it, 'nap', 0, 0.1, it.kind === 'wickerChair' ? 0.52 : it.kind === 'wickerWing' ? 0.47 : 0.44, it.rot, 'curl')
+      case 'roundChair':
+        if (cat) add(it, 'nap', 0, 0.1, it.kind === 'wickerChair' ? 0.52 : it.kind === 'wickerWing' || it.kind === 'roundChair' ? 0.47 : 0.44, it.rot, 'curl')
         break
       case 'storageBench':
         // the cushion of a window seat: a sunny nap

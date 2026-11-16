@@ -190,6 +190,7 @@ export type ItemKind =
   | 'writingDesk'
   | 'bedsideChest'
   | 'chevalMirror'
+  | 'roundChair'
   | 'minifigClock'
   | 'brickModel'
   | 'coffeeTable'

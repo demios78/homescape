@@ -150,7 +150,44 @@ const partOpen = (v: Visual, i: number) => (v.open ? (!v.openParts?.length || v.
 const legs4 = (w: number, d: number, h: number, color: string = C.ink, r = 0.03) =>
   [-1, 1].flatMap((sx) => [-1, 1].map((sz) => <Cyl key={`${sx}${sz}`} r={r} h={h} position={[sx * (w / 2 - 0.06), h / 2, sz * (d / 2 - 0.06)]} color={color} />))
 
-export function Sofa() {
+/**
+ * Sofa with a chaise (Item.variant 'chaiseLeft' | 'chaiseRight', seen from the front): track arms, a 2.2 m frame with three
+ * back cushions; on the chaise side the seat runs forward 0.66 m more as one long cushion. Fabric Item.body.
+ */
+function ChaiseSofa({ v }: { v: Visual }) {
+  const fabric = v.opts.body ?? '#b8332f'
+  const cushion = shade(fabric, 1.06)
+  const sx = v.opts.variant === 'chaiseLeft' ? -1 : 1
+  const legs = '#3a2a20'
+  const cx = sx * 0.74
+  return (
+    <group>
+      {[-1.02, 1.02].flatMap((x) => [-0.36, 0.36].map((z) => <Box key={`${x}${z}`} size={[0.06, 0.08, 0.06]} position={[x, 0.04, z]} color={legs} />))}
+      {[-0.36, 0.36].map((x) => (
+        <Box key={x} size={[0.06, 0.08, 0.06]} position={[cx + x, 0.04, 1.08]} color={legs} />
+      ))}
+      {/* base: the sofa and the chaise */}
+      <Box size={[2.2, 0.3, 0.9]} position={[0, 0.23, 0]} color={fabric} radius={0.04} />
+      <Box size={[0.72, 0.3, 0.7]} position={[cx, 0.23, 0.77]} color={fabric} radius={0.04} />
+      {/* back and track arms; the arm on the chaise side runs along the chaise */}
+      <Box size={[2.2, 0.5, 0.2]} position={[0, 0.62, -0.35]} color={fabric} radius={0.05} />
+      <Box size={[0.16, 0.26, 0.9]} position={[-sx * 1.02, 0.51, 0]} color={fabric} radius={0.04} />
+      <Box size={[0.16, 0.26, 1.55]} position={[sx * 1.02, 0.51, 0.33]} color={fabric} radius={0.04} />
+      {/* seat cushions: two on the sofa side, one long chaise cushion */}
+      {[0.38, -0.2].map((x) => (
+        <Box key={x} size={[0.58, 0.12, 0.66]} position={[-sx * x, 0.44, 0.1]} color={cushion} radius={0.05} />
+      ))}
+      <Box size={[0.7, 0.12, 1.36]} position={[cx - sx * 0.08, 0.44, 0.43]} color={cushion} radius={0.05} />
+      {/* back cushions */}
+      {[-0.66, 0, 0.66].map((x) => (
+        <Box key={x} size={[0.64, 0.44, 0.18]} position={[x, 0.71, -0.17]} rotation-x={-0.12} color={cushion} radius={0.07} />
+      ))}
+    </group>
+  )
+}
+
+export function Sofa({ v }: { v: Visual }) {
+  if (v.opts.variant === 'chaiseLeft' || v.opts.variant === 'chaiseRight') return <ChaiseSofa v={v} />
   // Seat top at 0.49 m (a real sofa): a seated person's feet reach the floor; the back cushions keep them forward
   // (seats in model/people.ts, pose in scene/Human.tsx)
   return (
@@ -1950,6 +1987,44 @@ export function GamingChair({ v }: { v: Visual }) {
         <Box size={[0.26, 0.12, 0.07]} position={[0, 0.78, 0.075]} color={C.ink} radius={0.03} shadow={false} />
         <Box size={[0.3, 0.13, 0.07]} position={[0, 0.2, 0.075]} color={C.ink} radius={0.03} shadow={false} />
       </group>
+    </group>
+  )
+}
+
+/** Round swivel chair outline: a round seat and a back hugging the rear half (built once) */
+let roundBackGeo: THREE.ExtrudeGeometry | null = null
+function roundChairBack() {
+  if (!roundBackGeo) {
+    const sh = new THREE.Shape()
+    // ring segment around the back (angles from +x, the back is local -z)
+    const a0 = Math.PI * 0.95
+    const a1 = Math.PI * 2.05
+    sh.absarc(0, 0, 0.525, a0, a1, false)
+    sh.absarc(0, 0, 0.36, a1, a0, true)
+    sh.closePath()
+    roundBackGeo = new THREE.ExtrudeGeometry(sh, { depth: 0.36, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2, curveSegments: 32 })
+    // shape in (x, y) becomes (x, z) on the floor; extrusion goes up
+    roundBackGeo.rotateX(Math.PI / 2)
+    roundBackGeo.translate(0, 0.78, 0)
+  }
+  return roundBackGeo
+}
+
+/**
+ * Round swivel cuddle chair (like a velvet barrel swivel chair): a deep round seat on a round base, a low curved back that
+ * wraps the rear half and ends in two short arms, two loose pillows. Fabric Item.body; front +z.
+ */
+export function RoundChair({ v }: { v: Visual }) {
+  const fabric = v.opts.body ?? '#8a9488'
+  const m = mat(fabric, { roughness: 0.95 })
+  return (
+    <group>
+      <Cyl r={0.5} h={0.3} position={[0, 0.15, 0]} material={m} segments={40} />
+      <Cyl r={0.51} h={0.14} position={[0, 0.37, 0]} material={mat(shade(fabric, 1.05), { roughness: 0.95 })} segments={40} />
+      <mesh geometry={roundChairBack()} material={m} castShadow receiveShadow />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.2, 0.38, 0.18]} position={[s * 0.3, 0.6, -0.26]} rotation-y={s * -0.5} rotation-x={-0.1} color={shade(fabric, 0.96)} radius={0.06} />
+      ))}
     </group>
   )
 }

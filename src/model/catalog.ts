@@ -84,6 +84,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
 
   sofa: { label: t('Sofa'), group: 'furniture', domains: [], size: [2.2, 0.9], labelY: 1.1 },
   armchair: { label: t('Armchair'), group: 'furniture', domains: [], size: [0.9, 0.85], labelY: 1.1 },
+  // Round swivel cuddle chair: a round seat with a low curved back, two pillows; fabric Item.body
+  roundChair: { label: t('Round swivel chair'), group: 'furniture', domains: [], size: [1.05, 1.05], labelY: 1.0 },
   // Two-seat sofa with rolled arms and carved legs; fabric Item.variant (striped damask or plain in Item.body)
   loveseat: { label: t('Loveseat'), group: 'furniture', domains: [], size: [1.42, 0.82], labelY: 1.1 },
   // Woven armchair with a horseshoe back and a seat cushion; frame Item.body, cushion Item.top
@@ -864,6 +866,7 @@ export const OPTIONS: Partial<
       ['classic', t('Classic')],
       ['globe', t('Globe')],
       ['frame', t('Wood frame')],
+      ['jar', t('Ginger jar')],
     ],
     variantDef: 'classic',
     top: t('Shade color'),
@@ -1017,6 +1020,35 @@ export const OPTIONS: Partial<
   bicycle: { variantLabel: t('Type'), variants: [['bike', t('Bicycle')], ['ebike', t('E-bike')]], variantDef: 'bike', body: t('Bike frame color'), bodyList: ACCENT_COLORS },
   motorcycle: { variantLabel: t('Type'), variants: [['motorbike', t('Motorcycle')], ['scooter', t('Scooter')]], variantDef: 'motorbike', body: t('Color'), bodyList: ACCENT_COLORS },
   displayShelf: { note: t('The main bound light or plug lights the models (spots and accents); the first extra one is the grow light on the bottom shelf.') },
+  sofa: {
+    variantLabel: t('Shape'),
+    variants: [
+      ['standard', t('Three seats')],
+      ['chaiseLeft', t('Chaise left')],
+      ['chaiseRight', t('Chaise right')],
+    ],
+    variantDef: 'standard',
+    body: t('Fabric color'),
+    bodyList: [
+      [t('Default'), '#5b6cf0'],
+      [t('Red'), '#b8332f'],
+      [t('Gray'), '#8a8f98'],
+      [t('Navy'), '#2a3556'],
+      [t('Beige'), '#cdbb9c'],
+      [t('Green'), '#6f8a73'],
+    ],
+  },
+  roundChair: {
+    body: t('Fabric color'),
+    bodyList: [
+      [t('Sage gray'), '#8a9488'],
+      [t('Gray'), '#8a8f98'],
+      [t('Blue'), '#5d7a9a'],
+      [t('Beige'), '#cdbb9c'],
+      [t('Red'), '#b8332f'],
+    ],
+    bodyDef: '#8a9488',
+  },
   coffeeTable: {
     variantLabel: t('Top'),
     variants: [

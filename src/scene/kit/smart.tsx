@@ -280,6 +280,25 @@ export function TableLamp({ v }: P) {
         <Glow position={[0, 0.19, 0]} color={v.color} opacity={k} size={0.9} />
       </group>
     )
+  if (v.opts.variant === 'jar') {
+    // glazed green ginger jar with lotus reliefs and a clay lid, on a brass foot; a wide burlap empire shade
+    const glaze = mat(v.opts.body ?? '#173c34', { roughness: 0.15, metalness: 0.1 })
+    const clay = mat('#b88a62', { roughness: 0.8 })
+    return (
+      <group>
+        <Cyl r={0.14} rTop={0.13} h={0.07} position={[0, 0.035, 0]} material={brass} segments={32} />
+        <Ball r={0.17} detail={3} position={[0, 0.25, 0]} scale={[1, 1.15, 1]} material={glaze} />
+        <Cyl r={0.12} rTop={0.09} h={0.08} position={[0, 0.42, 0]} material={glaze} segments={28} shadow={false} />
+        <Cyl r={0.13} rTop={0.06} h={0.05} position={[0, 0.48, 0]} material={clay} segments={20} shadow={false} />
+        {[0, 2.2].map((a) => (
+          <Ball key={a} r={0.045} detail={1} position={[Math.sin(a) * 0.17, 0.27 - a * 0.03, Math.cos(a) * 0.17]} material={clay} shadow={false} />
+        ))}
+        <Cyl r={0.006} h={0.1} position={[0, 0.55, 0]} material={brass} segments={8} shadow={false} />
+        <Cyl r={0.33} rTop={0.13} h={0.3} position={[0, 0.66, 0]} material={shade} segments={40} shadow={false} />
+        <Glow position={[0, 0.62, 0]} color={v.color} opacity={k} size={1.3} />
+      </group>
+    )
+  }
   if (v.opts.variant === 'frame') {
     // two open wooden rectangles crossing at right angles, a drum shade with a chrome finial
     const wood = mat(v.opts.body ?? '#2b211c', { roughness: 0.6 })
