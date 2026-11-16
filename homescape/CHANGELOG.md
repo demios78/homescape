@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.9 (demios78 fork)
+
+- Stairs can be closed underneath (a closet under the stairs): basement stairs below them get no railing on the
+  floor above. A door may open onto stairs, such as a basement door.
+
 ## 0.2.1-dm.8 (demios78 fork)
 
 - Brick models light up while their bound switch or light is on (engines, cockpits, the Concorde's landing and
