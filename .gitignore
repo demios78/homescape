@@ -40,3 +40,4 @@ shots/
 
 # Local tool settings
 .claude/
+.vs/
