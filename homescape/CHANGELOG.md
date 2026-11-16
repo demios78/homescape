@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.31 (demios78 fork)
+
+- New: a coffee bar hutch with glass cabinets, a wine rack and a granite counter.
+
 ## 0.2.1-dm.30 (demios78 fork)
 
 - The tall wall shelf is open at the sides.
