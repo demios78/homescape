@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.13 (demios78 fork)
+
+- Doors can be open doorways: a cased opening without a door, 0.6-3 m wide.
+
 ## 0.2.1-dm.12 (demios78 fork)
 
 - Windows can be double-hung (wooden sashes with a grid), optionally with black shutters outside.
