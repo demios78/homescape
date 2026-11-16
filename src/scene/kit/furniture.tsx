@@ -694,7 +694,7 @@ export function IroningBoard({ v }: { v: Visual }) {
  * glued baseplates (blue with a green plate and a train track loop, baseplateTopTexture). Same footprint and top height as
  * the coffee table, so models on it keep their place.
  */
-function LegoTable() {
+function LegoTable({ W, D }: { W: number; D: number }) {
   const wood = '#4a2e22'
   const top = useMemo(() => {
     const t = baseplateTopTexture().clone()
@@ -706,21 +706,24 @@ function LegoTable() {
   useEffect(() => () => top.dispose(), [top])
   return (
     <group>
-      <Box size={[1.1, 0.05, 0.6]} position={[0, 0.395, 0]} color={wood} />
-      <Box size={[1.08, 0.02, 0.58]} position={[0, 0.43, 0]} material={top} />
-      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => <Box key={`${sx}${sz}`} size={[0.06, 0.37, 0.06]} position={[sx * 0.51, 0.185, sz * 0.26]} color={wood} />))}
+      <Box size={[W, 0.05, D]} position={[0, 0.395, 0]} color={wood} />
+      <Box size={[W - 0.02, 0.02, D - 0.02]} position={[0, 0.43, 0]} material={top} />
+      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => <Box key={`${sx}${sz}`} size={[0.06, 0.37, 0.06]} position={[sx * (W / 2 - 0.04), 0.185, sz * (D / 2 - 0.04)]} color={wood} />))}
       {[-1, 1].map((s) => (
-        <Box key={`a${s}`} size={[0.98, 0.07, 0.025]} position={[0, 0.335, s * 0.27]} color={wood} shadow={false} />
+        <Box key={`a${s}`} size={[W - 0.12, 0.07, 0.025]} position={[0, 0.335, s * (D / 2 - 0.03)]} color={wood} shadow={false} />
       ))}
-      <Box size={[1.0, 0.025, 0.5]} position={[0, 0.1, 0]} color={wood} />
+      <Box size={[W - 0.1, 0.025, D - 0.1]} position={[0, 0.1, 0]} color={wood} />
     </group>
   )
 }
 
 export function CoffeeTable({ v }: { v: Visual }) {
-  if (v.opts.variant === 'lego') return <LegoTable />
+  // Length Item.len, depth Item.len2 (catalog RESIZABLE, RESIZABLE2); the plain table is drawn at 1.1 × 0.6 m and scaled
+  const W = v.opts.len ?? 1.1
+  const D = v.opts.len2 ?? 0.6
+  if (v.opts.variant === 'lego') return <LegoTable W={W} D={D} />
   return (
-    <group>
+    <group scale={[W / 1.1, 1, D / 0.6]}>
       <Box size={[1.1, 0.07, 0.6]} position={[0, 0.4, 0]} color={C.kraft} radius={0.03} />
       {legs4(1.1, 0.6, 0.37, C.ink, 0.025)}
       <Box size={[0.28, 0.04, 0.2]} position={[-0.25, 0.455, 0.02]} rotation={[0, 0.25, 0]} color={C.coral} />

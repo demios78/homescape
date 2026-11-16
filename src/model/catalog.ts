@@ -1194,6 +1194,7 @@ export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; lab
   desk: { min: 0.8, max: 2.6 },
   consoleTable: { min: 0.6, max: 2.2, label: t('Table length') },
   storageBench: { min: 0.8, max: 2, label: t('Bench length') },
+  coffeeTable: { min: 0.6, max: 1.8, label: t('Table length') },
   kitchenCounter: { min: 0.6, max: 4, label: t('Counter length') },
   tvUnit: { min: 0.8, max: 3.2, label: t('Unit length') },
   window: { min: 0.5, max: 3, label: t('Window width') },
@@ -1220,6 +1221,7 @@ export const RESIZABLE2: Partial<Record<ItemKind, { min: number; max: number; la
   kitchenCounter: { min: 1.2, max: 4, label: t('L arm length (from the corner)'), def: 1.8, onlyL: true },
   stairs: { min: 0, max: 3, label: t('Open well beside the stairs (right side)'), def: 0 },
   minifigClock: { min: 0.4, max: 1.2, label: t('Clock size'), def: 0.8 },
+  coffeeTable: { min: 0.4, max: 1.2, label: t('Table depth'), def: 0.6 },
   window: { min: 0.5, max: 2.3, label: t('Window height'), def: 1.2 },
   rug: { min: 0.5, max: 5, label: t('Rug length'), def: 1.8 },
   doormat: { min: 0.3, max: 1.5, label: t('Doormat length'), def: 0.45 },
@@ -1284,7 +1286,7 @@ export const frenchWidth = (it: DoorLike) => (it.kind === 'door' && it.variant =
 export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, number] {
   const [w, d] = CATALOG[kind].size
   // The second size only for kinds that use it as depth (ceiling strip, rug); the L arm of a counter is computed separately.
-  if (kind === 'ceilingStrip' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel') return [len ?? w, len2 ?? d]
+  if (kind === 'ceilingStrip' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel' || kind === 'coffeeTable') return [len ?? w, len2 ?? d]
   // A ceiling fan is round: the blade span in both directions
   if (kind === 'ceilingFan') return [len ?? w, len ?? d]
   // The minifigure clock is round: its diameter (Item.len2) is its width on the wall
