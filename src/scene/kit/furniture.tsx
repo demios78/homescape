@@ -1677,7 +1677,30 @@ export function DrawerUnit({ v }: { v: Visual }) {
   )
 }
 
-export function Chair() {
+/** Folding bistro chair (chair variant 'bistro'): black metal X frame, weathered wooden seat and back slats */
+function BistroChair() {
+  const iron = '#1d1e22'
+  const wood = '#9a8b78'
+  return (
+    <group>
+      {[-0.2, 0.2].map((x) => (
+        <group key={x}>
+          <Box size={[0.02, 0.86, 0.02]} position={[x, 0.43, 0.02]} rotation-x={0.22} color={iron} />
+          <Box size={[0.02, 0.5, 0.02]} position={[x, 0.24, -0.02]} rotation-x={-0.35} color={iron} />
+        </group>
+      ))}
+      {[-0.15, -0.05, 0.05, 0.15].map((z) => (
+        <Box key={z} size={[0.42, 0.018, 0.085]} position={[0, 0.45, z + 0.03]} color={wood} />
+      ))}
+      {[0.66, 0.78].map((y) => (
+        <Box key={y} size={[0.4, 0.07, 0.016]} position={[0, y, -0.15]} rotation-x={0.22} color={wood} />
+      ))}
+    </group>
+  )
+}
+
+export function Chair({ v }: { v: Visual }) {
+  if (v.opts.variant === 'bistro') return <BistroChair />
   return (
     <group>
       {legs4(0.44, 0.44, 0.44, C.ink, 0.022)}
@@ -1905,7 +1928,40 @@ export function Bookshelf() {
   )
 }
 
-export function Plant() {
+/** Cane plant (Item.variant 'cane', like a corn plant dracaena): two ringed trunks in a glazed teal pot, arching leaf rosettes */
+function CanePlant() {
+  const leaf = mat('#3f8f3a', { roughness: 0.6 })
+  const light = mat('#6bb04a', { roughness: 0.6 })
+  const head = (y: number, x: number, n: number, seed: number) => {
+    const r = rng(seed)
+    return Array.from({ length: n }, (_, i) => {
+      const a = (i / n) * Math.PI * 2 + r() * 0.4
+      const tilt = 0.5 + r() * 0.7
+      const len = 0.38 + r() * 0.2
+      return (
+        <group key={i} position={[x, y, 0]} rotation-y={a}>
+          <group rotation-z={-tilt}>
+            <Box size={[0.07, len, 0.008]} position={[0, len / 2, 0]} material={i % 3 ? leaf : light} shadow={false} />
+          </group>
+        </group>
+      )
+    })
+  }
+  return (
+    <group>
+      <Cyl r={0.2} rTop={0.19} h={0.06} position={[0, 0.03, 0]} color="#21524f" segments={24} />
+      <Cyl r={0.21} rTop={0.24} h={0.34} position={[0, 0.23, 0]} material={mat('#2e6f6a', { roughness: 0.25 })} segments={24} />
+      <Cyl r={0.2} h={0.02} position={[0, 0.39, 0]} color="#3b2a20" segments={24} shadow={false} />
+      <Cyl r={0.045} rTop={0.04} h={1.0} position={[-0.04, 0.9, 0]} color="#b49a78" segments={10} />
+      <Cyl r={0.035} rTop={0.03} h={0.55} position={[0.07, 0.67, 0.03]} color="#a88c6a" segments={10} />
+      {head(1.4, -0.04, 14, 3)}
+      {head(0.95, 0.07, 9, 7)}
+    </group>
+  )
+}
+
+export function Plant({ v }: { v: Visual }) {
+  if (v.opts.variant === 'cane') return <CanePlant />
   return (
     <group>
       <Cyl r={0.2} rTop={0.24} h={0.42} position={[0, 0.21, 0]} color={C.terracotta} />
@@ -2025,6 +2081,63 @@ export function RoundChair({ v }: { v: Visual }) {
       {[-1, 1].map((s) => (
         <Box key={s} size={[0.2, 0.38, 0.18]} position={[s * 0.3, 0.6, -0.26]} rotation-y={s * -0.5} rotation-x={-0.1} color={shade(fabric, 0.96)} radius={0.06} />
       ))}
+    </group>
+  )
+}
+
+/** Balloon back outline of the carved wingback (meters, x across, y up from the seat): wide crest, narrow waist (built once) */
+let balloonGeo: readonly [THREE.ExtrudeGeometry, THREE.ExtrudeGeometry] | null = null
+function balloonBack() {
+  if (!balloonGeo) {
+    const outline = (k: number) => {
+      const s = new THREE.Shape()
+      s.moveTo(-0.3 * k, 0)
+      s.bezierCurveTo(-0.3 * k, 0.25, -0.2 * k, 0.32, -0.26 * k, 0.55)
+      s.bezierCurveTo(-0.33 * k, 0.78, -0.3 * k, 0.9, 0, 0.92 + (k - 1) * 0.5)
+      s.bezierCurveTo(0.3 * k, 0.9, 0.33 * k, 0.78, 0.26 * k, 0.55)
+      s.bezierCurveTo(0.2 * k, 0.32, 0.3 * k, 0.25, 0.3 * k, 0)
+      s.closePath()
+      return s
+    }
+    const panel = new THREE.ExtrudeGeometry(outline(1), { depth: 0.1, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 3, curveSegments: 24 })
+    const frame = new THREE.ExtrudeGeometry(outline(1.1), { depth: 0.04, bevelEnabled: false, curveSegments: 24 })
+    balloonGeo = [panel, frame] as const
+  }
+  return balloonGeo
+}
+
+/**
+ * Carved wingback chair (like a Louis style balloon back wing chair): a tall upholstered back with a narrow waist, edged in
+ * carved dark wood with nailheads, curved wings sweeping into the arms, a deep seat cushion on a wood apron with turned
+ * legs, and a navy brocade pillow. Fabric Item.body; front +z.
+ */
+export function WingChair({ v }: { v: Visual }) {
+  const fabric = mat(v.opts.body ?? '#a9bcc4', { roughness: 0.6 })
+  const wood = mat('#4a2c1c', { roughness: 0.5 })
+  const brass = mat('#b08d57', { metalness: 0.6, roughness: 0.35 })
+  const [panel, frame] = balloonBack()
+  return (
+    <group>
+      {[-0.3, 0.3].flatMap((x) => [-0.28, 0.28].map((z) => <Cyl key={`${x}${z}`} r={0.025} rTop={0.03} h={0.2} position={[x, 0.1, z]} material={wood} segments={10} />))}
+      <Box size={[0.72, 0.08, 0.7]} position={[0, 0.22, 0.02]} material={wood} radius={0.02} />
+      <Box size={[0.7, 0.16, 0.7]} position={[0, 0.33, 0.03]} material={fabric} radius={0.05} />
+      <Box size={[0.58, 0.1, 0.56]} position={[0, 0.45, 0.08]} material={fabric} radius={0.05} />
+      <group position={[0, 0.42, -0.3]} rotation-x={-0.1}>
+        <mesh geometry={frame} material={wood} position={[0, -0.02, -0.03]} castShadow />
+        <mesh geometry={panel} material={fabric} castShadow receiveShadow />
+        {Array.from({ length: 18 }, (_, i) => {
+          const t = (i / 17) * Math.PI
+          return <Ball key={i} r={0.008} position={[Math.cos(t) * 0.3, 0.62 + Math.sin(t) * 0.3, 0.14]} material={brass} detail={0} shadow={false} />
+        })}
+      </group>
+      {/* wings: curved side panels from the back into the arms, wood edged */}
+      {[-1, 1].map((s) => (
+        <group key={s} position={[s * 0.33, 0.62, -0.08]} rotation-y={s * -0.35}>
+          <Box size={[0.08, 0.42, 0.42]} material={fabric} radius={0.04} />
+          <Box size={[0.03, 0.44, 0.03]} position={[s * 0.02, 0, 0.21]} material={wood} />
+        </group>
+      ))}
+      <Box size={[0.3, 0.3, 0.08]} position={[0, 0.66, -0.12]} rotation-x={-0.12} color="#1f2a44" radius={0.03} />
     </group>
   )
 }

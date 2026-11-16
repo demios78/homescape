@@ -45,6 +45,23 @@ export function Pendant({ v }: P) {
 
 export function FloorLamp({ v }: P) {
   const shade = useLitMaterial(C.sunPale, v.on, v.color, v.level, 0.9)
+  if (v.opts.variant === 'column') {
+    // tall table style lamp on the floor: white ceramic and brass column on a wood base, a tall cream drum shade
+    const brass = mat('#b08d57', { metalness: 0.6, roughness: 0.35 })
+    const white = mat('#f2efe8', { roughness: 0.25 })
+    return (
+      <group>
+        <Cyl r={0.16} h={0.04} position={[0, 0.02, 0]} color="#5a3a24" segments={24} />
+        <Cyl r={0.12} rTop={0.1} h={0.2} position={[0, 0.14, 0]} material={white} segments={24} />
+        <Ball r={0.11} detail={2} position={[0, 0.32, 0]} scale={[1, 0.8, 1]} material={white} />
+        <Cyl r={0.16} h={0.03} position={[0, 0.45, 0]} material={white} segments={24} shadow={false} />
+        <Cyl r={0.04} rTop={0.03} h={0.36} position={[0, 0.65, 0]} material={brass} segments={14} />
+        <Cyl r={0.06} h={0.05} position={[0, 0.86, 0]} material={brass} segments={14} shadow={false} />
+        <Cyl r={0.012} h={0.2} position={[0, 0.98, 0]} material={brass} segments={8} shadow={false} />
+        <Cyl r={0.24} rTop={0.22} h={0.5} position={[0, 1.3, 0]} material={shade} segments={36} shadow={false} />
+      </group>
+    )
+  }
   return (
     <group>
       <Cyl r={0.17} h={0.04} position={[0, 0.02, 0]} color={C.ink} />

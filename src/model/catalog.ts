@@ -85,6 +85,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   sofa: { label: t('Sofa'), group: 'furniture', domains: [], size: [2.2, 0.9], labelY: 1.1 },
   armchair: { label: t('Armchair'), group: 'furniture', domains: [], size: [0.9, 0.85], labelY: 1.1 },
   // Round swivel cuddle chair: a round seat with a low curved back, two pillows; fabric Item.body
+  // Carved wingback: a tall balloon back with a nailhead wood frame, wings, a seat cushion; fabric Item.body
+  wingChair: { label: t('Carved wingback chair'), group: 'furniture', domains: [], size: [0.8, 0.82], labelY: 1.45 },
   roundChair: { label: t('Round swivel chair'), group: 'furniture', domains: [], size: [1.05, 1.05], labelY: 1.0 },
   // Two-seat sofa with rolled arms and carved legs; fabric Item.variant (striped damask or plain in Item.body)
   loveseat: { label: t('Loveseat'), group: 'furniture', domains: [], size: [1.42, 0.82], labelY: 1.1 },
@@ -1037,6 +1039,40 @@ export const OPTIONS: Partial<
       [t('Beige'), '#cdbb9c'],
       [t('Green'), '#6f8a73'],
     ],
+  },
+  wingChair: {
+    body: t('Fabric color'),
+    bodyList: [
+      [t('Duck egg blue'), '#a9bcc4'],
+      [t('Sage gray'), '#8a9488'],
+      [t('Cream'), '#e9e0cc'],
+      [t('Red'), '#b8332f'],
+    ],
+    bodyDef: '#a9bcc4',
+  },
+  chair: {
+    variantLabel: t('Model'),
+    variants: [
+      ['plain', t('Plain')],
+      ['bistro', t('Folding bistro')],
+    ],
+    variantDef: 'plain',
+  },
+  plant: {
+    variantLabel: t('Plant'),
+    variants: [
+      ['bush', t('Bush')],
+      ['cane', t('Cane plant')],
+    ],
+    variantDef: 'bush',
+  },
+  floorLamp: {
+    variantLabel: t('Model'),
+    variants: [
+      ['modern', t('Modern')],
+      ['column', t('Column with drum shade')],
+    ],
+    variantDef: 'modern',
   },
   roundChair: {
     body: t('Fabric color'),

@@ -54,6 +54,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   storageBench: F.StorageBench,
   wickerWing: F.WickerWing,
   roundChair: F.RoundChair,
+  wingChair: F.WingChair,
   ironingBoard: F.IroningBoard,
   writingDesk: F.WritingDesk,
   bedsideChest: F.BedsideChest,

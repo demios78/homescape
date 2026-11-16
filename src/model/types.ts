@@ -191,6 +191,7 @@ export type ItemKind =
   | 'bedsideChest'
   | 'chevalMirror'
   | 'roundChair'
+  | 'wingChair'
   | 'minifigClock'
   | 'brickModel'
   | 'coffeeTable'
