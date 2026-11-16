@@ -1756,7 +1756,78 @@ export function PowerMeter({ v }: P) {
  * grate, bean hopper lid on top. When on the display lights up, a cup of coffee appears on the grate and thin steam rises
  * from it. Body color Item.body.
  */
+/**
+ * Compact brushed steel espresso machine (coffee machine variant 'bambino', like a Breville Bambino): a slim tall body with
+ * a domed top, two buttons each side of the logo band, a portafilter with a black handle, a steam wand on the right and a
+ * drip tray with a grate. On: an espresso glass under the spouts with steam.
+ */
+function Bambino({ v }: P) {
+  // brushed steel: low metalness, there is no environment map to reflect
+  const steel = mat('#d4d7dc', { metalness: 0.25, roughness: 0.35 })
+  const dark = mat('#26272b', { roughness: 0.5 })
+  const led = useLitMaterial('#d8dce2', v.on, '#ffffff', 0.9, 1.4)
+  return (
+    <group>
+      <Box size={[0.19, 0.03, 0.27]} position={[0, 0.015, 0.0]} material={dark} radius={0.008} />
+      <Box size={[0.19, 0.31, 0.15]} position={[0, 0.17, -0.06]} material={steel} radius={0.02} />
+      <Box size={[0.19, 0.07, 0.11]} position={[0, 0.28, 0.07]} material={steel} radius={0.02} />
+      <Box size={[0.16, 0.012, 0.11]} position={[0, 0.036, 0.075]} material={steel} shadow={false} />
+      {[-1, 1].flatMap((s) => [0.29, 0.265].map((y) => (
+        <Cyl key={`${s}${y}`} r={0.008} h={0.006} position={[s * 0.035, y, 0.126]} rotation-x={Math.PI / 2} material={led} segments={12} shadow={false} />
+      )))}
+      <Cyl r={0.03} h={0.025} position={[0, 0.235, 0.08]} material={steel} segments={20} />
+      <Cyl r={0.012} h={0.11} position={[0, 0.225, 0.15]} rotation-x={Math.PI / 2} material={dark} segments={10} />
+      <Cyl r={0.004} h={0.17} position={[0.075, 0.14, 0.1]} rotation-z={0.1} material={steel} segments={8} shadow={false} />
+      <Box size={[0.03, 0.02, 0.03]} position={[0.07, 0.235, 0.1]} material={dark} shadow={false} />
+      {v.on && (
+        <group position={[0, 0.042, 0.08]}>
+          <Cyl r={0.025} rTop={0.03} h={0.08} position={[0, 0.04, 0]} material={mat('#e6eef2', { opacity: 0.5, roughness: 0.05 })} segments={16} shadow={false} />
+          <Cyl r={0.024} h={0.03} position={[0, 0.02, 0]} color="#5a2e14" segments={16} shadow={false} />
+          <Mist active y={0.1} size={0.2} />
+        </group>
+      )}
+    </group>
+  )
+}
+
+/**
+ * Brushed steel burr grinder (coffee machine variant 'grinder', like a Breville Smart Grinder Pro): a tall clear bean hopper
+ * with a black lid and a dark center cone, a steel body with a blue backlit display and three dials, a size dial on the
+ * side, and a glass grounds container in the bay below. On: the display lights.
+ */
+function Grinder({ v }: P) {
+  // brushed steel: low metalness, there is no environment map to reflect
+  const steel = mat('#d4d7dc', { metalness: 0.25, roughness: 0.35 })
+  const dark = mat('#26272b', { roughness: 0.5 })
+  const screen = useLitMaterial('#3a5878', v.on, '#9fd0ff', 0.9, 1.6)
+  return (
+    <group>
+      <Box size={[0.17, 0.03, 0.2]} position={[0, 0.015, 0]} material={dark} radius={0.008} />
+      <Box size={[0.17, 0.27, 0.16]} position={[0, 0.17, -0.02]} material={steel} radius={0.02} />
+      <Box size={[0.12, 0.1, 0.06]} position={[0, 0.08, 0.07]} material={dark} />
+      <Cyl r={0.045} h={0.07} position={[0, 0.07, 0.07]} material={mat('#e6eef2', { opacity: 0.45, roughness: 0.05 })} segments={16} shadow={false} />
+      <Cyl r={0.04} h={0.035} position={[0, 0.055, 0.07]} color="#6b3e22" segments={16} shadow={false} />
+      <Box size={[0.12, 0.04, 0.005]} position={[0, 0.25, 0.062]} material={screen} shadow={false} />
+      {[-0.04, 0, 0.04].map((x) => (
+        <Cyl key={x} r={0.011} h={0.008} position={[x, 0.2, 0.063]} rotation-x={Math.PI / 2} material={steel} segments={14} shadow={false} />
+      ))}
+      <Cyl r={0.03} h={0.02} position={[0.092, 0.25, -0.02]} rotation-z={Math.PI / 2} material={steel} segments={16} shadow={false} />
+      <Cyl r={0.05} h={0.02} position={[0, 0.315, -0.02]} material={steel} segments={20} />
+      <Cyl r={0.075} rTop={0.085} h={0.15} position={[0, 0.4, -0.02]} material={mat('#d8dde2', { opacity: 0.35, roughness: 0.05 })} segments={24} shadow={false} />
+      <Cyl r={0.03} rTop={0.005} h={0.09} position={[0, 0.37, -0.02]} rotation-x={Math.PI} material={dark} segments={12} shadow={false} />
+      <Cyl r={0.088} h={0.02} position={[0, 0.485, -0.02]} material={dark} segments={24} />
+      <mesh position={[-0.07, 0.5, -0.07]} rotation-x={Math.PI / 2} geometry={torus(0.015, 0.004, 12)} material={dark} />
+    </group>
+  )
+}
+
 export function CoffeeMachine({ v }: P) {
+  if (v.opts.variant === 'bambino') return <Bambino v={v} />
+  if (v.opts.variant === 'grinder') return <Grinder v={v} />
+  return <DripMachine v={v} />
+}
+
+function DripMachine({ v }: P) {
   const body = bodyOf(v, '#2a2c33')
   const steel = mat('#c9ccd4', { metalness: 0.6, roughness: 0.3 })
   const led = useLitMaterial(C.screenOff, v.on, '#ffd27a', 0.9, 1.6)

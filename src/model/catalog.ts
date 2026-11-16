@@ -1048,6 +1048,15 @@ export const OPTIONS: Partial<
       [t('Emerald teal'), '#1d5560'],
     ],
   },
+  coffeeMachine: {
+    variantLabel: t('Model'),
+    variants: [
+      ['drip', t('Espresso machine')],
+      ['bambino', t('Compact espresso (steel)')],
+      ['grinder', t('Burr grinder')],
+    ],
+    variantDef: 'drip',
+  },
   wingChair: {
     body: t('Fabric color'),
     bodyList: [
