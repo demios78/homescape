@@ -332,7 +332,44 @@ function LoopCoaster({ lit }: M) {
   )
 }
 
+/**
+ * Lighthouse (like the motorized brick lighthouse): a dark blue baseplate with gray rocks, a grassy top, the keeper's house
+ * (cream stone, white walls, dark red roof), a tall white tower with windows, a black gallery and a clear lantern; a small
+ * white rowing boat at the dock. Lit: the lantern glows.
+ */
+function Lighthouse({ lit }: M) {
+  const white = '#f2f2ee'
+  return (
+    <group>
+      <Box size={[0.38, 0.012, 0.38]} position={[0, 0.006, 0]} color="#22304f" />
+      <Box size={[0.32, 0.09, 0.3]} position={[0.01, 0.055, -0.02]} color="#8a8f96" radius={0.02} />
+      <Box size={[0.24, 0.04, 0.22]} position={[-0.03, 0.12, -0.03]} color="#6b6f76" radius={0.015} />
+      <Box size={[0.3, 0.012, 0.28]} position={[0, 0.103, -0.02]} color="#7a8a52" />
+      {/* keeper's house */}
+      <Box size={[0.14, 0.1, 0.12]} position={[0.06, 0.16, 0.05]} color={white} />
+      <Box size={[0.145, 0.03, 0.125]} position={[0.06, 0.12, 0.05]} color="#d9c9a0" shadow={false} />
+      <group position={[0.06, 0.21, 0.05]}>
+        <Box size={[0.16, 0.012, 0.09]} position={[0, 0.02, -0.03]} rotation-x={0.6} color="#8c2a26" />
+        <Box size={[0.16, 0.012, 0.09]} position={[0, 0.02, 0.03]} rotation-x={-0.6} color="#8c2a26" />
+      </group>
+      {/* tower */}
+      <Cyl r={0.06} rTop={0.048} h={0.42} position={[-0.06, 0.32, -0.06]} color={white} segments={16} />
+      {[0.22, 0.32, 0.42].map((y) => (
+        <Box key={y} size={[0.018, 0.035, 0.008]} position={[-0.06, y, -0.008]} color="#3a3c40" shadow={false} />
+      ))}
+      <Cyl r={0.07} h={0.014} position={[-0.06, 0.535, -0.06]} color="#2a2b2e" segments={16} shadow={false} />
+      <Cyl r={0.04} h={0.07} position={[-0.06, 0.575, -0.06]} material={lit ? glowMat('#fff2c0', true) : mat('#dfe9f2', { opacity: 0.45, roughness: 0.05 })} segments={14} shadow={false} />
+      <Cyl r={0.046} rTop={0.01} h={0.03} position={[-0.06, 0.625, -0.06]} color="#1d1e22" segments={14} shadow={false} />
+      <Cyl r={0.002} h={0.05} position={[-0.06, 0.665, -0.06]} color="#1d1e22" segments={4} shadow={false} />
+      {lit && <Glow position={[-0.06, 0.575, -0.06]} color="#fff2c0" opacity={0.9} size={0.3} />}
+      {/* boat */}
+      <Box size={[0.1, 0.025, 0.04]} position={[-0.11, 0.025, 0.15]} rotation-y={0.4} color={white} radius={0.01} />
+    </group>
+  )
+}
+
 const MODELS: Record<string, (p: M) => JSX.Element> = {
+  lighthouse: Lighthouse,
   falcon: Falcon,
   xwing: XWing,
   tie: TieFighter,

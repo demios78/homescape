@@ -186,8 +186,43 @@ function ChaiseSofa({ v }: { v: Visual }) {
   )
 }
 
+/**
+ * Tufted velvet sofa (Item.variant 'tufted'): a low bench seat with button tufting, a low back and track arms at one
+ * height, tapered walnut legs with brass caps, loose back pillows (one patterned). Fabric Item.body (emerald teal default).
+ */
+function TuftedSofa({ v }: { v: Visual }) {
+  const fabric = mat(v.opts.body ?? '#1d5560', { roughness: 0.45 })
+  const dark = mat(shade(v.opts.body ?? '#1d5560', 0.7), { roughness: 0.5 })
+  const walnut = mat('#5a3420', { roughness: 0.5 })
+  const brass = mat('#c9a227', { metalness: 0.7, roughness: 0.3 })
+  return (
+    <group>
+      {[-0.95, 0, 0.95].flatMap((x) => [-0.32, 0.32].map((z) => (
+        <group key={`${x}${z}`}>
+          <Cyl r={0.022} rTop={0.03} h={0.15} position={[x, 0.09, z]} material={walnut} segments={10} />
+          <Cyl r={0.022} h={0.025} position={[x, 0.012, z]} material={brass} segments={10} shadow={false} />
+        </group>
+      )))}
+      <Box size={[2.2, 0.3, 0.88]} position={[0, 0.32, 0]} material={fabric} radius={0.04} />
+      {[-0.8, -0.4, 0, 0.4, 0.8].flatMap((x) => [-0.1, 0.18].map((z) => <Ball key={`${x}${z}`} r={0.012} position={[x, 0.47, z]} material={dark} detail={0} shadow={false} />))}
+      <Box size={[2.2, 0.32, 0.16]} position={[0, 0.62, -0.36]} material={fabric} radius={0.04} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.16, 0.32, 0.88]} position={[s * 1.02, 0.62, 0]} material={fabric} radius={0.04} />
+      ))}
+      {[-0.45, 0.45].map((x) => (
+        <Box key={x} size={[0.55, 0.5, 0.16]} position={[x, 0.72, -0.2]} rotation-x={-0.15} material={fabric} radius={0.07} />
+      ))}
+      {[-1, 1].map((s) => (
+        <Box key={`p${s}`} size={[0.14, 0.42, 0.42]} position={[s * 0.84, 0.62, 0.02]} rotation-z={s * 0.25} material={fabric} radius={0.06} />
+      ))}
+      <Box size={[0.42, 0.42, 0.12]} position={[0.05, 0.7, -0.08]} rotation-x={-0.18} color="#dfe8e0" radius={0.05} />
+    </group>
+  )
+}
+
 export function Sofa({ v }: { v: Visual }) {
   if (v.opts.variant === 'chaiseLeft' || v.opts.variant === 'chaiseRight') return <ChaiseSofa v={v} />
+  if (v.opts.variant === 'tufted') return <TuftedSofa v={v} />
   // Seat top at 0.49 m (a real sofa): a seated person's feet reach the floor; the back cushions keep them forward
   // (seats in model/people.ts, pose in scene/Human.tsx)
   return (
@@ -754,11 +789,69 @@ function LegoTable({ W, D }: { W: number; D: number }) {
   )
 }
 
+/** Scroll (C curl) of round iron bar in the item's local x/y plane, radius r, at (x, y), turning by the sign s */
+function Scroll({ x, y, z, r, s, iron }: { x: number; y: number; z: number; r: number; s: number; iron: THREE.Material }) {
+  return (
+    <mesh position={[x, y, z]} rotation-z={s > 0 ? 0 : Math.PI} material={iron} castShadow>
+      <torusGeometry args={[r, 0.008, 6, 20, Math.PI * 1.5]} />
+    </mesh>
+  )
+}
+
+/**
+ * Glass and iron tables (coffee table variants): 'glassOval' an oval clear glass top on a bronze iron base with scrolled
+ * legs and a ring stretcher; 'glassRect' a taller (0.6 m) rectangular glass end table on scrolled legs with acorn finials.
+ */
+function GlassTable({ W, D, oval }: { W: number; D: number; oval: boolean }) {
+  const iron = mat('#4a4438', { metalness: 0.5, roughness: 0.5 })
+  const glass = mat('#cfe3dc', { opacity: 0.28, roughness: 0.05 })
+  const H = oval ? 0.44 : 0.6
+  const legs: [number, number][] = [[-1, -1], [1, -1], [-1, 1], [1, 1]]
+  return (
+    <group>
+      {oval ? (
+        <group scale={[W / 2, 1, D / 2]}>
+          <Cyl r={1} h={0.012} position={[0, H - 0.006, 0]} material={glass} segments={48} shadow={false} />
+          <mesh position={[0, H - 0.04, 0]} rotation-x={Math.PI / 2} material={iron}>
+            <torusGeometry args={[0.86, 0.012, 6, 48]} />
+          </mesh>
+          <mesh position={[0, 0.12, 0]} rotation-x={Math.PI / 2} material={iron}>
+            <torusGeometry args={[0.6, 0.012, 6, 48]} />
+          </mesh>
+        </group>
+      ) : (
+        <>
+          <Box size={[W, 0.012, D]} position={[0, H - 0.006, 0]} material={glass} shadow={false} />
+          {[-1, 1].map((s) => (
+            <Box key={`a${s}`} size={[W - 0.12, 0.04, 0.025]} position={[0, H - 0.04, s * (D / 2 - 0.06)]} material={iron} />
+          ))}
+          {[-1, 1].map((s) => (
+            <Box key={`b${s}`} size={[0.025, 0.04, D - 0.12]} position={[s * (W / 2 - 0.06), H - 0.04, 0]} material={iron} />
+          ))}
+        </>
+      )}
+      {legs.map(([sx, sz]) => {
+        const lx = sx * (W / 2 - (oval ? 0.16 : 0.06))
+        const lz = sz * (D / 2 - (oval ? 0.1 : 0.06))
+        return (
+          <group key={`${sx}${sz}`}>
+            <Cyl r={0.014} h={H - 0.06} position={[lx, (H - 0.06) / 2, lz]} material={iron} segments={8} />
+            <Scroll x={lx - sx * 0.05} y={H - 0.12} z={lz} r={0.05} s={sx} iron={iron} />
+            <Scroll x={lx - sx * 0.05} y={0.14} z={lz} r={0.05} s={-sx} iron={iron} />
+            {!oval && <Ball r={0.03} position={[lx, H + 0.02, lz]} scale={[1, 1.4, 1]} material={mat('#8a7a52', { metalness: 0.5, roughness: 0.5 })} detail={1} />}
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
 export function CoffeeTable({ v }: { v: Visual }) {
   // Length Item.len, depth Item.len2 (catalog RESIZABLE, RESIZABLE2); the plain table is drawn at 1.1 × 0.6 m and scaled
   const W = v.opts.len ?? 1.1
   const D = v.opts.len2 ?? 0.6
   if (v.opts.variant === 'lego') return <LegoTable W={W} D={D} />
+  if (v.opts.variant === 'glassOval' || v.opts.variant === 'glassRect') return <GlassTable W={W} D={D} oval={v.opts.variant === 'glassOval'} />
   return (
     <group scale={[W / 1.1, 1, D / 0.6]}>
       <Box size={[1.1, 0.07, 0.6]} position={[0, 0.4, 0]} color={C.kraft} radius={0.03} />

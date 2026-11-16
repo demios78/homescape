@@ -453,6 +453,7 @@ export const BRICK_MODEL_SIZE: Record<string, [number, number]> = {
   helicarrier: [0.45, 0.3],
   concorde: [1.05, 0.43],
   coaster: [0.9, 0.32],
+  lighthouse: [0.38, 0.38],
 }
 /** Dark wood finishes (writing desk, nightstand, shutter mirror). */
 export const DARK_WOODS: [string, string][] = [
@@ -803,6 +804,7 @@ export const OPTIONS: Partial<
       ['helicarrier', t('Helicarrier')],
       ['concorde', t('Concorde')],
       ['coaster', t('Loop coaster')],
+      ['lighthouse', t('Lighthouse')],
     ],
     variantDef: 'falcon',
     variantLen: Object.fromEntries(Object.entries(BRICK_MODEL_SIZE).map(([k, s]) => [k, s[0]])),
@@ -1028,6 +1030,7 @@ export const OPTIONS: Partial<
       ['standard', t('Three seats')],
       ['chaiseLeft', t('Chaise left')],
       ['chaiseRight', t('Chaise right')],
+      ['tufted', t('Tufted velvet')],
     ],
     variantDef: 'standard',
     body: t('Fabric color'),
@@ -1038,6 +1041,7 @@ export const OPTIONS: Partial<
       [t('Navy'), '#2a3556'],
       [t('Beige'), '#cdbb9c'],
       [t('Green'), '#6f8a73'],
+      [t('Emerald teal'), '#1d5560'],
     ],
   },
   wingChair: {
@@ -1090,6 +1094,8 @@ export const OPTIONS: Partial<
     variants: [
       ['plain', t('Plain')],
       ['lego', t('Brick baseplates')],
+      ['glassOval', t('Oval glass on iron')],
+      ['glassRect', t('Glass end table on iron')],
     ],
     variantDef: 'plain',
   },
