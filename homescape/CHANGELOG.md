@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.25 (demios78 fork)
+
+- New: a carved wingback chair; chair, plant and floor lamp models (folding bistro, cane plant, column lamp).
+
 ## 0.2.1-dm.24 (demios78 fork)
 
 - Sofas can have a chaise (left or right) and a fabric color.
