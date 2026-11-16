@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.8 (demios78 fork)
+
+- Brick models light up while their bound switch or light is on (engines, cockpits, the Concorde's landing and
+  wingtip lights, bulbs along the coaster track), and can hang on the wall on a floating shelf.
+
 ## 0.2.1-dm.7 (demios78 fork)
 
 - New decor: brick display models (Millennium Falcon, X-wing, TIE fighter, U-wing, N-1 starfighter, Helicarrier,
