@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.11 (demios78 fork)
+
+- Doors can be French doors: a pair of white glazed leaves (2 x 5 panes each), 1-3 m wide.
+
 ## 0.2.1-dm.10 (demios78 fork)
 
 - Doors can be sliding closet doors: two white bypass panels, 1-3 m wide, no swing area.
