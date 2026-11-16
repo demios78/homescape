@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.17 (demios78 fork)
+
+- Stairwell railings stop where a wall begins.
+
 ## 0.2.1-dm.16 (demios78 fork)
 
 - Stairs can have an open well beside them; railings follow the opening and skip edges under an upper flight.
