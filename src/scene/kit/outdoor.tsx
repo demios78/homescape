@@ -2361,16 +2361,9 @@ function wallShelfGeometry() {
     const stuff: Part[] = []
     const n = 5
     const h = (WS_Y1 - WS_Y0) / n
-    // Two full height side panels with the shelves set in between them; the panel fronts get a slightly darker edge so
-    // the sides read against a white wall or window frame
-    const SIDE = 0.045
-    for (const s of [-1, 1]) {
-      frame.push({ g: boxG(SIDE, WS_Y1 - WS_Y0 + 0.05, WS_D), p: [s * (WS_W / 2 - SIDE / 2), (WS_Y0 + WS_Y1) / 2, 0], c: '#ecebe6' })
-      frame.push({ g: boxG(SIDE + 0.002, WS_Y1 - WS_Y0 + 0.05, 0.004), p: [s * (WS_W / 2 - SIDE / 2), (WS_Y0 + WS_Y1) / 2, WS_D / 2], c: '#cfcdc6' })
-    }
-    for (let i = 0; i <= n; i++) frame.push({ g: boxG(WS_W - SIDE * 2, 0.05, WS_D - 0.01), p: [0, WS_Y0 + i * h, -0.005], c: white })
-    // a thin back panel so the compartments read as boxes
-    frame.push({ g: boxG(WS_W - SIDE * 2, WS_Y1 - WS_Y0, 0.008), p: [0, (WS_Y0 + WS_Y1) / 2, -WS_D / 2 + 0.004], c: '#f0efea' })
+    // Open sides: the shelves are held by a thin back panel only
+    for (let i = 0; i <= n; i++) frame.push({ g: boxG(WS_W, 0.05, WS_D - 0.01), p: [0, WS_Y0 + i * h, -0.005], c: white })
+    frame.push({ g: boxG(WS_W, WS_Y1 - WS_Y0, 0.008), p: [0, (WS_Y0 + WS_Y1) / 2, -WS_D / 2 + 0.004], c: '#f0efea' })
     const shelf = (i: number) => WS_Y0 + i * h + 0.025
     // bottom two: books lying in stacks
     const r = rng(23)
@@ -2412,8 +2405,8 @@ function wallShelfGeometry() {
 }
 
 /**
- * Tall wall shelf (like an IKEA LACK wall shelf unit hung upright): a slim white box 30 cm wide and 26 cm deep with five
- * open compartments from 0.65 to 2.45 m, holding stacked books, a cloth doll, a brick A-frame cabin and brick trees.
+ * Tall wall shelf (like an IKEA LACK wall shelf unit hung upright): a slim white unit 30 cm wide and 26 cm deep, open at
+ * the sides (shelves on a thin back), with five compartments from 0.65 to 2.45 m, holding stacked books, a cloth doll, a brick A-frame cabin and brick trees.
  * It may hang over the edge of a window (it stands in the floor layer, nothing below it). Back against the wall.
  */
 export function WallShelfUnit() {
