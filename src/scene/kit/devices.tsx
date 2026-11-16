@@ -1294,6 +1294,7 @@ function doorState(v: Visual) {
  * Sliding closet door (Item.variant 'sliding'): two white bypass panels on two tracks in a frame as wide as Item.len, each a
  * little over half the opening, with recessed panels and a finger pull. Open (a bound door sensor, or someone passing): the
  * front panel slides over the back one. Without a sensor it is drawn closed. The hinge setting picks which panel is in front.
+ * Item.body colors the panels (plain, slightly glossy: frosted or mirrored doors).
  */
 function SlidingDoor({ v }: P) {
   const root = useRef<THREE.Group>(null)
@@ -1319,12 +1320,16 @@ function SlidingDoor({ v }: P) {
   useWallHeight(root, v.interior, (h) => {
     if (tall.current) tall.current.scale.y = Math.max(0.02, h / FULL_H)
   })
+  // Panel color Item.body (white by default; frosted grey mirror-like panels have no raised panels)
+  const color = v.opts.body ?? C.white
+  const plain = Boolean(v.opts.body)
   const panel = (key: string) => (
     <group key={key}>
-      <Box size={[pw, 2.1, 0.03]} position={[0, 1.07, 0]} color={C.white} radius={0.008} />
-      {[0.62, 1.55].map((y, i) => (
-        <Box key={y} size={[pw - 0.16, i ? 0.95 : 0.7, 0.006]} position={[0, y, 0.016]} color={C.offWhite} shadow={false} />
-      ))}
+      <Box size={[pw, 2.1, 0.03]} position={[0, 1.07, 0]} material={plain ? mat(color, { roughness: 0.25, metalness: 0.2 }) : mat(color)} radius={0.008} />
+      {!plain &&
+        [0.62, 1.55].map((y, i) => (
+          <Box key={y} size={[pw - 0.16, i ? 0.95 : 0.7, 0.006]} position={[0, y, 0.016]} color={C.offWhite} shadow={false} />
+        ))}
       <Box size={[0.025, 0.12, 0.004]} position={[pw / 2 - 0.06, 1.0, 0.017]} color={C.inkSoft} shadow={false} />
     </group>
   )
