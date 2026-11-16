@@ -529,6 +529,8 @@ export const OPTIONS: Partial<
       bodyList?: [string, string][]
       drawers?: boolean
       shape?: boolean
+      /** Window style buttons (Item.sash) */
+      sash?: boolean
       corner?: boolean
       variants?: [string, string][]
       variantLabel?: string
@@ -585,12 +587,14 @@ export const OPTIONS: Partial<
     variantLabel: t('Curtain'),
     variants: [
       ['curtain', t('Drapes')],
+      ['pleated', t('Pleated drapes')],
       ['roller', t('Roller blind')],
       ['zebra', t('Zebra blind')],
       ['blinds', t('Venetian blind')],
       ['none', t('None')],
     ],
     variantDef: 'curtain',
+    sash: true,
     body: t('Curtain color'),
     note: t('Bind the curtain motor (Home Assistant cover) to this window: its open percentage (current_position) opens and closes the curtain; the slat angle of a venetian blind and the stripe alignment of a zebra blind follow current_tilt_position. With a window sensor bound, the sash opens.'),
   },

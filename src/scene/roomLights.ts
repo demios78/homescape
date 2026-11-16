@@ -308,10 +308,10 @@ function shadePass(win: Item, entities: Record<string, HassEntity>) {
     .map((id) => entities[id])
     .find((e) => e?.entity_id.startsWith('cover.'))
   const at = Number(cover?.attributes.current_position)
-  const pos = cover ? (Number.isFinite(at) ? at : cover.state === 'open' ? 100 : 0) / 100 : type === 'curtain' ? 0.9 : type === 'roller' ? 0.75 : 0
+  const pos = cover ? (Number.isFinite(at) ? at : cover.state === 'open' ? 100 : 0) / 100 : type === 'curtain' || type === 'pleated' ? 0.9 : type === 'roller' ? 0.75 : 0
   const t = Number(cover?.attributes.current_tilt_position)
   const tilt = Number.isFinite(t) ? t / 100 : 1
-  if (type === 'curtain') return 0.12 + 0.88 * pos
+  if (type === 'curtain' || type === 'pleated') return 0.12 + 0.88 * pos
   if (type === 'roller') return 0.08 + 0.92 * pos
   // venetian blind: passes between horizontal slats; zebra blind: through the sheer stripes
   if (type === 'blinds') return pos + (1 - pos) * (0.05 + 0.7 * tilt)

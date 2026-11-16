@@ -1531,6 +1531,30 @@ function CurtainPanel({ fabric, fold, h }: { fabric: string; fold: string; h: nu
     </>
   )
 }
+/**
+ * Pinch pleated drape for one side, drawn 1 m wide (the group scale sets the width): the outer half in the patterned
+ * fabric (a darker diamond weave as stripes), the inner half plain linen; pleat bundles along the heading.
+ */
+const LINEN = '#d9c9a6'
+function PleatPanel({ outer, h }: { outer: string; h: number }) {
+  const dark = useMemo(() => darker(outer, 0.78), [outer])
+  return (
+    <>
+      <Box size={[0.5, h, 0.05]} position={[-0.25, 0, 0]} color={outer} radius={0.015} />
+      {[-0.42, -0.25, -0.08].map((x) => (
+        <Box key={x} size={[0.05, h - 0.02, 0.055]} position={[x, 0, 0.002]} color={dark} shadow={false} />
+      ))}
+      <Box size={[0.5, h, 0.045]} position={[0.25, 0, 0.004]} color={LINEN} radius={0.015} />
+      {[0.12, 0.38].map((x) => (
+        <Box key={x} size={[0.04, h - 0.02, 0.05]} position={[x, 0, 0.006]} color={darker(LINEN, 0.9)} shadow={false} />
+      ))}
+      {[-0.4, -0.2, 0, 0.2, 0.4].map((x) => (
+        <Box key={x} size={[0.05, 0.1, 0.07]} position={[x, h / 2 - 0.07, 0.01]} color={x < 0 ? dark : darker(LINEN, 0.88)} shadow={false} />
+      ))}
+    </>
+  )
+}
+
 const darker = (hex: string, k = 0.82) => `#${new THREE.Color(hex).multiplyScalar(k).getHexString()}`
 
 /**
@@ -1546,7 +1570,8 @@ function Shade({ v, W, B, T, yoff }: P & { W: number; B: number; T: number; yoff
   const cover = coverOf(v)
   const fabric = v.opts.body ?? C.brandLight
   const fold = useMemo(() => darker(fabric), [fabric])
-  const open = cover ? cover.pos / 100 : type === 'curtain' ? 0.9 : type === 'roller' ? 0.75 : 0
+  const drapes = type === 'curtain' || type === 'pleated'
+  const open = cover ? cover.pos / 100 : drapes ? 0.9 : type === 'roller' ? 0.75 : 0
   const tilt = cover?.tilt != null ? cover.tilt / 100 : 1
   const left = useRef<THREE.Group>(null)
   const right = useRef<THREE.Group>(null)
@@ -1563,7 +1588,7 @@ function Shade({ v, W, B, T, yoff }: P & { W: number; B: number; T: number; yoff
   useFollow(
     open,
     (f) => {
-      if (type === 'curtain') {
+      if (drapes) {
         // Closed, the two panels meet in the middle; open, they gather at the sides (attached to the rod ends).
         const ow = 0.12 + 0.035 * W
         const w = ow + (1 - f) * (W / 2 + 0.12 - ow)
@@ -1616,6 +1641,30 @@ function Shade({ v, W, B, T, yoff }: P & { W: number; B: number; T: number; yoff
   )
 
   if (type === 'none') return null
+  if (type === 'pleated') {
+    // Pinch pleated panels on a dark rod high above the window, down to the floor: each side a patterned outer panel
+    // (Item.body) and a plain linen inner panel
+    const top = T + 0.2
+    const bottom = 0.02 - yoff
+    const ph = top - bottom
+    const cy = (top + bottom) / 2
+    return (
+      <group>
+        <Cyl r={0.014} h={W + 0.7} position={[0, T + 0.26, 0.04]} rotation-z={Math.PI / 2} color="#3a2f26" segments={10} shadow={false} />
+        {[-1, 1].map((s) => (
+          <Ball key={s} r={0.03} position={[s * (W / 2 + 0.36), T + 0.26, 0.04]} color="#3a2f26" detail={1} shadow={false} />
+        ))}
+        <group ref={left} position={[-anchor + 0.3, cy, 0]}>
+          <PleatPanel outer={fabric} h={ph} />
+        </group>
+        <group ref={right} position={[anchor - 0.3, cy, 0]}>
+          <group scale-x={-1}>
+            <PleatPanel outer={fabric} h={ph} />
+          </group>
+        </group>
+      </group>
+    )
+  }
   if (type === 'curtain') {
     // Rod 10 cm above the top edge; panels from below the rod to 23 cm below the sill (2 cm above the floor for a floor-to-ceiling window)
     const top = T + 0.07
@@ -1704,6 +1753,79 @@ function Shade({ v, W, B, T, yoff }: P & { W: number; B: number; T: number; yoff
  * down by Item.y; 8 cm above the floor for a floor-to-ceiling window). The wall opening has the same size (geometry.ts >
  * apertureOf). A sill only when the bottom edge is more than 30 cm above the floor.
  */
+/** Muntin grid on a sash pane: cols × rows panes (white bars) */
+function Grid({ w, h, cols, rows, y, z }: { w: number; h: number; cols: number; rows: number; y: number; z: number }) {
+  return (
+    <>
+      {Array.from({ length: cols - 1 }, (_, i) => (
+        <Box key={`c${i}`} size={[0.018, h, 0.02]} position={[-w / 2 + (w * (i + 1)) / cols, y, z]} color={C.white} shadow={false} />
+      ))}
+      {Array.from({ length: rows - 1 }, (_, i) => (
+        <Box key={`r${i}`} size={[w, 0.018, 0.02]} position={[0, y - h / 2 + (h * (i + 1)) / rows, z]} color={C.white} shadow={false} />
+      ))}
+    </>
+  )
+}
+
+/**
+ * Painted wooden double-hung window (Item.sash 'hung' | 'shutters'): a wide white casing on the inside, two sashes with a
+ * muntin grid (the upper one outside, the lower one inside); a bound window sensor slides the lower sash up. 'shutters'
+ * adds two black raised-panel shutters on the outside of an exterior wall.
+ */
+function HungSashes({ v, W, B, H, glass }: P & { W: number; B: number; H: number; glass: THREE.Material }) {
+  const lower = useRef<THREE.Group>(null)
+  const sh = H / 2 + 0.02
+  const target = sashOpen(v) ? H * 0.4 : 0
+  const invalidate = useThree((s) => s.invalidate)
+  useEffect(() => invalidate(), [target, invalidate])
+  useFrame((state, dt) => {
+    const g = lower.current
+    if (!g) return
+    const d = target - g.position.y
+    if (Math.abs(d) < 0.0005) return
+    g.position.y += d * Math.min(1, dt * 5)
+    markShadows(1)
+    state.invalidate()
+  })
+  const cols = W >= 0.9 ? 4 : 3
+  const rows = 3
+  const sw = W - 0.08
+  const pane = (y: number, z: number) => (
+    <>
+      <Box size={[sw - 0.1, sh - 0.1, 0.008]} position={[0, y, z]} material={glass} shadow={false} />
+      <Box size={[sw, 0.05, 0.04]} position={[0, y + sh / 2 - 0.025, z]} color={C.white} shadow={false} />
+      <Box size={[sw, 0.06, 0.04]} position={[0, y - sh / 2 + 0.03, z]} color={C.white} shadow={false} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.05, sh, 0.04]} position={[s * (sw / 2 - 0.025), y, z]} color={C.white} shadow={false} />
+      ))}
+      <Grid w={sw - 0.1} h={sh - 0.1} cols={cols} rows={rows} y={y} z={z} />
+    </>
+  )
+  const shutterW = Math.min(0.5, W * 0.42)
+  const outer = EDGE_Z - 0.065
+  return (
+    <>
+      {pane(B + H * 0.75, EDGE_Z - 0.02)}
+      <group ref={lower}>{pane(B + H * 0.25, EDGE_Z + 0.03)}</group>
+      {/* inside casing: wide white trim around the opening on the inner wall face */}
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.09, H + 0.18, 0.02]} position={[s * (W / 2 + 0.045), B + H / 2 + 0.03, EDGE_Z + WALL_IN + 0.01]} color={C.white} shadow={false} />
+      ))}
+      <Box size={[W + 0.36, 0.1, 0.03]} position={[0, B + H + 0.1, EDGE_Z + WALL_IN + 0.015]} color={C.white} shadow={false} />
+      {v.opts.sash === 'shutters' &&
+        !v.interior &&
+        [-1, 1].map((s) => (
+          <group key={s} position={[s * (W / 2 + 0.06 + shutterW / 2), B + H / 2, outer]}>
+            <Box size={[shutterW, H + 0.04, 0.03]} color="#1f2226" />
+            {[H * 0.27, -H * 0.2].map((y, i) => (
+              <Box key={y} size={[shutterW - 0.1, i ? H * 0.5 : H * 0.36, 0.012]} position={[0, y, -0.018]} color="#2b2f34" shadow={false} />
+            ))}
+          </group>
+        ))}
+    </>
+  )
+}
+
 export function Window({ v }: P) {
   const root = useRef<THREE.Group>(null)
   const full = useRef<THREE.Group>(null)
@@ -1714,6 +1836,7 @@ export function Window({ v }: P) {
   const yoff = v.at?.y ?? 0
   const gw = W - 0.06
   const gh = H - 0.06
+  const hung = v.opts.sash === 'hung' || v.opts.sash === 'shutters'
   // The sash opens into the room by default (negative rotation toward local +z, into the room); only with a window sensor.
   const sash = useEased(sashOpen(v) ? -0.5 : 0)
   // With a low wall the window is hidden; a thin glass line on top of the low wall stands in for it (floor plan mark).
@@ -1736,17 +1859,21 @@ export function Window({ v }: P) {
         <Box size={[W + 0.04, 0.06, 0.22]} position={[0, T, EDGE_Z]} color={C.white} />
         <Box size={[0.06, H, 0.22]} position={[-W / 2, B + H / 2, EDGE_Z]} color={C.white} />
         <Box size={[0.06, H, 0.22]} position={[W / 2, B + H / 2, EDGE_Z]} color={C.white} />
-        <Mirror x={v.hingeRight} z={v.swingOut}>
-          <group ref={sash} position={[-gw / 2, 0, EDGE_Z + 0.04]}>
-            <Box size={[gw, gh, 0.025]} position={[gw / 2, B + H / 2, 0]} material={glass} shadow={false} />
-            <Box size={[0.03, gh, 0.035]} position={[gw / 2, B + H / 2, 0]} color={C.white} shadow={false} />
-          </group>
-        </Mirror>
+        {hung ? (
+          <HungSashes v={v} W={W} B={B} H={H} glass={glass} />
+        ) : (
+          <Mirror x={v.hingeRight} z={v.swingOut}>
+            <group ref={sash} position={[-gw / 2, 0, EDGE_Z + 0.04]}>
+              <Box size={[gw, gh, 0.025]} position={[gw / 2, B + H / 2, 0]} material={glass} shadow={false} />
+              <Box size={[0.03, gh, 0.035]} position={[gw / 2, B + H / 2, 0]} color={C.white} shadow={false} />
+            </group>
+          </Mirror>
+        )}
         {B + yoff > 0.3 && <Box size={[W + 0.3, 0.04, 0.2]} position={[0, B - 0.03, EDGE_Z + WALL_IN + 0.1]} color={C.white} />}
         <Shade v={v} W={W} B={B} T={T} yoff={yoff} />
       </group>
       {/* Sash swing direction in edit mode: outline arc on the floor (visible when the wall is low too) */}
-      {v.edit && (
+      {v.edit && !hung && (
         <Mirror x={v.hingeRight} z={v.swingOut}>
           <SwingArc at={[-gw / 2, 0.014 - yoff, EDGE_Z + 0.04]} r={gw - 0.04} strong outline />
         </Mirror>

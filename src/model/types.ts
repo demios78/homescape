@@ -289,6 +289,8 @@ export interface Item {
   fedAt?: string
   /** Shape option: shower cabin square or round (quarter circle) */
   shape?: 'square' | 'round'
+  /** Window style: 'casement' (default, one sash swinging in) | 'hung' (painted wooden double-hung, sliding sashes with a grid) | 'shutters' (double-hung with black shutters outside) */
+  sash?: 'casement' | 'hung' | 'shutters'
   /** Kind-specific option (catalog OPTIONS.variants): TV 'stand' (on a unit/table) | 'wall' (on the wall), mirror 'tall' | 'small', oven 'under' | 'tall', counter 'straight' | 'lLeft' | 'lRight', power strip '2'...'8' (outlets), rug 'rect' | 'round' | 'cowhide' | 'zebra' | 'sheep' (shape), ceiling fan '3' | '4' | '5' (blades) */
   variant?: string
   /** Second size: arm length of an L counter (from the back wall), depth (length) of a ceiling LED strip and of a rug */

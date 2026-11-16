@@ -45,6 +45,7 @@ export interface ItemOpts {
   body?: string
   fedAt?: string
   shape?: 'square' | 'round'
+  sash?: 'casement' | 'hung' | 'shutters'
   variant?: string
   len2?: number
   led?: 'none' | 'under' | 'plinth' | 'back' | 'strip'

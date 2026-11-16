@@ -694,6 +694,24 @@ function FurnitureOptions({ item }: { item: Item }) {
             </div>
           )
         })()}
+      {opt?.sash && (
+        <div className="grid gap-1.5">
+          <span className="text-[12px] font-semibold text-ink-2">{t('Window style')}</span>
+          <div className="grid grid-cols-3 gap-1.5">
+            {(
+              [
+                ['casement', t('Casement')],
+                ['hung', t('Double-hung')],
+                ['shutters', t('With shutters')],
+              ] as const
+            ).map(([k, label]) => (
+              <button key={k} type="button" className={seg((item.sash ?? 'casement') === k)} onClick={() => updateItem(item.id, { sash: k })}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {opt?.shape && (
         <div className="grid gap-1.5">
           <span className="text-[12px] font-semibold text-ink-2">{t('Shape')}</span>
