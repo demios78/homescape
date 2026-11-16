@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.24 (demios78 fork)
+
+- Sofas can have a chaise (left or right) and a fabric color.
+- New: a round swivel cuddle chair and a ginger jar table lamp.
+
 ## 0.2.1-dm.23 (demios78 fork)
 
 - New furniture: a display bookcase full of brick models, with model lights and a grow light.
