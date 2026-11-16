@@ -163,5 +163,22 @@ export function railEdges(w: Stairwell, room: Rect[]): { a: Pt; b: Pt }[] {
     return !inside(mx + nx, mz + nz) || !inside(mx - nx, mz - nz)
   }
   // Without a room (walk mode collision) all edges
-  return sides.filter(([, a, b]) => !room.length || !onWall(a, b)).map(([, a, b]) => ({ a, b }))
+  if (!room.length) return sides.map(([, a, b]) => ({ a, b }))
+  // Checked in 10 cm pieces, so an edge that runs partly along a wall (an L-shaped room) keeps its railing only where it is open
+  const out: { a: Pt; b: Pt }[] = []
+  for (const [, a, b] of sides) {
+    const len = Math.hypot(b.x - a.x, b.z - a.z)
+    const n = Math.max(1, Math.round(len / 0.1))
+    const at = (t: number): Pt => ({ x: a.x + ((b.x - a.x) * t) / n, z: a.z + ((b.z - a.z) * t) / n })
+    let start = -1
+    for (let i = 0; i <= n; i++) {
+      const open = i < n && !onWall(at(i), at(i + 1))
+      if (open && start < 0) start = i
+      if (!open && start >= 0) {
+        if (i - start >= 1 && (i - start) * (len / n) > 0.05) out.push({ a: at(start), b: at(i) })
+        start = -1
+      }
+    }
+  }
+  return out
 }
