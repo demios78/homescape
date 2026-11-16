@@ -13,7 +13,7 @@ import { itemName, itemStateLabel } from '@/ui/Bindings'
 import { cameraApi, useView } from './camera'
 import { useBins } from './bins'
 import { OPENS } from '@/model/containers'
-import { railEdges, stairwellsOf } from '@/model/stairwell'
+import { closetSides, railEdges, stairwellsOf } from '@/model/stairwell'
 import { ACTIVE_LEVEL, buildColliders, EYE, indoorAt, resolve, RUN, spawnPoint, stairHeight, touchInput, useFps, WALK } from './fps'
 import { quickTarget } from '@/ui/quickState'
 
@@ -67,7 +67,7 @@ function FpsRig() {
   // The stairwell edges other than the arrival end act like walls (model/stairwell.ts)
   const colliders = useMemo(() => {
     if (!level) return { segs: [], boxes: [] }
-    const rails = stairwellsOf(levels ?? [], level).flatMap((w) => railEdges(w, []))
+    const rails = stairwellsOf(levels ?? [], level).flatMap((w) => (w.closet ? closetSides(w) : railEdges(w, [])))
     return buildColliders(level, rails)
   }, [level, levels])
   const st = useRef({ x: 0, z: 0, yaw: 0, pitch: -0.05, h: 0, stride: 0, foot: 0, aimAt: 0, placed: false, keys: new Set<string>() })

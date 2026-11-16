@@ -591,7 +591,7 @@ export function RoomMesh({ room, level: fixed, still: stillProp }: { room: Room;
       })}
       {/* Stairwell railing (except the arrival end and edges along a wall) */}
       {wells
-        .filter((w) => inRoom(room, w.r.x + w.r.w / 2, w.r.z + w.r.d / 2))
+        .filter((w) => !w.closet && inRoom(room, w.r.x + w.r.w / 2, w.r.z + w.r.d / 2))
         .map((w) => (
           <StairwellRail key={w.id} edges={railEdges(w, rects)} />
         ))}

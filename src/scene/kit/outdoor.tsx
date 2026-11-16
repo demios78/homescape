@@ -2236,6 +2236,10 @@ function stairsGeometry() {
     ])
     const plate = new THREE.ExtrudeGeometry(side, { depth: 0.05, bevelEnabled: false }).rotateY(-Math.PI / 2)
     const stringers = merge([{ g: plate, p: [-0.45, 0, 0] }, { g: plate, p: [0.5, 0, 0] }])
+    // walls under both stringers down to the floor (closed underneath): a closet under the stairs
+    const under = new THREE.Shape([new THREE.Vector2(1.3, 0), new THREE.Vector2(-1.6, 2.62), new THREE.Vector2(-1.6, 0)])
+    const panel = new THREE.ExtrudeGeometry(under, { depth: 0.04, bevelEnabled: false }).rotateY(-Math.PI / 2)
+    const closet = merge([{ g: panel, p: [-0.455, 0, 0] }, { g: panel, p: [0.495, 0, 0] }])
     // railing: newel posts at the bottom and top, sloped handrail, one baluster per step
     const x = 0.46
     const y0 = 1.08
@@ -2252,22 +2256,24 @@ function stairsGeometry() {
       const z = STAIR_L / 2 - (i + 0.5) * RUN
       rail.push(rod([x, (i + 1) * RISE, z], [x, railY(z), z], 0.012, C.white, 6))
     }
-    return { treads: merge(treads, true), risers: merge(risers), stringers, rail: merge(rail) }
+    return { treads: merge(treads, true), risers: merge(risers), stringers, closet, rail: merge(rail) }
   })
 }
 
 /**
  * Stairs (1 × 3.2 m): 14 steps from the first step at the +z end up to 2.8 m (the floor height) at the -z end; wooden
  * treads (woodGrainTexture), white risers and stringers, railing on the +x side (newel posts, handrail, balusters).
- * Repeated parts are merged: four meshes in total.
+ * Item.variant 'closed': walls under both sides down to the floor (a closet under the stairs; a stairwell from the level
+ * below that lies under them gets no railing, model/stairwell.ts). Repeated parts are merged: four or five meshes.
  */
-export function Stairs() {
+export function Stairs({ v }: P) {
   const g = stairsGeometry()
   return (
     <group>
       <M g={g.treads} m={woodMat(C.kraft)} />
       <M g={g.risers} m={mat(C.offWhite)} />
       <M g={g.stringers} m={mat(C.white)} />
+      {v.opts.variant === 'closed' && <M g={g.closet} m={mat(C.wall)} />}
       <M g={g.rail} m={vcMat(0.6)} />
     </group>
   )

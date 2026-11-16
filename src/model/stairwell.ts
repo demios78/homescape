@@ -13,6 +13,11 @@ export interface Stairwell {
   r: Rect
   /** Arrival edge (top of the stairs): no railing */
   open: Side
+  /**
+   * The hole lies under stairs on this level that are closed underneath (Item.variant 'closed'): a closet under the
+   * stairs, as with basement stairs below the main stairs. No railing is drawn; in the walk only its long sides block.
+   */
+  closet?: boolean
 }
 
 const HALF_W = 0.55
@@ -29,11 +34,29 @@ export function stairFootprint(it: Item): Stairwell {
   return { id: it.id, r: { x: it.x - hx, z: it.z - hz, w: hx * 2, d: hz * 2 }, open }
 }
 
+/** Overlap area of two rectangles */
+const overlap = (a: Rect, b: Rect) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.z + a.d, b.z + b.d) - Math.max(a.z, b.z))
+
 /** Holes in this level's floor opened by the stairs on the level right below */
 export function stairwellsOf(levels: Level[], level: Level): Stairwell[] {
   const e = level.elevation ?? 0
   const below = levels.find((l) => (l.elevation ?? 0) === e - 1)
-  return below ? below.items.filter((it) => it.kind === 'stairs').map(stairFootprint) : []
+  if (!below) return []
+  const closed = level.items.filter((it) => it.kind === 'stairs' && it.variant === 'closed').map((it) => stairFootprint(it).r)
+  return below.items
+    .filter((it) => it.kind === 'stairs')
+    .map((it) => {
+      const w = stairFootprint(it)
+      return closed.some((r) => overlap(r, w.r) > 0.5 * w.r.w * w.r.d) ? { ...w, closet: true } : w
+    })
+}
+
+/** The long sides of a hole (parallel to its stairs): the walls of a closet under the stairs */
+export function closetSides(w: Stairwell) {
+  const { x, z, w: W, d: D } = w.r
+  return w.open === 't' || w.open === 'b'
+    ? [{ a: { x, z }, b: { x, z: z + D } }, { a: { x: x + W, z }, b: { x: x + W, z: z + D } }]
+    : [{ a: { x, z }, b: { x: x + W, z } }, { a: { x, z: z + D }, b: { x: x + W, z: z + D } }]
 }
 
 /** Holes in the ceiling opened by this level's stairs */

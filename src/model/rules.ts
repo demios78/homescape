@@ -323,6 +323,8 @@ export function checkItem(level: Level, cand: Cand, ignoreId?: string, onWall = 
     const name = it.name || CATALOG[it.kind].label
     if (it.kind === 'ceilingStrip') continue
     if (cand.kind === 'door' || it.kind === 'door') {
+      // A door may open onto stairs (a basement door at the top of the basement stairs)
+      if (cand.kind === 'stairs' || it.kind === 'stairs') continue
       if (FREE_NEAR_DOOR.includes(layerOf(it.kind, it.y, it.variant, it.mount)) || FREE_NEAR_DOOR.includes(layer)) continue
       const a = cand.kind === 'door' ? [doorZone(cand.x, cand.z, cand.rot, cand.swing)] : boxes
       const b = it.kind === 'door' ? [doorZone(it.x, it.z, it.rot, it.swing)] : footprints(it, 0.04)
