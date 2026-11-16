@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.15 (demios78 fork)
+
+- Sliding closet doors can have colored (frosted or mirrored) panels.
+
 ## 0.2.1-dm.14 (demios78 fork)
 
 - Doors can be a glass door with fixed floor-length side panels.
