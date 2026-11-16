@@ -91,6 +91,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   bed: { label: t('Bed'), group: 'furniture', domains: [], size: [1.7, 2.1], labelY: 1.2 },
   // Twin loft bed: the mattress at about 1.1 m, a ladder on one long side; footprint includes the ladder
   loftBed: { label: t('Loft bed'), group: 'furniture', domains: [], size: [1.12, 2.05], labelY: 1.9 },
+  // Daybed with a pull-out: Item.len2 is the depth, closed (a twin sofa-bed) or pulled out into a king (DAYBED_DEPTH)
+  daybed: { label: t('Daybed'), group: 'furniture', domains: [], size: [1.99, 1.05], labelY: 1 },
   nightstand: { label: t('Nightstand'), group: 'furniture', domains: [], size: [0.45, 0.4], labelY: 0.8 },
   wardrobe: { label: t('Wardrobe'), group: 'furniture', domains: [], size: [1.4, 0.6], labelY: 2.3, wall: true },
   desk: { label: t('Desk'), group: 'furniture', domains: [], size: [1.4, 0.7], labelY: 1 },
@@ -417,6 +419,12 @@ export function bedModel(it: { len?: number; len2?: number; variant?: string }) 
   return { w, d, style, head, front, stripY, backY }
 }
 
+/** Daybed depth (Item.len2): closed it is a twin with a back and two arms; pulled out, a second mattress makes a king. */
+export const DAYBED_DEPTH: [string, string, number][] = [
+  ['twin', t('Twin'), 1.05],
+  ['king', t('King'), 1.95],
+]
+
 /** Kinds with color and option settings: which settings are shown. */
 export const OPTIONS: Partial<
   Record<
@@ -522,6 +530,14 @@ export const OPTIONS: Partial<
       ['left', t('Left side')],
     ],
     variantDef: 'right',
+    top: t('Bedding color'),
+    topList: BEDDING_COLORS,
+    topDef: '#f6f4ef',
+    body: t('Frame color'),
+    bodyList: BED_FRAME_COLORS,
+    bodyDef: '#f3f1ec',
+  },
+  daybed: {
     top: t('Bedding color'),
     topList: BEDDING_COLORS,
     topDef: '#f6f4ef',
@@ -1020,7 +1036,7 @@ export const windowSize = (it: { len?: number; len2?: number }) => ({ w: it.len 
 export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, number] {
   const [w, d] = CATALOG[kind].size
   // The second size only for kinds that use it as depth (ceiling strip, rug); the L arm of a counter is computed separately.
-  if (kind === 'ceilingStrip' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed') return [len ?? w, len2 ?? d]
+  if (kind === 'ceilingStrip' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed') return [len ?? w, len2 ?? d]
   // A ceiling fan is round: the blade span in both directions
   if (kind === 'ceilingFan') return [len ?? w, len ?? d]
   return [len ?? w, d]

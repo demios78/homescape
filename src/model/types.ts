@@ -183,6 +183,7 @@ export type ItemKind =
   | 'doormat'
   | 'bed'
   | 'loftBed'
+  | 'daybed'
   | 'nightstand'
   | 'wardrobe'
   | 'desk'

@@ -778,6 +778,21 @@ export function floralTexture() {
  * Carved lattice (like a hand-carved Indian jali panel): white scrolls and petals on a transparent ground, with a few
  * darker flecks for a distressed finish. Tinted by the material color; holes cut with alphaTest.
  */
+/** Beadboard: vertical boards with a shadowed groove every quarter of the tile (white, tinted by the material color). */
+export function beadboardTexture() {
+  return base('beadboard', (g, s) => {
+    g.fillStyle = '#ffffff'
+    g.fillRect(0, 0, s, s)
+    for (let i = 0; i < 4; i++) {
+      const x = (i * s) / 4
+      g.fillStyle = 'rgba(0, 0, 0, 0.22)'
+      g.fillRect(x, 0, s * 0.012, s)
+      g.fillStyle = 'rgba(0, 0, 0, 0.07)'
+      g.fillRect(x + s * 0.012, 0, s * 0.02, s)
+    }
+  }, 128)
+}
+
 export function latticeTexture() {
   return base('lattice', (g, s) => {
     g.clearRect(0, 0, s, s)

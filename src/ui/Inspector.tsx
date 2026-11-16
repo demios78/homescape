@@ -4,7 +4,7 @@ import { canToggle, toggle, turnOffAll } from '@/ha/actions'
 import { friendlyName, isActive, relativeTime, stateLabel } from '@/ha/derive'
 import { useHa } from '@/ha/store'
 import { bindingsOf, boundAnywhere, emitsLight, isBound, ledOf, ledSource } from '@/model/bindings'
-import { BEAM, BED_SIZES, bedModel, BODY_COLORS, CATALOG, CONSOLE_LEN, consoleModel, ITEM_PRESETS, OPTIONS, RESIZABLE, RESIZABLE2, sizeOf, TOP_COLORS } from '@/model/catalog'
+import { BEAM, BED_SIZES, bedModel, BODY_COLORS, CATALOG, CONSOLE_LEN, consoleModel, DAYBED_DEPTH, ITEM_PRESETS, OPTIONS, RESIZABLE, RESIZABLE2, sizeOf, TOP_COLORS } from '@/model/catalog'
 import { kindFor, modelName, variantFor } from '@/model/generate'
 import { doorSides, isOutdoor, isStreetSurface, rectsOf, roomArea, roomAt, wallLengthAt, wallSnap, type Side } from '@/model/geometry'
 import { groupFamily, groupMates, heatingSummary } from '@/model/groups'
@@ -551,6 +551,24 @@ function FurnitureOptions({ item }: { item: Item }) {
               const at = { x: Math.round((item.x + Math.sin(item.rot) * dz) * 1000) / 1000, z: Math.round((item.z + Math.cos(item.rot) * dz) * 1000) / 1000 }
               return (
                 <button key={k} id={`bedsize-${k}-${item.id}`} type="button" className={seg(item.len === w && item.len2 === d)} onClick={() => tryPatch({ len: w, len2: d, ...at }, true, label)}>
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+      {item.kind === 'daybed' && (
+        <div className="grid gap-1.5">
+          <span className="text-[12px] font-semibold text-ink-2">{t('Bed size')}</span>
+          {/* Closed or pulled out (Item.len2), checked against the rules; the back stays against the wall */}
+          <div className="flex gap-1.5">
+            {DAYBED_DEPTH.map(([k, label, d]) => {
+              const dz = (d - sizeOf('daybed', item.len, item.len2)[1]) / 2
+              const at = { x: Math.round((item.x + Math.sin(item.rot) * dz) * 1000) / 1000, z: Math.round((item.z + Math.cos(item.rot) * dz) * 1000) / 1000 }
+              const cur = sizeOf('daybed', item.len, item.len2)[1]
+              return (
+                <button key={k} id={`daybed-${k}-${item.id}`} type="button" className={seg(Math.abs(cur - d) < 0.01)} onClick={() => tryPatch({ len2: d, ...at }, true, label)}>
                   {label}
                 </button>
               )

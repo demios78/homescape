@@ -4,14 +4,14 @@ import * as THREE from 'three'
 import { domainOf, isActive, lightColor, lightLevel } from '@/ha/derive'
 import { t } from '@/i18n'
 import { HEADBOARD } from '@/model/bindings'
-import { BED_FLORAL, bedModel, CATALOG, RUG_DEFAULT } from '@/model/catalog'
+import { BED_FLORAL, bedModel, CATALOG, RUG_DEFAULT, sizeOf } from '@/model/catalog'
 import { DRAWER_SLIDE } from '@/model/containers'
 import { SINK_W } from '@/model/counter'
 import { markShadows } from '../frame'
 import { StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { floralTexture, latticeTexture, medallionTexture, rugTexture } from './textures'
+import { beadboardTexture, floralTexture, latticeTexture, medallionTexture, rugTexture } from './textures'
 import { gainOf, type Visual } from './visual'
 
 /*
@@ -654,6 +654,84 @@ export function LoftBed({ v }: { v: Visual }) {
       <Box size={[fw - 0.1, 0.05, dd]} position={[fx, top + 0.02, d / 2 - 0.1 - dd / 2]} color={sheet} material={sheet === BED_FLORAL ? floralMaterial(fw - 0.1, dd) : undefined} radius={0.025} />
     </group>
   )
+}
+
+/**
+ * Daybed with a pull-out (like a white beadboard daybed with three drawers): a beadboard back along the long side and two
+ * arms, a twin mattress, and a pull-out in front whose face has three drawers. Item.len2 is the depth: closed (1.05 m) or
+ * pulled out into a king (DAYBED_DEPTH), where the pull-out rises with a second mattress. Frame color Item.body, bedding
+ * Item.top. Back at local -z.
+ */
+export function Daybed({ v }: { v: Visual }) {
+  const [L, d] = sizeOf('daybed', v.opts.len, v.opts.len2)
+  const back = -d / 2
+  const color = v.opts.body ?? '#f3f1ec'
+  const sheet = v.opts.top ?? '#f6f4ef'
+  const king = d > 1.5
+  const armD = 1.05
+  const mw = L - 0.12
+  const md = 0.95
+  const deckY = 0.3
+  const front = back + d
+  const bb = (w: number, h: number) => beadboardMaterial(color, w, h)
+  const lit = shade(color, 0.86)
+  const bedD = king ? d - 0.06 : md
+  return (
+    <group>
+      {/* back: beadboard panel between posts, with a top rail */}
+      <Box size={[L - 0.1, 0.62, 0.03]} position={[0, 0.5, back + 0.03]} material={bb(L - 0.1, 0.62)} />
+      <Box size={[L, 0.05, 0.07]} position={[0, 0.81, back + 0.035]} color={color} radius={0.01} />
+      <Box size={[L - 0.1, 0.12, 0.04]} position={[0, 0.13, back + 0.03]} color={color} />
+      {/* arms: beadboard panels from the back to the front posts */}
+      {[-1, 1].map((s) => (
+        <group key={s} position={[s * (L / 2 - 0.035), 0, 0]}>
+          <Box size={[0.07, 0.8, 0.07]} position={[0, 0.4, back + 0.035]} color={color} radius={0.01} />
+          <Box size={[0.07, 0.76, 0.07]} position={[0, 0.38, back + armD - 0.035]} color={color} radius={0.01} />
+          <Box size={[0.03, 0.5, armD - 0.14]} position={[0, 0.5, back + armD / 2]} material={bb(armD - 0.14, 0.5)} />
+          <Box size={[0.08, 0.05, armD]} position={[0, 0.765, back + armD / 2]} color={color} radius={0.01} />
+          <Box size={[0.05, 0.12, armD - 0.14]} position={[0, 0.17, back + armD / 2]} color={color} />
+        </group>
+      ))}
+      {/* upper deck and mattress */}
+      <Box size={[L - 0.14, 0.06, armD - 0.1]} position={[0, deckY - 0.03, back + 0.05 + (armD - 0.1) / 2]} color={lit} />
+      <Box size={[mw, 0.16, md]} position={[0, deckY + 0.08, back + 0.05 + md / 2]} color={C.white} radius={0.04} />
+      {/* pull-out: closed it sits under the deck with its drawer face flush with the arms; pulled out it carries the second mattress */}
+      {king && (
+        <>
+          <Box size={[L - 0.14, 0.06, d - armD]} position={[0, deckY - 0.03, back + armD + (d - armD) / 2 - 0.02]} color={lit} />
+          <Box size={[mw, 0.16, md]} position={[0, deckY + 0.08, back + 0.05 + md + md / 2 - 0.01]} color={C.white} radius={0.04} />
+        </>
+      )}
+      <Box size={[L - 0.16, king ? 0.27 : 0.25, 0.03]} position={[0, king ? 0.135 : 0.14, front - 0.035]} color={color} />
+      {[-1, 0, 1].map((k) => {
+        const fw = (L - 0.24) / 3
+        return (
+          <group key={k} position={[k * (fw + 0.02), king ? 0.135 : 0.14, front - 0.015]}>
+            <Box size={[fw, 0.2, 0.012]} position={[0, 0, 0]} color={shade(color, 0.97)} radius={0.004} />
+            <Cyl r={0.012} h={0.02} position={[0, 0.03, 0.012]} rotation={[Math.PI / 2, 0, 0]} color={shade(color, 0.7)} segments={10} />
+          </group>
+        )
+      })}
+      {/* bedding and a pillow at the left arm */}
+      <Box size={[mw - 0.02, 0.04, bedD - 0.04]} position={[0, deckY + 0.18, back + 0.05 + bedD / 2]} color={sheet} material={sheet === BED_FLORAL ? floralMaterial(mw - 0.02, bedD - 0.04) : undefined} radius={0.02} />
+      <Box size={[0.38, 0.11, king ? 0.8 : 0.6]} position={[-L / 2 + 0.3, deckY + 0.25, back + 0.05 + (king ? bedD / 2 : md / 2)]} color={C.offWhite} radius={0.05} />
+    </group>
+  )
+}
+
+/** Beadboard material: one per color and panel size (a groove about every 8 cm). */
+const beadboardMats = new Map<string, THREE.MeshStandardMaterial>()
+function beadboardMaterial(color: string, w: number, h: number) {
+  const key = `${color}:${w.toFixed(2)}:${h.toFixed(2)}`
+  let m = beadboardMats.get(key)
+  if (!m) {
+    const map = beadboardTexture().clone()
+    map.repeat.set(w / 0.32, Math.max(1, h / 0.32))
+    map.needsUpdate = true
+    m = new THREE.MeshStandardMaterial({ color, map, roughness: 0.75 })
+    beadboardMats.set(key, m)
+  }
+  return m
 }
 
 /** One end of the loft bed: corner posts, an arched cap, slats with a raised center panel above the deck, a rail below. */
