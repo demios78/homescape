@@ -176,6 +176,10 @@ export type ItemKind =
   // furniture
   | 'sofa'
   | 'armchair'
+  | 'loveseat'
+  | 'wickerChair'
+  | 'shellChair'
+  | 'taskChair'
   | 'coffeeTable'
   | 'consoleTable'
   | 'roundTable'

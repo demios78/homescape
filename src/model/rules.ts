@@ -132,7 +132,7 @@ export const APPLIANCE_STACK: ItemKind[] = ['washer', 'dryer', 'dishwasher']
  * Chairs can tuck under tables and desks, a drawer unit under a desk. A power strip on the floor can go under a table or a
  * coffee table (partly under it is no collision).
  */
-const TUCKS: Partial<Record<ItemKind, ItemKind[]>> = { chair: ['diningTable', 'desk'], gamingChair: ['desk', 'diningTable'], drawerUnit: ['desk'], powerStrip: ['desk', 'diningTable', 'coffeeTable', 'roundTable'] }
+const TUCKS: Partial<Record<ItemKind, ItemKind[]>> = { chair: ['diningTable', 'desk'], gamingChair: ['desk', 'diningTable'], shellChair: ['desk', 'diningTable'], taskChair: ['desk', 'diningTable'], drawerUnit: ['desk'], powerStrip: ['desk', 'diningTable', 'coffeeTable', 'roundTable'] }
 
 /**
  * Ceiling items (ceiling layer: no collision with floor and wall items). The pergola / gazebo is in this layer too, like a

@@ -82,6 +82,14 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
 
   sofa: { label: t('Sofa'), group: 'furniture', domains: [], size: [2.2, 0.9], labelY: 1.1 },
   armchair: { label: t('Armchair'), group: 'furniture', domains: [], size: [0.9, 0.85], labelY: 1.1 },
+  // Two-seat sofa with rolled arms and carved legs; fabric Item.variant (striped damask or plain in Item.body)
+  loveseat: { label: t('Loveseat'), group: 'furniture', domains: [], size: [1.42, 0.82], labelY: 1.1 },
+  // Woven armchair with a horseshoe back and a seat cushion; frame Item.body, cushion Item.top
+  wickerChair: { label: t('Wicker armchair'), group: 'furniture', domains: [], size: [0.76, 0.72], labelY: 1.2 },
+  // Swivel chair with a scalloped shell back on a five-star base; fits under a desk (rules.ts > TUCKS)
+  shellChair: { label: t('Shell chair'), group: 'furniture', domains: [], size: [0.64, 0.62], labelY: 1.05 },
+  // Swivel task chair: a one-piece upholstered shell on a five-star base with casters; fits under a desk
+  taskChair: { label: t('Task chair'), group: 'furniture', domains: [], size: [0.6, 0.6], labelY: 1.1 },
   coffeeTable: { label: t('Coffee table'), group: 'furniture', domains: [], size: [1.1, 0.6], labelY: 0.7 },
   consoleTable: { label: t('Console table'), group: 'furniture', domains: [], size: [1.2, 0.35], labelY: 1 },
   roundTable: { label: t('Round side table'), group: 'furniture', domains: [], size: [0.6, 0.6], labelY: 0.7 },
@@ -391,6 +399,30 @@ export const BED_FRAME_COLORS: [string, string][] = [
   [t('Navy'), '#34416c'],
   [t('Black'), '#2a2a2e'],
 ]
+/** Upholstery colors (plain loveseat fabric, shell chair velvet). */
+export const FABRIC_COLORS: [string, string][] = [
+  [t('Navy'), '#2f3a5c'],
+  [t('Sage'), '#93a79b'],
+  [t('Blush'), '#f0cfcd'],
+  [t('Cream'), '#eee3cc'],
+  [t('Gray'), '#a9adb4'],
+  [t('White'), '#f1ede6'],
+]
+/** Wicker frame colors. */
+export const WICKER_COLORS: [string, string][] = [
+  [t('White'), '#f2efe8'],
+  [t('Natural'), '#c9a26a'],
+  [t('Black'), '#2e2c2a'],
+]
+/** Cushion with a printed floral pattern instead of a plain color: the swatch shows its base tone. */
+export const CUSHION_FLORAL = '#eadfc9'
+export const CUSHION_COLORS: [string, string][] = [
+  [t('Floral'), CUSHION_FLORAL],
+  [t('Cream'), '#eee3cc'],
+  [t('Sage'), '#b5c4a8'],
+  [t('Navy'), '#2f3a5c'],
+  [t('Blush'), '#f0cfcd'],
+]
 /** Bedding with a printed pattern instead of a plain color: the swatch shows its base tone. */
 export const BED_FLORAL = '#e9e4e6'
 export const BEDDING_COLORS: [string, string][] = [
@@ -655,6 +687,20 @@ export const OPTIONS: Partial<
     bodyDef: '#ffffff',
   },
   gamingChair: { body: t('Seat color'), bodyDef: '#1f2440', top: t('Stripe color'), topList: ACCENT_COLORS, topDef: '#e2564b' },
+  loveseat: {
+    variantLabel: t('Fabric'),
+    variants: [
+      ['striped', t('Striped')],
+      ['plain', t('Plain')],
+    ],
+    variantDef: 'striped',
+    body: t('Fabric color'),
+    bodyList: FABRIC_COLORS,
+    bodyDef: '#2f3a5c',
+  },
+  wickerChair: { body: t('Frame color'), bodyList: WICKER_COLORS, bodyDef: '#f2efe8', top: t('Cushion color'), topList: CUSHION_COLORS, topDef: CUSHION_FLORAL },
+  shellChair: { body: t('Seat color'), bodyList: FABRIC_COLORS, bodyDef: '#f0cfcd' },
+  taskChair: { body: t('Seat color'), bodyList: FABRIC_COLORS, bodyDef: '#93a79b', top: t('Base color'), topList: WICKER_COLORS.filter(([, c]) => c !== '#c9a26a'), topDef: '#f2efe8' },
   tvUnit: { top: t('Door color'), body: t('Body color') },
   drawerUnit: { top: t('Top color'), body: t('Body color') },
   wardrobe: { top: t('Door color'), body: t('Body color') },

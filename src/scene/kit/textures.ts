@@ -843,6 +843,192 @@ export function latticeTexture() {
   })
 }
 
+/** Draws fn at (x, y) and at its copies one tile away, so a motif crossing the tile edge continues on the next tile. */
+function wrapped(s: number, x: number, y: number, fn: (x: number, y: number) => void) {
+  for (const dx of [-s, 0, s]) for (const dy of [-s, 0, s]) fn(x + dx, y + dy)
+}
+
+/**
+ * Striped damask upholstery (like a traditional loveseat): vertical bands across the tile, a gold rope stripe, a peach band
+ * with red acanthus leaves, another rope stripe and a navy band with a gold diamond lattice. Stripes run along v, so on a box
+ * they rise up the back and run front to back on the seat. One tile is one full repeat.
+ */
+export function damaskStripeTexture() {
+  return base('damask-stripe', (g, s) => {
+    const rope = s * 0.08
+    const band = (s - 2 * rope) / 2
+    const peach0 = rope
+    const navy0 = 2 * rope + band
+    // Rope stripes: cream with thin gold edges and green diagonal twists
+    for (const x0 of [0, rope + band]) {
+      g.fillStyle = '#efe2bd'
+      g.fillRect(x0, 0, rope, s)
+      g.fillStyle = '#b8954a'
+      g.fillRect(x0, 0, rope * 0.12, s)
+      g.fillRect(x0 + rope * 0.88, 0, rope * 0.12, s)
+      g.save()
+      g.beginPath()
+      g.rect(x0 + rope * 0.22, 0, rope * 0.56, s)
+      g.clip()
+      g.strokeStyle = '#5f7350'
+      g.lineWidth = rope * 0.16
+      for (let y = -rope; y < s + rope; y += rope * 0.42) {
+        g.beginPath()
+        g.moveTo(x0, y + rope * 0.6)
+        g.lineTo(x0 + rope, y)
+        g.stroke()
+      }
+      g.restore()
+    }
+    // Peach band with acanthus leaves (pale outline, deep red tips), two leaves per tile height
+    g.fillStyle = '#e8b892'
+    g.fillRect(peach0, 0, band, s)
+    g.save()
+    g.beginPath()
+    g.rect(peach0, 0, band, s)
+    g.clip()
+    const cx = peach0 + band / 2
+    const leaf = (x: number, y: number, flip: number) => {
+      g.fillStyle = '#f3d8bd'
+      g.beginPath()
+      g.moveTo(x, y + s * 0.2)
+      g.bezierCurveTo(x - flip * band * 0.42, y + s * 0.1, x - flip * band * 0.3, y - s * 0.14, x + flip * band * 0.1, y - s * 0.2)
+      g.bezierCurveTo(x + flip * band * 0.05, y - s * 0.05, x + flip * band * 0.25, y + s * 0.08, x, y + s * 0.2)
+      g.fill()
+      g.fillStyle = '#a8323a'
+      for (const [dx, dy, r] of [[-0.22, -0.08, 0.07], [-0.08, -0.15, 0.06], [-0.28, 0.04, 0.06], [0.08, 0.02, 0.05]]) {
+        g.beginPath()
+        g.ellipse(x + flip * dx * band, y + dy * s, r * band, r * band * 0.55, flip * 0.7, 0, Math.PI * 2)
+        g.fill()
+      }
+    }
+    wrapped(s, cx, s * 0.25, (x, y) => leaf(x, y, 1))
+    wrapped(s, cx, s * 0.75, (x, y) => leaf(x, y, -1))
+    g.restore()
+    // Navy band with a gold diamond lattice and small dots at the crossings
+    g.fillStyle = '#2b3557'
+    g.fillRect(navy0, 0, band, s)
+    g.save()
+    g.beginPath()
+    g.rect(navy0, 0, band, s)
+    g.clip()
+    // s / 8 apart, so a line leaving the bottom edge comes back on the top one (seamless vertically)
+    const step = s / 8
+    g.strokeStyle = 'rgba(214, 186, 112, 0.8)'
+    g.lineWidth = s * 0.006
+    for (let k = -10; k <= 10; k++) {
+      g.beginPath()
+      g.moveTo(navy0 + k * step, 0)
+      g.lineTo(navy0 + k * step + s, s)
+      g.stroke()
+      g.beginPath()
+      g.moveTo(navy0 + k * step, s)
+      g.lineTo(navy0 + k * step + s, 0)
+      g.stroke()
+    }
+    g.restore()
+  }, 512)
+}
+
+/** Wicker weave: rows of short woven strands with shadowed gaps (white, tinted by the material color). */
+export function wickerTexture() {
+  return base('wicker', (g, s) => {
+    g.fillStyle = '#c9c4ba'
+    g.fillRect(0, 0, s, s)
+    const rows = 12
+    const h = s / rows
+    const r = rngT(3)
+    for (let i = 0; i < rows; i++) {
+      const off = i % 2 ? h * 0.9 : 0
+      for (let x = -h * 1.8; x < s + h * 1.8; x += h * 1.8) {
+        const k = 0.95 + r() * 0.05
+        g.fillStyle = `rgb(${Math.round(255 * k)}, ${Math.round(253 * k)}, ${Math.round(248 * k)})`
+        g.beginPath()
+        g.ellipse(x + off, i * h + h / 2, h * 0.85, h * 0.4, 0, 0, Math.PI * 2)
+        g.fill()
+      }
+    }
+  }, 128)
+}
+
+/** Open wicker lattice: woven diagonal strands on a transparent ground, one diamond per tile (holes cut with alphaTest). */
+export function wickerLatticeTexture() {
+  return base('wicker-lattice', (g, s) => {
+    g.clearRect(0, 0, s, s)
+    g.lineCap = 'round'
+    for (const [w, c] of [[s * 0.16, '#a8a39b'], [s * 0.11, '#ffffff']] as const) {
+      g.strokeStyle = c
+      g.lineWidth = w
+      for (const o of [-s, 0, s]) {
+        g.beginPath()
+        g.moveTo(o, 0)
+        g.lineTo(o + s, s)
+        g.stroke()
+        g.beginPath()
+        g.moveTo(o, s)
+        g.lineTo(o + s, 0)
+        g.stroke()
+      }
+    }
+  }, 64)
+}
+
+/**
+ * Floral cushion print (like a chintz garden print): large red and gold blooms with teal centers, smaller teal flowers,
+ * green leaves and thin brown stems on a cream ground. Tiles about every 40 cm.
+ */
+export function chintzTexture() {
+  return base('chintz', (g, s) => {
+    g.fillStyle = '#efe6d2'
+    g.fillRect(0, 0, s, s)
+    const stem = (x0: number, y0: number, x1: number, y1: number) => {
+      g.strokeStyle = '#8a6a48'
+      g.lineWidth = s * 0.008
+      g.beginPath()
+      g.moveTo(x0, y0)
+      g.quadraticCurveTo((x0 + x1) / 2 + s * 0.06, (y0 + y1) / 2, x1, y1)
+      g.stroke()
+    }
+    const leafAt = (x: number, y: number, a: number) => {
+      g.fillStyle = '#86a06a'
+      g.beginPath()
+      g.ellipse(x, y, s * 0.05, s * 0.02, a, 0, Math.PI * 2)
+      g.fill()
+    }
+    const bloom = (x: number, y: number, r: number, petal: string, core: string) => {
+      g.fillStyle = petal
+      for (let i = 0; i < 7; i++) {
+        const a = (i * Math.PI * 2) / 7
+        g.beginPath()
+        g.ellipse(x + Math.cos(a) * r * 0.55, y + Math.sin(a) * r * 0.55, r * 0.5, r * 0.32, a, 0, Math.PI * 2)
+        g.fill()
+      }
+      g.fillStyle = core
+      g.beginPath()
+      g.arc(x, y, r * 0.38, 0, Math.PI * 2)
+      g.fill()
+      g.fillStyle = petal
+      g.beginPath()
+      g.arc(x, y, r * 0.16, 0, Math.PI * 2)
+      g.fill()
+    }
+    wrapped(s, s * 0.3, s * 0.3, (x, y) => {
+      stem(x, y, x + s * 0.25, y + s * 0.35)
+      leafAt(x + s * 0.12, y + s * 0.16, 0.6)
+      leafAt(x + s * 0.2, y + s * 0.26, -0.5)
+      bloom(x, y, s * 0.13, '#c8483c', '#e7b45a')
+    })
+    wrapped(s, s * 0.75, s * 0.72, (x, y) => {
+      stem(x, y, x - s * 0.2, y - s * 0.3)
+      leafAt(x - s * 0.1, y - s * 0.12, -0.7)
+      bloom(x, y, s * 0.12, '#d9a441', '#7fb3b0')
+    })
+    wrapped(s, s * 0.78, s * 0.22, (x, y) => bloom(x, y, s * 0.06, '#7fb3b0', '#e8dcc2'))
+    wrapped(s, s * 0.22, s * 0.8, (x, y) => bloom(x, y, s * 0.055, '#d77a6c', '#e7b45a'))
+    wrapped(s, s * 0.52, s * 0.5, (x, y) => leafAt(x, y, 0.2))
+  }, 256)
+}
+
 function rngT(seed: number) {
   let x = seed >>> 0 || 1
   return () => {

@@ -42,6 +42,7 @@ const COMPANION: Partial<Record<ItemKind, string[]>> = {
   washbasin: ['moisture'],
   bathtub: ['moisture', 'humidity'],
   sofa: ['occupancy', 'presence'],
+  loveseat: ['occupancy', 'presence'],
   desk: ['occupancy', 'presence', 'power'],
   tempSensor: ['temperature', 'humidity', 'battery'],
   motionSensor: ['motion', 'occupancy', 'presence', 'illuminance', 'battery'],

@@ -189,20 +189,26 @@ const SEAT = {
   armchair: { z: 0.12, y: 0.44, lean: 0.12 },
   chair: { z: 0.02, y: 0.495, lean: 0 },
   gamingChair: { z: 0.02, y: 0.505, lean: 0.12 },
+  wickerChair: { z: 0.06, y: 0.51, lean: 0.1 },
+  shellChair: { z: 0.04, y: 0.51, lean: 0.06 },
+  taskChair: { z: 0.03, y: 0.5, lean: 0.04 },
 }
+/** Seat kinds that count as another kind for activities and preferences (a wicker armchair is an armchair) */
+const SEAT_USE = { armchair: 'armchair', chair: 'chair', gamingChair: 'gamingChair', wickerChair: 'armchair', shellChair: 'chair', taskChair: 'chair' } as const
 
-/** Seats: sofa (2-3), armchair, chair, gaming chair. The person faces the item's local +z. */
+/** Seats: sofa (2-3), loveseat (2), armchair, chair, gaming chair, wicker, shell and task chair. The person faces the item's local +z. */
 function seats(level: Level, room: Room): Spot[] {
   const out: Spot[] = []
   for (const it of itemsIn(level, room)) {
     const base = (it.y ?? 0) + 0
-    if (it.kind === 'sofa') {
+    if (it.kind === 'sofa' || it.kind === 'loveseat') {
       // Cushion top 0.49 m, the middle of the cushions (0.595 apart); the person sits on the cushion, leaning back slightly
-      const n = (it.len ?? CATALOG.sofa.size[0]) >= 2 ? 3 : 2
-      for (let k = 0; k < n; k++) out.push({ ...local(it, (k - (n - 1) / 2) * 0.595, 0.15), y: base + 0.48, lean: 0.12, rot: it.rot, pose: 'sit', roomId: room.id, use: 'sofa' })
-    } else if (it.kind === 'armchair' || it.kind === 'chair' || it.kind === 'gamingChair') {
+      const n = it.kind === 'loveseat' ? 2 : (it.len ?? CATALOG.sofa.size[0]) >= 2 ? 3 : 2
+      const gap = it.kind === 'loveseat' ? 0.52 : 0.595
+      for (let k = 0; k < n; k++) out.push({ ...local(it, (k - (n - 1) / 2) * gap, 0.15), y: base + 0.48, lean: 0.12, rot: it.rot, pose: 'sit', roomId: room.id, use: 'sofa' })
+    } else if (it.kind === 'armchair' || it.kind === 'chair' || it.kind === 'gamingChair' || it.kind === 'wickerChair' || it.kind === 'shellChair' || it.kind === 'taskChair') {
       const s = SEAT[it.kind]
-      out.push({ ...local(it, 0, s.z), y: base + s.y, lean: s.lean, rot: it.rot, pose: 'sit', roomId: room.id, use: it.kind })
+      out.push({ ...local(it, 0, s.z), y: base + s.y, lean: s.lean, rot: it.rot, pose: 'sit', roomId: room.id, use: SEAT_USE[it.kind] })
     }
   }
   return out

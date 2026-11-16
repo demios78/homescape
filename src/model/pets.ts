@@ -133,7 +133,7 @@ export const CLEAR: Record<Mover, number> = { cat: 0.1, dog: 0.15, person: 0.18 
 /** Items it can pass under (table, chair); people none */
 const UNDER: Record<Mover, ItemKind[]> = {
   person: [],
-  cat: ['diningTable', 'coffeeTable', 'roundTable', 'desk', 'chair', 'gamingChair', 'outdoorTable', 'lounger', 'swing', 'clothesRack', 'workbench'],
+  cat: ['diningTable', 'coffeeTable', 'roundTable', 'desk', 'chair', 'gamingChair', 'shellChair','outdoorTable', 'lounger', 'swing', 'clothesRack', 'workbench'],
   dog: ['diningTable', 'desk', 'outdoorTable', 'swing', 'clothesRack'],
 }
 /** Items that can be walked over or through */
@@ -484,17 +484,21 @@ export function petPlaces(level: Level, species: Species): PetPlace[] {
       case 'dogHouse':
         if (!cat) add(it, 'house', 0, 0.05, 0.05, it.rot, 'lie')
         break
-      case 'sofa': {
+      case 'sofa':
+      case 'loveseat': {
+        const love = it.kind === 'loveseat'
         const seats = w >= 2 ? [-0.6, 0, 0.6] : [-0.3, 0.3]
-        for (const x of seats) add(it, 'nap', x, 0.12, 0.49, it.rot + (cat ? 0 : Math.PI / 2), cat ? 'curl' : 'lie')
+        for (const x of seats) add(it, 'nap', x, 0.12, love ? 0.47 : 0.49, it.rot + (cat ? 0 : Math.PI / 2), cat ? 'curl' : 'lie')
         if (cat) {
-          add(it, 'perch', w * 0.25, -0.33, 0.93, it.rot + Math.PI / 2, 'lie')
-          add(it, 'perch', -w / 2 + 0.11, 0.05, 0.64, it.rot, 'sit')
+          // the loveseat's back top and rolled arms are higher (kit/furniture.tsx > Loveseat)
+          add(it, 'perch', w * 0.25, love ? -0.32 : -0.33, love ? 0.9 : 0.93, it.rot + Math.PI / 2, 'lie')
+          add(it, 'perch', -w / 2 + 0.11, 0.05, love ? 0.71 : 0.64, it.rot, 'sit')
         }
         break
       }
       case 'armchair':
-        if (cat) add(it, 'nap', 0, 0.1, 0.44, it.rot, 'curl')
+      case 'wickerChair':
+        if (cat) add(it, 'nap', 0, 0.1, it.kind === 'wickerChair' ? 0.52 : 0.44, it.rot, 'curl')
         break
       case 'bed':
         add(it, 'nap', cat ? 0.35 : 0, 0.62, 0.54, it.rot + Math.PI / 2, cat ? 'curl' : 'lie')

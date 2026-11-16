@@ -4,14 +4,14 @@ import * as THREE from 'three'
 import { domainOf, isActive, lightColor, lightLevel } from '@/ha/derive'
 import { t } from '@/i18n'
 import { HEADBOARD } from '@/model/bindings'
-import { BED_FLORAL, bedModel, CATALOG, RUG_DEFAULT, sizeOf } from '@/model/catalog'
+import { BED_FLORAL, bedModel, CATALOG, CUSHION_FLORAL, RUG_DEFAULT, sizeOf } from '@/model/catalog'
 import { DRAWER_SLIDE } from '@/model/containers'
 import { SINK_W } from '@/model/counter'
 import { markShadows } from '../frame'
 import { StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { beadboardTexture, floralTexture, latticeTexture, medallionTexture, rugTexture } from './textures'
+import { beadboardTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, medallionTexture, rugTexture, wickerLatticeTexture, wickerTexture } from './textures'
 import { gainOf, type Visual } from './visual'
 
 /*
@@ -180,6 +180,245 @@ export function Armchair() {
       <Box size={[0.18, 0.5, 0.85]} position={[-0.36, 0.42, 0]} color={C.coral} radius={0.07} />
       <Box size={[0.18, 0.5, 0.85]} position={[0.36, 0.42, 0]} color={C.coral} radius={0.07} />
       <Box size={[0.54, 0.4, 0.14]} position={[0, 0.64, -0.15]} rotation={[-0.12, 0, 0]} color={C.coral} radius={0.06} />
+    </group>
+  )
+}
+
+/* ---------- loveseat, wicker armchair, shell chair ---------- */
+
+/**
+ * Patterned material cache: one per texture, tint and repeat. turn: the pattern turned a quarter (stripes running along a
+ * cylinder's length instead of around it).
+ */
+const patternMats = new Map<string, THREE.MeshStandardMaterial>()
+function patternMaterial(name: string, tex: () => THREE.Texture, color: string, rx: number, ry: number, o: { turn?: boolean; alpha?: boolean; roughness?: number } = {}) {
+  const key = `${name}:${color}:${rx.toFixed(2)}:${ry.toFixed(2)}:${o.turn ? 1 : 0}`
+  let m = patternMats.get(key)
+  if (!m) {
+    const map = tex().clone()
+    map.repeat.set(rx, ry)
+    // centered, so the middle of a piece shows the middle of a stripe on every size
+    map.offset.set((((1 - rx) / 2) % 1 + 1) % 1, 0)
+    if (o.turn) {
+      map.center.set(0.5, 0.5)
+      map.rotation = Math.PI / 2
+    }
+    map.needsUpdate = true
+    m = new THREE.MeshStandardMaterial({ color, map, roughness: o.roughness ?? 0.9, ...(o.alpha ? { alphaTest: 0.5, side: THREE.DoubleSide } : {}) })
+    patternMats.set(key, m)
+  }
+  return m
+}
+
+/** Damask stripes repeat every 45 cm across a piece (u), leaves every 45 cm up it (v) */
+const DAMASK = 0.45
+const LOVESEAT_WOOD = '#6e4227'
+
+/** Carved (cabriole) leg: a knee bulging outward, a slim ankle and a pad foot; local +z points outward. */
+function CabrioleLeg({ at, color }: { at: [number, number, number]; color: string }) {
+  return (
+    <group position={at} rotation-y={Math.atan2(at[0], at[2])}>
+      <Cyl r={0.02} rTop={0.03} h={0.075} position={[0, 0.108, 0.012]} rotation-x={-0.3} color={color} segments={12} />
+      <Cyl r={0.014} rTop={0.021} h={0.075} position={[0, 0.045, 0.014]} rotation-x={0.32} color={color} segments={12} />
+      <Ball r={0.022} position={[0, 0.012, 0.002]} scale={[1, 0.55, 1.25]} color={color} detail={1} />
+    </group>
+  )
+}
+
+/**
+ * Loveseat (like a traditional striped damask loveseat): carved wooden legs, an upholstered base, one long seat cushion,
+ * rolled arms that scroll at the front, a camelback with a loose back cushion. Fabric Item.variant: 'striped' (damask
+ * stripes, the default) or 'plain' in Item.body. Seat top 0.47 m (people sit like on a sofa: model/people.ts > seats).
+ */
+export function Loveseat({ v }: { v: Visual }) {
+  const plain = v.opts.variant === 'plain'
+  const color = v.opts.body ?? '#2f3a5c'
+  // turn: on a cylinder lying on its side the stripes run along its length instead of around it
+  const fab = (w: number, h: number, turn = false) =>
+    plain ? mat(color, { roughness: 0.92 }) : patternMaterial('damask', damaskStripeTexture, '#ffffff', w / DAMASK, h / DAMASK, { turn })
+  const scroll = plain ? mat(shade(color, 0.85), { roughness: 0.92 }) : fab(0.15, 0.15)
+  return (
+    <group>
+      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => <CabrioleLeg key={`${sx}${sz}`} at={[sx * 0.56, 0, sz * 0.29]} color={LOVESEAT_WOOD} />))}
+      {/* base and seat cushion */}
+      <Box size={[1.26, 0.17, 0.74]} position={[0, 0.225, 0]} radius={0.03} material={fab(1.26, 0.17)} />
+      <Box size={[1.02, 0.16, 0.6]} position={[0, 0.39, 0.06]} radius={0.05} material={fab(1.02, 0.6)} />
+      {/* rolled arms: a panel under a roll that ends in a scroll at the front */}
+      {[-1, 1].map((s) => (
+        <group key={s}>
+          <Box size={[0.17, 0.32, 0.72]} position={[s * 0.6, 0.46, 0]} radius={0.04} material={fab(0.72, 0.32)} />
+          <Cyl r={0.085} h={0.74} position={[s * 0.625, 0.625, 0]} rotation-x={Math.PI / 2} material={fab(0.53, 0.74, true)} segments={20} />
+          <Cyl r={0.07} h={0.012} position={[s * 0.625, 0.625, 0.372]} rotation-x={Math.PI / 2} material={scroll} segments={20} shadow={false} />
+        </group>
+      ))}
+      {/* camelback and the loose back cushion */}
+      <Box size={[1.08, 0.5, 0.15]} position={[0, 0.58, -0.33]} radius={0.05} material={fab(1.08, 0.5)} />
+      <Cyl r={0.075} h={1.1} position={[0, 0.82, -0.33]} rotation-z={Math.PI / 2} material={fab(0.47, 1.1, true)} segments={20} />
+      <Box size={[0.98, 0.32, 0.17]} position={[0, 0.62, -0.19]} rotation-x={-0.14} radius={0.07} material={fab(0.98, 0.32)} />
+    </group>
+  )
+}
+
+/** Wicker rim: one woven roll from the front of the left arm, around the horseshoe back, to the front of the right arm. */
+let wickerRimGeo: THREE.TubeGeometry | null = null
+function wickerRim() {
+  if (!wickerRimGeo) {
+    const half: [number, number, number][] = [
+      [-0.325, 0.47, 0.31],
+      [-0.34, 0.6, 0.22],
+      [-0.345, 0.635, 0.02],
+      [-0.33, 0.67, -0.18],
+      [-0.28, 0.8, -0.29],
+      [-0.16, 0.92, -0.33],
+    ]
+    const pts = [...half, [0, 0.955, -0.345] as [number, number, number], ...[...half].reverse().map(([x, y, z]) => [-x, y, z] as [number, number, number])]
+    wickerRimGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), 96, 0.045, 10, false)
+  }
+  return wickerRimGeo
+}
+
+/** Open lattice of the horseshoe back: a rectangle with an arched top (meters, so the UVs are meters too). */
+let wickerBackGeo: THREE.ShapeGeometry | null = null
+function wickerBack() {
+  if (!wickerBackGeo) {
+    const s = new THREE.Shape()
+    s.moveTo(-0.28, 0)
+    s.lineTo(0.28, 0)
+    s.lineTo(0.28, 0.2)
+    s.bezierCurveTo(0.28, 0.4, 0.12, 0.45, 0, 0.45)
+    s.bezierCurveTo(-0.12, 0.45, -0.28, 0.4, -0.28, 0.2)
+    s.closePath()
+    wickerBackGeo = new THREE.ShapeGeometry(s, 16)
+  }
+  return wickerBackGeo
+}
+
+/** Lattice diamonds about every 7 cm */
+const LATTICE = 1 / 0.07
+
+/**
+ * Wicker armchair (like a painted white wicker chair): a thick woven rim running from the arm fronts around a tall
+ * horseshoe back, open diamond lattice in the back and under the arms, a woven apron with a row of loops under the seat,
+ * wrapped legs and a tufted seat cushion. Frame Item.body (white, natural, black), cushion Item.top (floral print or plain).
+ */
+export function WickerChair({ v }: { v: Visual }) {
+  const color = v.opts.body ?? '#f2efe8'
+  const cushion = v.opts.top ?? CUSHION_FLORAL
+  const weave = (rx: number, ry: number, turn = false) => patternMaterial('wicker', wickerTexture, color, rx, ry, { turn, roughness: 0.8 })
+  const lattice = (rx: number, ry: number) => patternMaterial('wicker-lattice', wickerLatticeTexture, color, rx, ry, { alpha: true, roughness: 0.8 })
+  const pad = cushion === CUSHION_FLORAL ? patternMaterial('chintz', chintzTexture, '#ffffff', 0.6 / 0.4, 0.56 / 0.4) : mat(cushion, { roughness: 0.92 })
+  return (
+    <group>
+      {/* wrapped legs, the front ones splaying slightly */}
+      {[-1, 1].flatMap((sx) =>
+        [-1, 1].map((sz) => <Cyl key={`${sx}${sz}`} r={0.024} rTop={0.03} h={0.4} position={[sx * 0.305, 0.2, sz * 0.28]} rotation-z={sx * (sz > 0 ? 0.06 : 0.03)} material={weave(1, 6, true)} segments={10} />),
+      )}
+      {[-1, 1].map((s) => (
+        <Cyl key={s} r={0.01} h={0.58} position={[s * 0.3, 0.1, 0]} rotation-x={Math.PI / 2} color={shade(color, 0.92)} segments={8} shadow={false} />
+      ))}
+      {/* apron, a row of loops, the seat frame */}
+      <Box size={[0.62, 0.2, 0.025]} position={[0, 0.22, 0.3]} material={weave(5, 1.6)} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.025, 0.2, 0.56]} position={[s * 0.31, 0.22, 0]} material={weave(4.5, 1.6)} />
+      ))}
+      {Array.from({ length: 9 }, (_, i) => (
+        <mesh key={i} position={[(i - 4) * 0.064, 0.35, 0.305]} castShadow material={mat(color, { roughness: 0.8 })}>
+          <torusGeometry args={[0.024, 0.007, 6, 14]} />
+        </mesh>
+      ))}
+      <Box size={[0.64, 0.05, 0.6]} position={[0, 0.405, 0]} radius={0.015} material={weave(5, 1)} />
+      {/* rim, lattice back with a braided band, lattice under the arms */}
+      <mesh geometry={wickerRim()} material={weave(40, 1, true)} castShadow receiveShadow />
+      <group position={[0, 0.47, -0.31]} rotation-x={-0.1}>
+        <mesh geometry={wickerBack()} material={lattice(LATTICE, LATTICE)} castShadow />
+        <Box size={[0.56, 0.035, 0.03]} position={[0, 0.2, 0]} material={weave(4, 0.4)} />
+        <Box size={[0.56, 0.05, 0.035]} position={[0, 0.0, 0]} material={weave(4, 0.4)} />
+      </group>
+      {[-1, 1].map((s) => (
+        <mesh key={s} position={[s * 0.325, 0.535, 0.03]} rotation-y={Math.PI / 2} material={lattice(0.5 * LATTICE, 0.13 * LATTICE)} castShadow>
+          <planeGeometry args={[0.5, 0.13]} />
+        </mesh>
+      ))}
+      {/* tufted cushion */}
+      <Box size={[0.6, 0.085, 0.56]} position={[0, 0.47, 0.01]} radius={0.035} material={pad} />
+      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => <Ball key={`${sx}${sz}`} r={0.012} position={[sx * 0.14, 0.513, 0.01 + sz * 0.13]} scale={[1, 0.4, 1]} color={shade(cushion, 0.8)} detail={1} shadow={false} />))}
+    </group>
+  )
+}
+
+/**
+ * Shell chair (like a velvet scallop swivel chair): six channel-tufted petals in a fan around a round seat, the outer
+ * ones curling forward as arms, on a chrome five-star base with casters. Velvet Item.body. Fits under a desk.
+ */
+export function ShellChair({ v }: { v: Visual }) {
+  const color = v.opts.body ?? '#f0cfcd'
+  const velvet = mat(color, { roughness: 0.96 })
+  // the inner shell joining the petals (seen from both sides)
+  const inner = useMemo(() => new THREE.MeshStandardMaterial({ color: shade(color, 0.97), roughness: 0.96, side: THREE.DoubleSide }), [color])
+  useEffect(() => () => inner.dispose(), [inner])
+  const R = 0.22
+  const petals = Array.from({ length: 6 }, (_, i) => -1.7 + (i * 3.4) / 5)
+  return (
+    <group>
+      {/* five-star base, casters, gas lift */}
+      {[0, 1, 2, 3, 4].map((i) => (
+        <group key={i} rotation-y={(i * Math.PI * 2) / 5}>
+          <Box size={[0.036, 0.026, 0.27]} position={[0, 0.07, 0.135]} rotation-x={0.08} material={steelBright} />
+          <Ball r={0.024} position={[0, 0.026, 0.265]} color={C.ink} detail={1} shadow={false} />
+        </group>
+      ))}
+      <Cyl r={0.038} h={0.05} position={[0, 0.085, 0]} material={steelBright} segments={16} />
+      <Cyl r={0.022} h={0.26} position={[0, 0.235, 0]} material={steelBright} segments={14} />
+      <Cyl r={0.1} h={0.02} position={[0, 0.37, 0]} color={C.ink} segments={16} shadow={false} />
+      {/* round seat */}
+      <Cyl r={0.24} rTop={0.27} h={0.05} position={[0, 0.405, 0.02]} material={velvet} segments={32} />
+      <Cyl r={0.27} h={0.08} position={[0, 0.47, 0.02]} material={velvet} segments={32} />
+      {/* petals: tallest at the back, the outer ones lower and forward; overlapping, so the seams read as channels */}
+      {petals.map((a) => {
+        const h = 0.42 - 0.1 * (a / 1.7) ** 2
+        return (
+          <group key={a} rotation-y={-a}>
+            <group position={[0, 0.43, -R]} rotation-x={-0.12}>
+              <Box size={[0.2, h, 0.09]} position={[0, h / 2, 0]} radius={0.045} material={velvet} />
+            </group>
+          </group>
+        )
+      })}
+      <mesh position={[0, 0.6, 0]} material={inner}>
+        <cylinderGeometry args={[R + 0.005, R - 0.03, 0.32, 28, 1, true, Math.PI - 1.8, 3.6]} />
+      </mesh>
+    </group>
+  )
+}
+
+/**
+ * Task chair (like an upholstered swivel desk chair): one fabric shell, a seat that sweeps up into a rounded back, on a
+ * five-star base with casters. Fabric Item.body, base Item.top (white or black). Fits under a desk.
+ */
+export function TaskChair({ v }: { v: Visual }) {
+  const fabric = mat(v.opts.body ?? '#93a79b', { roughness: 0.95 })
+  const edge = mat(shade(v.opts.body ?? '#93a79b', 0.82), { roughness: 0.95 })
+  const frame = v.opts.top ?? '#f2efe8'
+  const wheel = shade(frame, 0.72)
+  return (
+    <group>
+      {/* five-star base: legs angled down to the casters */}
+      {[0, 1, 2, 3, 4].map((i) => (
+        <group key={i} rotation-y={(i * Math.PI * 2) / 5 + 0.3}>
+          <Box size={[0.034, 0.03, 0.27]} position={[0, 0.085, 0.135]} rotation-x={0.12} color={frame} />
+          <Cyl r={0.026} h={0.024} position={[0, 0.03, 0.265]} rotation-z={Math.PI / 2} color={wheel} segments={14} shadow={false} />
+        </group>
+      ))}
+      <Cyl r={0.032} rTop={0.026} h={0.32} position={[0, 0.24, 0]} color={frame} segments={14} />
+      <Box size={[0.2, 0.03, 0.2]} position={[0, 0.405, 0]} color={frame} shadow={false} />
+      {/* shell: seat, a curved sweep and a rounded back, with a darker piping edge */}
+      <Box size={[0.48, 0.075, 0.46]} position={[0, 0.455, 0.03]} rotation-x={-0.04} radius={0.035} material={fabric} />
+      <Box size={[0.46, 0.14, 0.06]} position={[0, 0.5, -0.2]} rotation-x={-0.75} radius={0.028} material={fabric} />
+      <group position={[0, 0.54, -0.23]} rotation-x={-0.18}>
+        <Box size={[0.44, 0.42, 0.06]} position={[0, 0.23, 0]} radius={0.029} material={fabric} />
+        <Cyl r={0.22} h={0.06} position={[0, 0.39, 0]} rotation-x={Math.PI / 2} scale={[1, 1, 0.45]} material={fabric} segments={24} />
+        <Box size={[0.452, 0.44, 0.012]} position={[0, 0.24, -0.032]} radius={0.006} material={edge} shadow={false} />
+      </group>
     </group>
   )
 }
