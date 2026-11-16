@@ -24,7 +24,7 @@ export const WALL_MOUNTED: ItemKind[] = ['wallLight', 'ledStrip', 'mirrorLight',
  * Items that can optionally hang on a wall (Item.mount 'wall', e.g. a power strip). While hung they behave like wall
  * items (wall layer, stick to the wall, adjustable height).
  */
-export const MOUNTABLE: ItemKind[] = ['powerStrip']
+export const MOUNTABLE: ItemKind[] = ['powerStrip', 'brickModel']
 
 /** Default for items without a height: the LED strip is drawn from the strip itself (others 0: at their own height). */
 export const DEFAULT_MOUNT_Y: Partial<Record<ItemKind, number>> = { ledStrip: 2.45 }
@@ -51,6 +51,8 @@ const WALL_SPAN: Record<string, [number, number]> = {
   'mirror:tall': [0.25, 1.87],
   'mirror:small': [1.267, 1.833],
   shutterMirror: [1.12, 2.17],
+  // Brick model on its floating wall shelf (kit/bricks.tsx > BRICK_SHELF_Y); the tallest model (TIE fighter) sets the top
+  brickModel: [1.37, 1.68],
   mirrorCabinet: [1.137, 1.85],
   wallFan: [1.853, 2.264],
   'tv:wall': [0.89, 1.71],

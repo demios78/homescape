@@ -160,7 +160,7 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   // Carved frame with an arched mirror and two spindle shutters; wall-hung (rules.ts > WALL_SPAN)
   shutterMirror: { label: t('Carved shutter mirror'), group: 'decor', domains: [], size: [0.95, 0.06], labelY: 2.35, wall: true },
   // Built brick display model (Item.variant picks it; BRICK_MODEL_SIZE sets the footprint); on a shelf, desk or the floor
-  brickModel: { label: t('Brick model'), group: 'decor', domains: [], size: [0.44, 0.32], labelY: 0.5 },
+  brickModel: { label: t('Brick model'), group: 'decor', domains: ['switch', 'light'], size: [0.44, 0.32], labelY: 0.5 },
   // Free-standing oval mirror tilting between two turned posts
   chevalMirror: { label: t('Cheval mirror'), group: 'decor', domains: [], size: [0.62, 0.45], labelY: 1.7 },
   mirror: { label: t('Mirror'), group: 'decor', domains: [], size: [0.56, 0.05], labelY: 2.05, wall: true },
