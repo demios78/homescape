@@ -11,7 +11,7 @@ import { markShadows } from '../frame'
 import { Glow, StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { baseplateTopTexture, beadboardTexture, carvedPanelTexture, dashSeatTexture, embroideredBackTexture, paintedTopTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, wickerLatticeTexture, wickerTexture } from './textures'
+import { baseplateTopTexture, beadboardTexture, wineLatticeTexture, carvedPanelTexture, dashSeatTexture, embroideredBackTexture, paintedTopTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, wickerLatticeTexture, wickerTexture } from './textures'
 import { gainOf, type Visual } from './visual'
 
 /*
@@ -2286,6 +2286,87 @@ export function WingChair({ v }: { v: Visual }) {
         </group>
       ))}
       <Box size={[0.3, 0.3, 0.08]} position={[0, 0.66, -0.12]} rotation-x={-0.12} color="#1f2a44" radius={0.03} />
+    </group>
+  )
+}
+
+/**
+ * Built-in coffee bar hutch (like a two-tone kitchen buffet): a distressed black base with drawers and raised panel doors
+ * between cherry fluted columns, a granite top at 0.91 m (coffee machines stand on it); above, two black glass-front
+ * cabinets, a cherry cabinet over a diagonal wine rack, three cherry drawers, and cherry crown molding. 1.75 × 0.6 m, back
+ * against the wall, front +z.
+ */
+export function CoffeeHutch() {
+  const W = 1.75
+  const D = 0.6
+  const black = mat('#1f1d1a', { roughness: 0.55 })
+  const panel = mat('#2a2723', { roughness: 0.5 })
+  const cherry = mat('#8a4a2a', { roughness: 0.5 })
+  const bronze = mat('#5a4430', { metalness: 0.6, roughness: 0.4 })
+  const granite = mat('#b8a07a', { roughness: 0.35 })
+  const glass = mat('#2f3a40', { opacity: 0.55, roughness: 0.1 })
+  const rack = useMemo(() => {
+    const t = wineLatticeTexture().clone()
+    t.repeat.set(5, 3)
+    t.needsUpdate = true
+    return new THREE.MeshStandardMaterial({ map: t, roughness: 0.6 })
+  }, [])
+  useEffect(() => () => rack.dispose(), [rack])
+  const fz = D / 2
+  const door = (x: number, w: number, y: number, h: number, knob: number) => (
+    <group key={`${x}${y}`}>
+      <Box size={[w, h, 0.02]} position={[x, y, fz + 0.01]} material={black} radius={0.006} />
+      <Box size={[w - 0.08, h - 0.08, 0.008]} position={[x, y, fz + 0.022]} material={panel} shadow={false} />
+      <Ball r={0.014} position={[x + knob, y + (h > 0.3 ? 0.16 - h / 2 + 0.3 : 0), fz + 0.03]} material={bronze} detail={1} shadow={false} />
+    </group>
+  )
+  const upZ = -D / 2 + 0.16
+  return (
+    <group>
+      {/* base */}
+      <Box size={[W, 0.1, D - 0.04]} position={[0, 0.05, -0.02]} material={cherry} />
+      <Box size={[W - 0.12, 0.78, D - 0.04]} position={[0, 0.49, -0.02]} material={black} />
+      {[-1, 1].map((s) => (
+        <group key={s}>
+          <Cyl r={0.04} h={0.72} position={[s * (W / 2 - 0.04), 0.48, fz - 0.04]} material={cherry} segments={12} />
+          <Box size={[0.08, 0.88, D - 0.04]} position={[s * (W / 2 - 0.04), 0.44, -0.04]} material={cherry} />
+        </group>
+      ))}
+      {door(-0.58, 0.36, 0.78, 0.14, 0)}
+      {door(-0.58, 0.36, 0.42, 0.52, 0.13)}
+      {door(-0.19, 0.38, 0.5, 0.68, 0.14)}
+      {door(0.21, 0.38, 0.5, 0.68, -0.14)}
+      {door(0.6, 0.34, 0.78, 0.14, 0)}
+      {door(0.6, 0.34, 0.42, 0.52, -0.12)}
+      <Box size={[W + 0.04, 0.03, D + 0.03]} position={[0, 0.895, 0.01]} material={granite} radius={0.008} />
+      <Box size={[W, 0.08, 0.02]} position={[0, 0.95, -D / 2 + 0.01]} material={granite} shadow={false} />
+      {/* uppers: left glass cabinet */}
+      <Box size={[0.42, 1.0, 0.32]} position={[-0.6, 1.9, upZ]} material={black} />
+      <Box size={[0.32, 0.88, 0.01]} position={[-0.6, 1.9, upZ + 0.163]} material={glass} shadow={false} />
+      {/* center: cherry cabinet over the wine rack */}
+      <Box size={[0.74, 0.5, 0.34]} position={[0.04, 2.15, upZ]} material={cherry} />
+      {[-0.17, 0.17].map((x) => (
+        <group key={x}>
+          <Box size={[0.33, 0.44, 0.01]} position={[0.04 + x, 2.15, upZ + 0.175]} material={mat('#9a5634', { roughness: 0.5 })} shadow={false} />
+          <Ball r={0.013} position={[0.04 + x - Math.sign(x) * 0.13, 2.0, upZ + 0.19]} material={bronze} detail={1} shadow={false} />
+        </group>
+      ))}
+      <Box size={[0.74, 0.46, 0.34]} position={[0.04, 1.67, upZ]} material={cherry} />
+      <Box size={[0.66, 0.38, 0.005]} position={[0.04, 1.66, upZ + 0.172]} material={rack} shadow={false} />
+      {/* right: three cherry drawers on the counter, a narrow glass cabinet above */}
+      <Box size={[0.26, 0.48, 0.3]} position={[0.55, 1.15, upZ]} material={cherry} />
+      {[0, 1, 2].map((i) => (
+        <group key={i}>
+          <Box size={[0.24, 0.14, 0.01]} position={[0.55, 0.99 + i * 0.155, upZ + 0.155]} material={mat('#9a5634', { roughness: 0.5 })} shadow={false} />
+          <Box size={[0.06, 0.015, 0.015]} position={[0.55, 0.99 + i * 0.155, upZ + 0.165]} material={bronze} shadow={false} />
+        </group>
+      ))}
+      <Box size={[0.3, 0.9, 0.32]} position={[0.7, 1.95, upZ]} material={black} />
+      <Box size={[0.22, 0.78, 0.01]} position={[0.7, 1.95, upZ + 0.163]} material={glass} shadow={false} />
+      {/* crown */}
+      <Box size={[0.48, 0.08, 0.38]} position={[-0.6, 2.44, upZ + 0.02]} material={cherry} />
+      <Box size={[0.8, 0.1, 0.4]} position={[0.04, 2.45, upZ + 0.03]} material={cherry} />
+      <Box size={[0.36, 0.08, 0.38]} position={[0.7, 2.44, upZ + 0.02]} material={cherry} />
     </group>
   )
 }

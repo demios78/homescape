@@ -1505,3 +1505,31 @@ export function paintedTopTexture() {
     512,
   )
 }
+
+/** Wine rack front: cherry diagonal lattice over a dark back (one tile, repeats) */
+export function wineLatticeTexture() {
+  return base('wine-lattice', (g, s) => {
+    g.fillStyle = '#2a1810'
+    g.fillRect(0, 0, s, s)
+    g.strokeStyle = '#9a5634'
+    g.lineWidth = s * 0.07
+    g.lineCap = 'square'
+    for (const d of [-s, 0, s]) {
+      g.beginPath()
+      g.moveTo(d, 0)
+      g.lineTo(d + s, s)
+      g.stroke()
+      g.beginPath()
+      g.moveTo(d + s, 0)
+      g.lineTo(d, s)
+      g.stroke()
+    }
+    // a few bottles in the cells
+    g.fillStyle = '#111'
+    for (const [x, y] of [[0.5, 0.18], [0.18, 0.5], [0.82, 0.5]]) {
+      g.beginPath()
+      g.arc(x * s, y * s, s * 0.09, 0, Math.PI * 2)
+      g.fill()
+    }
+  })
+}

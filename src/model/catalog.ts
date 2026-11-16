@@ -244,6 +244,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   displayShelf: { label: t('Display bookcase'), group: 'furniture', domains: ['switch', 'light'], size: [2.4, 0.35], labelY: 2.5, wall: true },
   // Tall slim wall shelf unit (like a LACK): five open compartments from 0.65 to 2.45 m, with brick trees, a brick cabin, a doll and books
   wallShelfUnit: { label: t('Tall wall shelf'), group: 'furniture', domains: [], size: [0.3, 0.26], labelY: 2.5, wall: true },
+  // Built-in coffee bar hutch: black base with a granite top, cherry trim, glass cabinets, a wine rack and drawers above
+  coffeeHutch: { label: t('Coffee bar hutch'), group: 'appliance', domains: [], size: [1.75, 0.6], labelY: 2.6, wall: true },
   brickDrawers: { label: t('Clear drawer tower'), group: 'furniture', domains: [], size: [1.2, 0.4], labelY: 1.35, wall: true },
   stairs: { label: t('Stairs'), group: 'structure', domains: [], size: [1, 3.2], labelY: 3 },
   garageDoor: { label: t('Garage door'), group: 'structure', domains: ['cover', 'binary_sensor', 'switch'], size: [2.6, 0.2], labelY: 2.6, wall: true },

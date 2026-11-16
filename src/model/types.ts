@@ -133,6 +133,7 @@ export type ItemKind =
   | 'storageRack'
   | 'brickDrawers'
   | 'displayShelf'
+  | 'coffeeHutch'
   | 'wallShelfUnit'
   | 'stairs'
   | 'garageDoor'
