@@ -133,7 +133,7 @@ export const CLEAR: Record<Mover, number> = { cat: 0.1, dog: 0.15, person: 0.18 
 /** Items it can pass under (table, chair); people none */
 const UNDER: Record<Mover, ItemKind[]> = {
   person: [],
-  cat: ['diningTable', 'coffeeTable', 'roundTable', 'desk', 'chair', 'gamingChair', 'shellChair','outdoorTable', 'lounger', 'swing', 'clothesRack', 'workbench'],
+  cat: ['diningTable', 'coffeeTable', 'roundTable', 'desk', 'chair', 'gamingChair', 'shellChair', 'ironingBoard', 'outdoorTable', 'lounger', 'swing', 'clothesRack', 'workbench'],
   dog: ['diningTable', 'desk', 'outdoorTable', 'swing', 'clothesRack'],
 }
 /** Items that can be walked over or through */
@@ -498,7 +498,12 @@ export function petPlaces(level: Level, species: Species): PetPlace[] {
       }
       case 'armchair':
       case 'wickerChair':
-        if (cat) add(it, 'nap', 0, 0.1, it.kind === 'wickerChair' ? 0.52 : 0.44, it.rot, 'curl')
+      case 'wickerWing':
+        if (cat) add(it, 'nap', 0, 0.1, it.kind === 'wickerChair' ? 0.52 : it.kind === 'wickerWing' ? 0.47 : 0.44, it.rot, 'curl')
+        break
+      case 'storageBench':
+        // the cushion of a window seat: a sunny nap
+        if (cat) add(it, 'nap', w * 0.2, 0, 0.56, it.rot + Math.PI / 2, 'curl')
         break
       case 'bed':
         add(it, 'nap', cat ? 0.35 : 0, 0.62, 0.54, it.rot + Math.PI / 2, cat ? 'curl' : 'lie')

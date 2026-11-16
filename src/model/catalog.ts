@@ -90,6 +90,12 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   shellChair: { label: t('Shell chair'), group: 'furniture', domains: [], size: [0.64, 0.62], labelY: 1.05 },
   // Swivel task chair: a one-piece upholstered shell on a five-star base with casters; fits under a desk
   taskChair: { label: t('Task chair'), group: 'furniture', domains: [], size: [0.6, 0.6], labelY: 1.1 },
+  // Low cabinet with carved openwork doors and a seat cushion; doors open (model/containers.ts > INTERIOR)
+  storageBench: { label: t('Storage bench'), group: 'furniture', domains: [], size: [1.22, 0.42], labelY: 0.9, wall: true },
+  // Tall wicker wingback with rolled arms and a seat cushion; frame Item.body, cushion Item.top
+  wickerWing: { label: t('Wicker wing chair'), group: 'furniture', domains: [], size: [0.86, 0.78], labelY: 1.4 },
+  // Board on crossed legs with an iron; a bound plug or switch is the iron
+  ironingBoard: { label: t('Ironing board'), group: 'appliance', domains: ['switch'], size: [1.37, 0.4], labelY: 1.3 },
   coffeeTable: { label: t('Coffee table'), group: 'furniture', domains: [], size: [1.1, 0.6], labelY: 0.7 },
   consoleTable: { label: t('Console table'), group: 'furniture', domains: [], size: [1.2, 0.35], labelY: 1 },
   roundTable: { label: t('Round side table'), group: 'furniture', domains: [], size: [0.6, 0.6], labelY: 0.7 },
@@ -412,7 +418,31 @@ export const FABRIC_COLORS: [string, string][] = [
 export const WICKER_COLORS: [string, string][] = [
   [t('White'), '#f2efe8'],
   [t('Natural'), '#c9a26a'],
+  [t('Weathered'), '#9c8a78'],
   [t('Black'), '#2e2c2a'],
+]
+/** Carved wood finishes (storage bench). */
+export const CARVED_COLORS: [string, string][] = [
+  [t('Whitewash'), '#cfcac2'],
+  [t('White'), '#efece6'],
+  [t('Natural'), '#b08860'],
+  [t('Walnut'), '#6b4a34'],
+]
+/** Storage bench cushion colors. */
+export const BENCH_CUSHION_COLORS: [string, string][] = [
+  [t('Pale blue'), '#dfe5ea'],
+  [t('Cream'), '#eee3cc'],
+  [t('Sage'), '#b5c4a8'],
+  [t('Navy'), '#2f3a5c'],
+  [t('Blush'), '#f0cfcd'],
+]
+/** Ironing board cover with a printed leaf pattern instead of a plain color: the swatch shows its base tone. */
+export const COVER_LEAF = '#eef0dc'
+export const COVER_COLORS: [string, string][] = [
+  [t('Leaf print'), COVER_LEAF],
+  [t('White'), '#f4f2ee'],
+  [t('Gray'), '#a9adb4'],
+  [t('Navy'), '#2f3a5c'],
 ]
 /** Cushion with a printed floral pattern instead of a plain color: the swatch shows its base tone. */
 export const CUSHION_FLORAL = '#eadfc9'
@@ -700,7 +730,20 @@ export const OPTIONS: Partial<
   },
   wickerChair: { body: t('Frame color'), bodyList: WICKER_COLORS, bodyDef: '#f2efe8', top: t('Cushion color'), topList: CUSHION_COLORS, topDef: CUSHION_FLORAL },
   shellChair: { body: t('Seat color'), bodyList: FABRIC_COLORS, bodyDef: '#f0cfcd' },
-  taskChair: { body: t('Seat color'), bodyList: FABRIC_COLORS, bodyDef: '#93a79b', top: t('Base color'), topList: WICKER_COLORS.filter(([, c]) => c !== '#c9a26a'), topDef: '#f2efe8' },
+  taskChair: { body: t('Seat color'), bodyList: FABRIC_COLORS, bodyDef: '#93a79b', top: t('Base color'), topList: WICKER_COLORS.filter(([, c]) => c === '#f2efe8' || c === '#2e2c2a'), topDef: '#f2efe8' },
+  storageBench: { body: t('Wood finish'), bodyList: CARVED_COLORS, bodyDef: '#cfcac2', top: t('Cushion color'), topList: BENCH_CUSHION_COLORS, topDef: '#dfe5ea' },
+  wickerWing: { body: t('Frame color'), bodyList: WICKER_COLORS, bodyDef: '#9c8a78', top: t('Cushion color'), topList: [[t('Mauve'), '#9d8796'], ...CUSHION_COLORS], topDef: '#9d8796' },
+  ironingBoard: {
+    top: t('Cover color'),
+    topList: COVER_COLORS,
+    topDef: COVER_LEAF,
+    body: t('Frame color'),
+    bodyList: [
+      [t('White'), '#f1f1ef'],
+      [t('Black'), '#2e2c2a'],
+    ],
+    bodyDef: '#f1f1ef',
+  },
   tvUnit: { top: t('Door color'), body: t('Body color') },
   drawerUnit: { top: t('Top color'), body: t('Body color') },
   wardrobe: { top: t('Door color'), body: t('Body color') },
@@ -1020,6 +1063,7 @@ export const OPTIONS: Partial<
 export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; label?: string }>> = {
   desk: { min: 0.8, max: 2.6 },
   consoleTable: { min: 0.6, max: 2.2, label: t('Table length') },
+  storageBench: { min: 0.8, max: 2, label: t('Bench length') },
   kitchenCounter: { min: 0.6, max: 4, label: t('Counter length') },
   tvUnit: { min: 0.8, max: 3.2, label: t('Unit length') },
   window: { min: 0.5, max: 3, label: t('Window width') },

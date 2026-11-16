@@ -1029,6 +1029,135 @@ export function chintzTexture() {
   }, 256)
 }
 
+/**
+ * Carved openwork door panel (like a hand-carved mango wood cabinet door): a beveled frame around a pierced panel with a
+ * medallion ring, a rosette in the middle, leaf scrolls radiating out and corner sprays; the dark gaps read as openings.
+ * Light on dark, tinted by the material color (whitewash, natural, dark wood). One tile is one door.
+ */
+export function carvedPanelTexture() {
+  return base('carved-panel', (g, s) => {
+    const c = s / 2
+    g.fillStyle = '#f2efe9'
+    g.fillRect(0, 0, s, s)
+    // frame bevel: lighter outer band, shadow line inside
+    g.strokeStyle = '#c9c4bb'
+    g.lineWidth = s * 0.012
+    g.strokeRect(s * 0.02, s * 0.02, s * 0.96, s * 0.96)
+    const m = s * 0.11
+    g.fillStyle = '#6f6a62'
+    g.fillRect(m, m, s - 2 * m, s - 2 * m)
+    g.strokeStyle = '#9d978d'
+    g.lineWidth = s * 0.014
+    g.strokeRect(m - s * 0.01, m - s * 0.01, s - 2 * m + s * 0.02, s - 2 * m + s * 0.02)
+    const light = '#e9e5de'
+    const mid = '#cfc9bf'
+    const leaf = (x: number, y: number, len: number, a: number, w = 0.38) => {
+      g.save()
+      g.translate(x, y)
+      g.rotate(a)
+      g.fillStyle = light
+      g.beginPath()
+      g.moveTo(0, 0)
+      g.quadraticCurveTo(len * 0.5, -len * w, len, 0)
+      g.quadraticCurveTo(len * 0.5, len * w, 0, 0)
+      g.fill()
+      g.strokeStyle = mid
+      g.lineWidth = s * 0.004
+      g.beginPath()
+      g.moveTo(len * 0.1, 0)
+      g.lineTo(len * 0.85, 0)
+      g.stroke()
+      g.restore()
+    }
+    const scroll = (x: number, y: number, r: number, a: number) => {
+      g.strokeStyle = light
+      g.lineWidth = s * 0.016
+      g.beginPath()
+      g.arc(x, y, r, a, a + Math.PI * 1.5)
+      g.stroke()
+    }
+    // dense small leaves fill the panel, so only small gaps stay open (pierced carving)
+    const r = rngT(7)
+    g.save()
+    g.beginPath()
+    g.rect(m, m, s - 2 * m, s - 2 * m)
+    g.clip()
+    for (let i = 0; i < 140; i++) leaf(m + r() * (s - 2 * m), m + r() * (s - 2 * m), s * (0.045 + r() * 0.04), r() * Math.PI * 2, 0.42)
+    g.restore()
+    // corner sprays and edge scrolls (behind the ring)
+    for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
+      const x = c + sx * s * 0.3
+      const y = c + sy * s * 0.3
+      const a = Math.atan2(sy, sx)
+      for (const d of [-0.7, 0, 0.7]) leaf(x, y, s * 0.11, a + Math.PI + d, 0.3)
+      scroll(c + sx * s * 0.33, c, s * 0.04, a)
+      scroll(c, c + sy * s * 0.33, s * 0.04, a + Math.PI / 2)
+    }
+    // medallion ring
+    g.strokeStyle = light
+    g.lineWidth = s * 0.03
+    g.beginPath()
+    g.arc(c, c, s * 0.3, 0, Math.PI * 2)
+    g.stroke()
+    g.strokeStyle = mid
+    g.lineWidth = s * 0.006
+    g.beginPath()
+    g.arc(c, c, s * 0.3, 0, Math.PI * 2)
+    g.stroke()
+    // leaves radiating inside the ring, two layers
+    for (let i = 0; i < 12; i++) leaf(c, c, s * 0.27, (i * Math.PI) / 6, 0.26)
+    for (let i = 0; i < 12; i++) leaf(c, c, s * 0.18, (i * Math.PI) / 6 + Math.PI / 12, 0.4)
+    // rosette
+    for (let i = 0; i < 8; i++) {
+      const a = (i * Math.PI) / 4
+      g.fillStyle = light
+      g.beginPath()
+      g.ellipse(c + Math.cos(a) * s * 0.055, c + Math.sin(a) * s * 0.055, s * 0.05, s * 0.03, a, 0, Math.PI * 2)
+      g.fill()
+      g.strokeStyle = mid
+      g.lineWidth = s * 0.004
+      g.stroke()
+    }
+    g.fillStyle = mid
+    g.beginPath()
+    g.arc(c, c, s * 0.035, 0, Math.PI * 2)
+    g.fill()
+  }, 256)
+}
+
+/** Ironing board cover: green branches, small flowers and blue dots on cream. Tiles about every 40 cm. */
+export function leafPrintTexture() {
+  return base('leaf-print', (g, s) => {
+    g.fillStyle = '#f4f2e8'
+    g.fillRect(0, 0, s, s)
+    const r = rngT(11)
+    g.strokeStyle = '#a9bd3c'
+    g.lineCap = 'round'
+    const branch = (x: number, y: number, a: number, len: number, w: number, depth: number) => {
+      const x1 = x + Math.cos(a) * len
+      const y1 = y + Math.sin(a) * len
+      g.lineWidth = w
+      g.beginPath()
+      g.moveTo(x, y)
+      g.lineTo(x1, y1)
+      g.stroke()
+      if (depth > 0) for (const d of [-0.6, 0.5]) branch(x1, y1, a + d + (r() - 0.5) * 0.3, len * 0.6, w * 0.65, depth - 1)
+    }
+    wrapped(s, s * 0.1, s * 0.6, (x, y) => branch(x, y, -0.5, s * 0.25, s * 0.02, 3))
+    wrapped(s, s * 0.6, s * 0.15, (x, y) => branch(x, y, 0.6, s * 0.22, s * 0.018, 3))
+    for (let i = 0; i < 26; i++) {
+      const x = r() * s
+      const y = r() * s
+      g.fillStyle = i % 3 ? '#b7c75a' : '#8aa3c9'
+      wrapped(s, x, y, (px, py) => {
+        g.beginPath()
+        g.arc(px, py, s * (i % 3 ? 0.012 : 0.008), 0, Math.PI * 2)
+        g.fill()
+      })
+    }
+  }, 256)
+}
+
 function rngT(seed: number) {
   let x = seed >>> 0 || 1
   return () => {

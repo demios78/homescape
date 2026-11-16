@@ -192,9 +192,10 @@ const SEAT = {
   wickerChair: { z: 0.06, y: 0.51, lean: 0.1 },
   shellChair: { z: 0.04, y: 0.51, lean: 0.06 },
   taskChair: { z: 0.03, y: 0.5, lean: 0.04 },
+  wickerWing: { z: 0.08, y: 0.46, lean: 0.12 },
 }
 /** Seat kinds that count as another kind for activities and preferences (a wicker armchair is an armchair) */
-const SEAT_USE = { armchair: 'armchair', chair: 'chair', gamingChair: 'gamingChair', wickerChair: 'armchair', shellChair: 'chair', taskChair: 'chair' } as const
+const SEAT_USE = { armchair: 'armchair', chair: 'chair', gamingChair: 'gamingChair', wickerChair: 'armchair', wickerWing: 'armchair', shellChair: 'chair', taskChair: 'chair' } as const
 
 /** Seats: sofa (2-3), loveseat (2), armchair, chair, gaming chair, wicker, shell and task chair. The person faces the item's local +z. */
 function seats(level: Level, room: Room): Spot[] {
@@ -206,7 +207,11 @@ function seats(level: Level, room: Room): Spot[] {
       const n = it.kind === 'loveseat' ? 2 : (it.len ?? CATALOG.sofa.size[0]) >= 2 ? 3 : 2
       const gap = it.kind === 'loveseat' ? 0.52 : 0.595
       for (let k = 0; k < n; k++) out.push({ ...local(it, (k - (n - 1) / 2) * gap, 0.15), y: base + 0.48, lean: 0.12, rot: it.rot, pose: 'sit', roomId: room.id, use: 'sofa' })
-    } else if (it.kind === 'armchair' || it.kind === 'chair' || it.kind === 'gamingChair' || it.kind === 'wickerChair' || it.kind === 'shellChair' || it.kind === 'taskChair') {
+    } else if (it.kind === 'storageBench') {
+      // Cushion top 0.55 m, no backrest: one person per 60 cm, sitting near the front edge
+      const n = Math.max(1, Math.floor((it.len ?? CATALOG.storageBench.size[0]) / 0.6))
+      for (let k = 0; k < n; k++) out.push({ ...local(it, (k - (n - 1) / 2) * 0.6, 0.04), y: base + 0.55, lean: 0, rot: it.rot, pose: 'sit', roomId: room.id, use: 'sofa' })
+    } else if (it.kind === 'armchair' || it.kind === 'chair' || it.kind === 'gamingChair' || it.kind === 'wickerChair' || it.kind === 'wickerWing' || it.kind === 'shellChair' || it.kind === 'taskChair') {
       const s = SEAT[it.kind]
       out.push({ ...local(it, 0, s.z), y: base + s.y, lean: s.lean, rot: it.rot, pose: 'sit', roomId: room.id, use: SEAT_USE[it.kind] })
     }

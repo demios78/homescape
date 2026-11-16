@@ -4,14 +4,14 @@ import * as THREE from 'three'
 import { domainOf, isActive, lightColor, lightLevel } from '@/ha/derive'
 import { t } from '@/i18n'
 import { HEADBOARD } from '@/model/bindings'
-import { BED_FLORAL, bedModel, CATALOG, CUSHION_FLORAL, RUG_DEFAULT, sizeOf } from '@/model/catalog'
+import { BED_FLORAL, bedModel, CATALOG, COVER_LEAF, CUSHION_FLORAL, RUG_DEFAULT, sizeOf } from '@/model/catalog'
 import { DRAWER_SLIDE } from '@/model/containers'
 import { SINK_W } from '@/model/counter'
 import { markShadows } from '../frame'
-import { StripGlow, useEased, useLitMaterial, Wash } from './effects'
+import { Glow, StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { beadboardTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, medallionTexture, rugTexture, wickerLatticeTexture, wickerTexture } from './textures'
+import { beadboardTexture, carvedPanelTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, wickerLatticeTexture, wickerTexture } from './textures'
 import { gainOf, type Visual } from './visual'
 
 /*
@@ -418,6 +418,182 @@ export function TaskChair({ v }: { v: Visual }) {
         <Box size={[0.44, 0.42, 0.06]} position={[0, 0.23, 0]} radius={0.029} material={fabric} />
         <Cyl r={0.22} h={0.06} position={[0, 0.39, 0]} rotation-x={Math.PI / 2} scale={[1, 1, 0.45]} material={fabric} segments={24} />
         <Box size={[0.452, 0.44, 0.012]} position={[0, 0.24, -0.032]} radius={0.006} material={edge} shadow={false} />
+      </group>
+    </group>
+  )
+}
+
+/* ---------- storage bench, wicker wing chair, ironing board ---------- */
+
+/** Storage bench: height of the cabinet top (the cushion sits on it) */
+const BENCH_H = 0.47
+
+/**
+ * Storage bench (like a carved mango wood window seat): a low cabinet on short feet with carved openwork doors (one about
+ * every 40 cm, Item.len 0.8-2 m) and a loose seat cushion. Finish Item.body, cushion Item.top. Doors open like any cabinet
+ * (model/containers.ts > INTERIOR); people sit on the cushion.
+ */
+export function StorageBench({ v }: { v: Visual }) {
+  const L = v.opts.len ?? CATALOG.storageBench.size[0]
+  const D = CATALOG.storageBench.size[1]
+  const wood = v.opts.body ?? '#cfcac2'
+  const cushion = v.opts.top ?? '#dfe5ea'
+  const n = Math.max(2, Math.round(L / 0.4))
+  const gap = 0.025
+  const doorW = (L - 0.07 - (n - 1) * gap) / n
+  const carved = patternMaterial('carved', carvedPanelTexture, wood, 1, 1, { roughness: 0.85 })
+  const open = v.open ?? 0
+  const H = BENCH_H - 0.05
+  return (
+    <group>
+      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => <Cyl key={`${sx}${sz}`} r={0.022} rTop={0.03} h={0.05} position={[sx * (L / 2 - 0.05), 0.025, sz * (D / 2 - 0.05)]} color={shade(wood, 0.85)} segments={10} />))}
+      <Carcass w={L} h={H} d={D - 0.02} y={0.05} color={wood} shelves={[0.21]} />
+      {Array.from({ length: n }, (_, i) => (
+        <SwingDoor key={i} w={doorW} h={H - 0.06} at={[-L / 2 + 0.035 + doorW / 2 + i * (doorW + gap), 0.05 + H / 2, (D - 0.02) / 2 + 0.009]} hinge={i === n - 1 ? 'r' : 'l'} open={open} color={wood} handle={0} material={carved} />
+      ))}
+      <Box size={[L - 0.01, 0.075, D - 0.01]} position={[0, BENCH_H + 0.04, 0]} radius={0.03} color={cushion} />
+    </group>
+  )
+}
+
+/** Wingback crest: tall wings at the sides, a dip, a gentle peak in the middle (local x, y in meters) */
+const WING_CREST: [number, number][] = [
+  [-0.38, 0.62],
+  [-0.36, 0.76],
+  [-0.27, 0.8],
+  [-0.15, 0.7],
+  [0, 0.75],
+  [0.15, 0.7],
+  [0.27, 0.8],
+  [0.36, 0.76],
+  [0.38, 0.62],
+]
+let wingGeo: readonly [THREE.ExtrudeGeometry, THREE.TubeGeometry] | null = null
+function wingBack() {
+  if (!wingGeo) {
+    const crest = new THREE.SplineCurve(WING_CREST.map(([x, y]) => new THREE.Vector2(x, y))).getPoints(40)
+    const sh = new THREE.Shape()
+    sh.moveTo(-0.38, 0)
+    for (const p of crest) sh.lineTo(p.x, p.y)
+    sh.lineTo(0.38, 0)
+    sh.closePath()
+    const back = new THREE.ExtrudeGeometry(sh, { depth: 0.07, bevelEnabled: false, curveSegments: 24 })
+    back.translate(0, 0, -0.035)
+    const rim = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(WING_CREST.map(([x, y]) => new THREE.Vector3(x, y, 0))), 64, 0.035, 8, false)
+    wingGeo = [back, rim] as const
+  }
+  return wingGeo
+}
+
+/**
+ * Wicker wing chair (like a tall rattan wingback): a high back with a wavy braided crest, wings that sweep into thick rolled
+ * arms, a woven apron with a round medallion in front, wrapped legs and a seat cushion. Frame Item.body, cushion Item.top.
+ */
+export function WickerWing({ v }: { v: Visual }) {
+  const color = v.opts.body ?? '#9c8a78'
+  const cushion = v.opts.top ?? '#9d8796'
+  const weave = (rx: number, ry: number, turn = false) => patternMaterial('wicker', wickerTexture, color, rx, ry, { turn, roughness: 0.85 })
+  const pad = cushion === CUSHION_FLORAL ? patternMaterial('chintz', chintzTexture, '#ffffff', 0.62 / 0.4, 0.6 / 0.4) : mat(cushion, { roughness: 0.95 })
+  const [back, crest] = wingBack()
+  return (
+    <group>
+      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => <Cyl key={`${sx}${sz}`} r={0.026} rTop={0.032} h={0.16} position={[sx * 0.34, 0.08, sz * 0.3]} material={weave(1, 4, true)} segments={10} />))}
+      {/* woven base with the apron medallion */}
+      <Box size={[0.74, 0.2, 0.66]} position={[0, 0.26, 0.01]} radius={0.03} material={weave(5, 1.5)} />
+      <mesh position={[0, 0.25, 0.345]} castShadow material={weave(6, 1, true)}>
+        <torusGeometry args={[0.06, 0.016, 8, 20]} />
+      </mesh>
+      <Box size={[0.62, 0.1, 0.6]} position={[0, 0.41, 0.04]} radius={0.04} material={pad} />
+      {/* rolled arms over woven side panels */}
+      {[-1, 1].map((s) => (
+        <group key={s}>
+          <Box size={[0.08, 0.26, 0.62]} position={[s * 0.36, 0.48, 0.02]} radius={0.03} material={weave(4.5, 2)} />
+          <Cyl r={0.065} h={0.66} position={[s * 0.37, 0.62, 0.02]} rotation-x={Math.PI / 2} material={weave(30, 1, true)} segments={16} />
+        </group>
+      ))}
+      {/* wings: rise from the arms to the crest, flaring outward at the front */}
+      {[-1, 1].map((s) => (
+        <group key={s} position={[s * 0.37, 0.62, -0.3]} rotation-y={s * 0.22}>
+          <Box size={[0.06, 0.56, 0.36]} position={[0, 0.28, 0.16]} radius={0.025} material={weave(2.5, 4)} />
+          <Cyl r={0.04} h={0.56} position={[0, 0.3, 0.33]} rotation-x={0.12} material={weave(1, 25, true)} segments={12} />
+        </group>
+      ))}
+      {/* high back with a braided crest */}
+      <group position={[0, 0.36, -0.34]} rotation-x={-0.08}>
+        <mesh geometry={back} material={weave(1 / 0.15, 1 / 0.15)} castShadow receiveShadow />
+        <mesh geometry={crest} position={[0, 0, 0.02]} material={weave(40, 1, true)} castShadow />
+      </group>
+    </group>
+  )
+}
+
+/** Ironing board outline: a square end at +x and a rounded nose at -x (local x, z; meters) */
+let boardGeo: THREE.ExtrudeGeometry | null = null
+function boardTop() {
+  if (!boardGeo) {
+    const sh = new THREE.Shape()
+    sh.moveTo(0.64, -0.19)
+    sh.quadraticCurveTo(0.685, -0.19, 0.685, -0.15)
+    sh.lineTo(0.685, 0.15)
+    sh.quadraticCurveTo(0.685, 0.19, 0.64, 0.19)
+    sh.lineTo(-0.2, 0.19)
+    sh.bezierCurveTo(-0.5, 0.19, -0.685, 0.1, -0.685, 0)
+    sh.bezierCurveTo(-0.685, -0.1, -0.5, -0.19, -0.2, -0.19)
+    sh.closePath()
+    boardGeo = new THREE.ExtrudeGeometry(sh, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.008, bevelSegments: 2, curveSegments: 20 })
+    // the shape lies in x, y and is extruded along +z; turned flat its top face is at y 0
+    boardGeo.rotateX(Math.PI / 2)
+  }
+  return boardGeo
+}
+
+/** A tube from a to b (local x, y; at a fixed z) */
+function Rod({ a, b, z, r, color }: { a: [number, number]; b: [number, number]; z: number; r: number; color: string }) {
+  const dx = b[0] - a[0]
+  const dy = b[1] - a[1]
+  return <Cyl r={r} h={Math.hypot(dx, dy)} position={[(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, z]} rotation-z={-Math.atan2(dx, dy)} color={color} segments={10} />
+}
+
+/** Ironing board: height of the board top */
+const BOARD_Y = 0.9
+
+/**
+ * Ironing board: a padded board with a nose at one end on crossed tube legs with T feet, and an iron standing on its heel at
+ * the square end. Cover Item.top (leaf print or plain), frame Item.body. A bound plug or switch is the iron: its light glows
+ * red while on.
+ */
+export function IroningBoard({ v }: { v: Visual }) {
+  const cover = v.opts.top ?? COVER_LEAF
+  const frame = v.opts.body ?? '#f1f1ef'
+  const top = cover === COVER_LEAF ? patternMaterial('leaf-print', leafPrintTexture, '#ffffff', 1 / 0.4, 1 / 0.4) : mat(cover, { roughness: 0.95 })
+  const on = v.on && !v.unavailable
+  return (
+    <group>
+      <mesh geometry={boardTop()} position={[0, BOARD_Y, 0]} material={top} castShadow receiveShadow />
+      <Box size={[1.1, 0.02, 0.3]} position={[0.05, BOARD_Y - 0.045, 0]} color={shade(frame, 0.9)} shadow={false} />
+      {/* crossed legs, one pair on each side, T feet on the floor */}
+      {[-0.1, 0.1].map((z) => (
+        <group key={z}>
+          <Rod a={[-0.32, BOARD_Y - 0.05]} b={[0.3, 0.03]} z={z} r={0.013} color={frame} />
+          <Rod a={[0.36, BOARD_Y - 0.05]} b={[-0.36, 0.03]} z={z} r={0.013} color={frame} />
+        </group>
+      ))}
+      {[0.3, -0.36].map((x) => (
+        <group key={x}>
+          <Cyl r={0.016} h={0.4} position={[x, 0.02, 0]} rotation-x={Math.PI / 2} color={frame} segments={10} />
+          {[-0.2, 0.2].map((z) => (
+            <Cyl key={z} r={0.02} h={0.03} position={[x, 0.02, z]} rotation-x={Math.PI / 2} color={C.inkSoft} segments={10} shadow={false} />
+          ))}
+        </group>
+      ))}
+      <Cyl r={0.014} h={0.24} position={[-0.02, 0.46, 0]} rotation-x={Math.PI / 2} color={frame} segments={10} shadow={false} />
+      {/* the iron, standing on its heel */}
+      <group position={[0.52, BOARD_Y + 0.01, 0.02]}>
+        <Box size={[0.07, 0.25, 0.11]} position={[0, 0.125, 0]} radius={0.03} color="#3a2a30" />
+        <Box size={[0.02, 0.26, 0.115]} position={[0.042, 0.13, 0]} radius={0.008} material={steelBright} />
+        <Box size={[0.07, 0.04, 0.05]} position={[-0.05, 0.14, 0]} radius={0.015} color="#7a1f2a" />
+        <Ball r={0.012} position={[-0.038, 0.05, 0.035]} color={on ? '#ff5a3a' : '#5a4044'} detail={1} shadow={false} />
+        {on && <Glow position={[-0.05, 0.05, 0.035]} color="#ff5a3a" opacity={v.night ? 0.9 : 0.5} size={0.12} />}
       </group>
     </group>
   )
