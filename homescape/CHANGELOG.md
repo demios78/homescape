@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.27 (demios78 fork)
+
+- New: an embroidered folding chair and a hand-painted three-legged side table.
+
 ## 0.2.1-dm.26 (demios78 fork)
 
 - New: a tufted velvet sofa, glass and iron coffee and end tables, and a brick lighthouse model.
