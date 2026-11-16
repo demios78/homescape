@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.21 (demios78 fork)
+
+- Coffee tables can have a brick baseplate top (blue plates, a green plate, a train track loop).
+
 ## 0.2.1-dm.20 (demios78 fork)
 
 - New furniture: a clear drawer tower (3 x 12 drawers full of bricks) with an oak top.
