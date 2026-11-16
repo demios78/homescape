@@ -153,6 +153,8 @@ interface LayoutState {
   setTheme: (theme: Theme) => void
   /** Changes the arrangement of this home's Dashboard (goes into the undo history; an empty layout is removed) */
   updateDashboard: (fn: (d: DashboardLayout) => DashboardLayout | null) => void
+  /** Hides or shows a room's name label in View mode, on any floor (one undo step) */
+  setRoomLabel: (roomId: string, hidden: boolean) => void
 
   checkpoint: () => void
   /** Go back to the last checkpoint and drop it from the history (to undo a drag dropped at an invalid spot) */
@@ -335,6 +337,21 @@ export const useLayout = create<LayoutState>()(
           set({ multi: null, selection: null })
         },
         setTheme: (theme) => set({ theme }),
+        setRoomLabel: (roomId, hidden) => {
+          const { layout, past } = get()
+          if (!layout) return
+          const levels = layout.levels.map((l) => ({
+            ...l,
+            rooms: l.rooms.map((r) => {
+              if (r.id !== roomId) return r
+              const next = { ...r }
+              if (hidden) next.hideLabel = true
+              else delete next.hideLabel
+              return next
+            }),
+          }))
+          set({ layout: { ...layout, levels }, past: [...past, layout].slice(-HISTORY), future: [] })
+        },
         updateDashboard: (fn) => {
           const { layout, past } = get()
           if (!layout) return

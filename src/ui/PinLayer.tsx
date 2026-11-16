@@ -157,7 +157,7 @@ export default function PinLayer({ stats }: { stats: Record<string, RoomStats> }
       <div className={`transition-opacity duration-200 ${placing ? 'opacity-25' : ''}`}>
         {/* Street surfaces (road, sidewalk, crosswalk, parking) show no name in view mode; in edit mode they show with their size */}
         {(level?.rooms ?? [])
-          .filter((r) => edit || (labels && !isStreetSurface(r)))
+          .filter((r) => edit || (labels && !isStreetSurface(r) && !r.hideLabel))
           .map((r) => (
             <RoomTag key={r.id} room={r} stats={stats[r.id]} edit={edit} />
           ))}

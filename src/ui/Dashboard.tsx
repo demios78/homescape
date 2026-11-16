@@ -25,6 +25,7 @@ import {
   Sparkles,
   Square,
   Star,
+  Tag,
   Thermometer,
   Users,
   Zap,
@@ -85,6 +86,20 @@ function Tool({ label, onClick, children, data }: { label: string; onClick: () =
  * section (cards move only among their section: rooms of one floor, the side column, the top cards). Hidden cards are not
  * drawn outside customizing.
  */
+/** Room cards while customizing: show or hide the room's name label in the 3D view (Room.hideLabel) */
+function RoomLabelTool({ roomId }: { roomId: string }) {
+  const hiddenLabel = useLayout((s) => Boolean(s.layout?.levels.some((l) => l.rooms.some((r) => r.id === roomId && r.hideLabel))))
+  return (
+    <Tool
+      label={hiddenLabel ? t('Show the room name in 3D') : t('Hide the room name in 3D')}
+      onClick={() => useLayout.getState().setRoomLabel(roomId, !hiddenLabel)}
+      data="data-dash-room-label"
+    >
+      {hiddenLabel ? <Tag size={14} className="opacity-40" /> : <Tag size={14} />}
+    </Tool>
+  )
+}
+
 function CardFrame({ k, section, keys, children }: { k: string; section: string; keys: string[]; children: ReactNode }) {
   const { editing, dash, drag, setDrag } = useContext(DashEdit)
   const hidden = isHidden(dash, k)
@@ -140,6 +155,7 @@ function CardFrame({ k, section, keys, children }: { k: string; section: string;
         <Tool label={hidden ? t('Show') : t('Hide')} onClick={() => update((d) => toggleHidden(d, k))} data="data-dash-hide">
           {hidden ? <Eye size={14} /> : <EyeOff size={14} />}
         </Tool>
+        {k.startsWith('room:') && <RoomLabelTool roomId={k.slice(5)} />}
       </div>
       {children}
     </div>

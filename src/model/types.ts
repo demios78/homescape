@@ -45,6 +45,8 @@ export interface Room extends Rect {
    * space (geometry.ts > wallOpen). A balcony or terrace side here has no railing.
    */
   open?: string[]
+  /** The room's name label is hidden in View mode (set from the Dashboard's customize mode; Edit always shows it) */
+  hideLabel?: boolean
 }
 
 export type ItemKind =
