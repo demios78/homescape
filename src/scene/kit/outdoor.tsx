@@ -2361,8 +2361,16 @@ function wallShelfGeometry() {
     const stuff: Part[] = []
     const n = 5
     const h = (WS_Y1 - WS_Y0) / n
-    for (const s of [-1, 1]) frame.push({ g: boxG(0.05, WS_Y1 - WS_Y0, WS_D), p: [s * (WS_W / 2 - 0.025), (WS_Y0 + WS_Y1) / 2, 0], c: white })
-    for (let i = 0; i <= n; i++) frame.push({ g: boxG(WS_W, 0.05, WS_D), p: [0, WS_Y0 + i * h, 0], c: white })
+    // Two full height side panels with the shelves set in between them; the panel fronts get a slightly darker edge so
+    // the sides read against a white wall or window frame
+    const SIDE = 0.045
+    for (const s of [-1, 1]) {
+      frame.push({ g: boxG(SIDE, WS_Y1 - WS_Y0 + 0.05, WS_D), p: [s * (WS_W / 2 - SIDE / 2), (WS_Y0 + WS_Y1) / 2, 0], c: '#ecebe6' })
+      frame.push({ g: boxG(SIDE + 0.002, WS_Y1 - WS_Y0 + 0.05, 0.004), p: [s * (WS_W / 2 - SIDE / 2), (WS_Y0 + WS_Y1) / 2, WS_D / 2], c: '#cfcdc6' })
+    }
+    for (let i = 0; i <= n; i++) frame.push({ g: boxG(WS_W - SIDE * 2, 0.05, WS_D - 0.01), p: [0, WS_Y0 + i * h, -0.005], c: white })
+    // a thin back panel so the compartments read as boxes
+    frame.push({ g: boxG(WS_W - SIDE * 2, WS_Y1 - WS_Y0, 0.008), p: [0, (WS_Y0 + WS_Y1) / 2, -WS_D / 2 + 0.004], c: '#f0efea' })
     const shelf = (i: number) => WS_Y0 + i * h + 0.025
     // bottom two: books lying in stacks
     const r = rng(23)
