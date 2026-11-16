@@ -2202,6 +2202,65 @@ function storageRackGeometry() {
   })
 }
 
+/* ---------- clear drawer tower ---------- */
+
+const BD_W = 1.2
+const BD_D = 0.4
+const BD_COLS = 3
+const BD_ROWS = 12
+const BD_H = 1.02
+const BRICK_COLORS = ['#d93636', '#f2cd37', '#2a5fb0', '#5dbb63', '#f2f2f2', '#1d1e22', '#9aa0a8', '#e8833a', '#d85fa8', '#36b0c9', '#7a5434', '#c8a640']
+
+/** Drawer tower parts (built once): clear drawer bodies and fronts; their contents (white dividers, colored bricks) vertex colored. */
+function brickDrawersGeometry() {
+  return cached('brickDrawers', () => {
+    const r = rng(41)
+    const shell: Part[] = []
+    const bits: Part[] = []
+    const cw = (BD_W - 0.04) / BD_COLS
+    const rh = BD_H / BD_ROWS
+    for (let c = 0; c < BD_COLS; c++) {
+      const cx = -BD_W / 2 + 0.02 + cw * (c + 0.5)
+      // a clear housing per stack: sides and back
+      for (const s of [-1, 1]) shell.push({ g: boxG(0.006, BD_H, BD_D - 0.02), p: [cx + s * (cw / 2 - 0.004), BD_H / 2, 0] })
+      shell.push({ g: boxG(cw, BD_H, 0.006), p: [cx, BD_H / 2, -BD_D / 2 + 0.013] })
+      for (let i = 0; i < BD_ROWS; i++) {
+        const y = i * rh
+        // drawer: bottom, front with a lip, sides
+        shell.push({ g: boxG(cw - 0.02, 0.004, BD_D - 0.04), p: [cx, y + 0.008, 0.005] })
+        shell.push({ g: boxG(cw - 0.012, rh - 0.008, 0.006), p: [cx, y + rh / 2, BD_D / 2 - 0.012] })
+        shell.push({ g: boxG(cw - 0.012, 0.006, 0.012), p: [cx, y + rh - 0.006, BD_D / 2 - 0.008] })
+        // contents: a few white divider trays and loose bricks in mixed colors
+        const trays = Math.floor(r() * 4)
+        for (let k = 0; k < trays; k++) bits.push({ g: boxG(0.07, rh * 0.45, 0.09), p: [cx - cw / 2 + 0.05 + r() * (cw - 0.1), y + 0.012 + rh * 0.22, -0.1 + r() * 0.2], c: '#f4f4f2' })
+        const n = 4 + Math.floor(r() * 6)
+        for (let k = 0; k < n; k++) {
+          const w = 0.016 + r() * 0.03
+          bits.push({ g: boxG(w, 0.012 + r() * 0.01, 0.016 + r() * 0.02), p: [cx - cw / 2 + 0.03 + r() * (cw - 0.06), y + 0.016, -0.14 + r() * 0.3], r: [0, r() * Math.PI, 0], c: BRICK_COLORS[Math.floor(r() * BRICK_COLORS.length)] })
+        }
+      }
+    }
+    return { shell: merge(shell), bits: merge(bits) }
+  })
+}
+
+/**
+ * Clear drawer tower (like stacked acrylic brick organizers): three stacks of twelve transparent drawers with white trays
+ * and loose bricks inside, under an oak plank top that overhangs a little (small items stand on it: rules SURFACE_Y).
+ * 1.2 × 0.4 m, back against the wall.
+ */
+export function BrickDrawers() {
+  const g = brickDrawersGeometry()
+  const clear = mat('#dfe9f2', { opacity: 0.28, roughness: 0.08 })
+  return (
+    <group>
+      <M g={g.bits} m={vcMat(0.6)} shadow={false} />
+      <M g={g.shell} m={clear} shadow={false} />
+      <Box size={[BD_W + 0.06, 0.03, BD_D + 0.04]} position={[0, BD_H + 0.025, 0.01]} material={woodMat('#a8713f')} />
+    </group>
+  )
+}
+
 /** Metal shelf (1.2 × 0.45 m, ~1.9 m, back against the wall): dark steel uprights, four galvanized shelves, cardboard boxes and lidded bins (one mesh). */
 export function StorageRack() {
   return <M g={storageRackGeometry()} m={vcMat(0.7, false, false, 0.15)} />

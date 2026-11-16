@@ -131,6 +131,7 @@ export type ItemKind =
   | 'workbench'
   | 'toolWall'
   | 'storageRack'
+  | 'brickDrawers'
   | 'stairs'
   | 'garageDoor'
   // front of the house and street (kit/street.tsx)

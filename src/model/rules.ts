@@ -124,6 +124,7 @@ export const SURFACE_Y: Partial<Record<ItemKind, number>> = {
   dishwasher: 0.86,
   workbench: 0.9,
   storageRack: 0.42,
+  brickDrawers: 1.07,
 }
 
 /** Small items that can be stacked on a surface. */

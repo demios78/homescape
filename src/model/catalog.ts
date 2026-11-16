@@ -235,6 +235,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   workbench: { label: t('Workbench'), group: 'garage', domains: [], size: [1.6, 0.65], labelY: 1.2, wall: true },
   toolWall: { label: t('Tool wall'), group: 'garage', domains: [], size: [1.2, 0.06], labelY: 2.1, wall: true },
   storageRack: { label: t('Metal shelf'), group: 'garage', domains: [], size: [1.2, 0.45], labelY: 2.1, wall: true },
+  // Three stacks of twelve clear drawers full of bricks under an oak plank top; small items stand on top
+  brickDrawers: { label: t('Clear drawer tower'), group: 'furniture', domains: [], size: [1.2, 0.4], labelY: 1.35, wall: true },
   stairs: { label: t('Stairs'), group: 'structure', domains: [], size: [1, 3.2], labelY: 3 },
   garageDoor: { label: t('Garage door'), group: 'structure', domains: ['cover', 'binary_sensor', 'switch'], size: [2.6, 0.2], labelY: 2.6, wall: true },
   // Front of the house and street; models in kit/street.tsx. Floors like road and sidewalk are drawn as rooms
