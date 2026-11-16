@@ -1196,6 +1196,7 @@ export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; lab
 /** Second size (Item.len2): the arm of an L counter (L shapes only), the height of a window */
 export const RESIZABLE2: Partial<Record<ItemKind, { min: number; max: number; label: string; def: number; onlyL?: boolean }>> = {
   kitchenCounter: { min: 1.2, max: 4, label: t('L arm length (from the corner)'), def: 1.8, onlyL: true },
+  stairs: { min: 0, max: 3, label: t('Open well beside the stairs (right side)'), def: 0 },
   window: { min: 0.5, max: 2.3, label: t('Window height'), def: 1.2 },
   rug: { min: 0.5, max: 5, label: t('Rug length'), def: 1.8 },
   doormat: { min: 0.3, max: 1.5, label: t('Doormat length'), def: 0.45 },
