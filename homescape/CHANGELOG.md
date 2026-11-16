@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.33 (demios78 fork)
+
+- Hide a single room's name label in 3D from the Dashboard (Customize, label button on the room card).
+
 ## 0.2.1-dm.32 (demios78 fork)
 
 - Coffee machine models: compact steel espresso machine and burr grinder.
