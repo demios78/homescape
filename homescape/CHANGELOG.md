@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.16 (demios78 fork)
+
+- Stairs can have an open well beside them; railings follow the opening and skip edges under an upper flight.
+
 ## 0.2.1-dm.15 (demios78 fork)
 
 - Sliding closet doors can have colored (frosted or mirrored) panels.
