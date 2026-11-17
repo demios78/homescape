@@ -1049,7 +1049,7 @@ export const OPTIONS: Partial<
       [t('Gray'), '#6e737b'],
     ],
     bodyDef: '#c8323c',
-    note: t("Bind the car's location (device_tracker), lock, battery or charging sensor: it looks see-through while away, the charging port glows green while charging, and the indicators glow yellow while unlocked."),
+    note: t("Bind the car's location (device_tracker), lock, and its charger or charging sensor: it looks see-through while away, the ground around it pulses yellow while charging and glows green once charged, and the indicators glow yellow while unlocked."),
   },
   bicycle: { variantLabel: t('Type'), variants: [['bike', t('Bicycle')], ['ebike', t('E-bike')]], variantDef: 'bike', body: t('Bike frame color'), bodyList: ACCENT_COLORS },
   motorcycle: { variantLabel: t('Type'), variants: [['motorbike', t('Motorcycle')], ['scooter', t('Scooter')]], variantDef: 'motorbike', body: t('Color'), bodyList: ACCENT_COLORS },

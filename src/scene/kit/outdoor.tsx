@@ -11,7 +11,7 @@ import { markShadows } from '../frame'
 import { Glow, Mist, Spin, useAmbient, useEased, useLitMaterial } from './effects'
 import { C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { glowTexture, pegboardTexture, woodGrainTexture } from './textures'
+import { glowTexture, pegboardTexture, softRectTexture, woodGrainTexture } from './textures'
 import { gainOf, type Visual } from './visual'
 
 /*
@@ -1786,6 +1786,44 @@ function carGeometry(kind: string) {
 }
 
 const CAR_KINDS = ['sedan', 'suv', 'hatch', 'crossover', 'compact']
+const CHARGE_YELLOW = '#ffc23a'
+const CHARGE_GREEN = '#3ee07a'
+const CHARGED_STATE = /complete|finished|fully|^charged$|^done$/
+const CHARGING_STATE = /^charging/
+
+/**
+ * Charge state of a car from its main and extra entities (car integration or wall charger): 'charging' while a
+ * battery_charging binary sensor is on, a charge switch (main) is on or a status sensor reads charging; 'charged' while
+ * a status sensor reads complete / finished, or the car is plugged in (binary_sensor plug on) without charging.
+ */
+function carCharge(v: Visual): 'charging' | 'charged' | null {
+  const all = [{ d: v.domain, st: String(v.state).toLowerCase(), dc: String(v.attrs.device_class ?? ''), main: true }, ...v.related.map((e) => ({ d: domainOf(e.entity_id), st: String(e.state).toLowerCase(), dc: deviceClass(e), main: false }))]
+  const charging = all.some((e) => (e.d === 'binary_sensor' && e.dc === 'battery_charging' && e.st === 'on') || (e.main && e.d === 'switch' && e.st === 'on') || (e.d === 'sensor' && CHARGING_STATE.test(e.st) && !CHARGED_STATE.test(e.st)))
+  if (charging) return 'charging'
+  const done = all.some((e) => (e.d === 'sensor' && CHARGED_STATE.test(e.st)) || (e.d === 'binary_sensor' && e.dc === 'plug' && e.st === 'on'))
+  return done ? 'charged' : null
+}
+
+/**
+ * Light on the ground around a charging car: pulses slowly yellow (3 s) while charging, steady green once charged.
+ * Additive at night; by day a plain tint, since adding light to pale paving washes the color out to white.
+ */
+function ChargeGround({ state, w, l, night }: { state: 'charging' | 'charged'; w: number; l: number; night: boolean }) {
+  const ref = useRef<THREE.MeshBasicMaterial>(null)
+  const pulsing = state === 'charging'
+  useAmbient(pulsing)
+  useFrame(({ clock }) => {
+    if (!pulsing || !ref.current) return
+    ref.current.opacity = (night ? 1 : 0.75) * (0.25 + 0.6 * (0.5 + 0.5 * Math.sin((clock.elapsedTime * Math.PI * 2) / 3)))
+  })
+  return (
+    <mesh rotation-x={-Math.PI / 2} position={[0, 0.015, 0]} renderOrder={2} raycast={() => null}>
+      <planeGeometry args={[w / 0.58, l / 0.5]} />
+      <meshBasicMaterial ref={ref} map={softRectTexture()} color={pulsing ? CHARGE_YELLOW : CHARGE_GREEN} transparent opacity={night ? 0.8 : 0.6} depthWrite={false} blending={night ? THREE.AdditiveBlending : THREE.NormalBlending} toneMapped={false} />
+    </mesh>
+  )
+}
+
 const isAway = (domain: string, state: string) => (domain === 'device_tracker' || domain === 'person') && !['home', 'unavailable', 'unknown', ''].includes(state)
 
 /**
@@ -1794,8 +1832,8 @@ const isAway = (domain: string, state: string) => (domain === 'device_tracker' |
  * 'compact' (compact SUV, chrome V grille, arch cladding); body color Item.body (default red). Lower body with rounded edges, wheel arches, dark glass
  * cabin, roof, pillars, mirrors, four wheels with rims.
  * States: away (main or extra device_tracker / person not 'home') the car becomes a faint transparent ghost and parking
- * lines appear on the ground; while charging (extra binary_sensor battery_charging on, or the main switch on) a green
- * pulsing light at the rear left charge port; while unlocked (main or extra lock 'unlocked') the side indicators glow amber.
+ * lines appear on the ground; charging (carCharge: a wall charger or the car's integration) lights the ground around the
+ * car, pulsing slowly yellow with the rear left charge port, and steady green once charged; while unlocked (main or extra lock 'unlocked') the side indicators glow amber.
  */
 export function Car({ v }: P) {
   const kind = CAR_KINDS.includes(v.opts.variant ?? '') ? v.opts.variant! : 'sedan'
@@ -1803,10 +1841,8 @@ export function Car({ v }: P) {
   const g = carGeometry(kind)
   const color = v.opts.body ?? '#c8323c'
   const away = isAway(v.domain, v.state) || v.related.some((e) => isAway(domainOf(e.entity_id), e.state))
-  const charging =
-    (v.domain === 'switch' && v.on) ||
-    (v.domain === 'binary_sensor' && v.attrs.device_class === 'battery_charging' && v.on) ||
-    v.related.some((e) => domainOf(e.entity_id) === 'binary_sensor' && deviceClass(e) === 'battery_charging' && isActive(e))
+  const charge = away ? null : carCharge(v)
+  const charging = charge === 'charging'
   const unlocked = (v.domain === 'lock' && v.state === 'unlocked') || v.related.some((e) => domainOf(e.entity_id) === 'lock' && e.state === 'unlocked')
   const paint = useMemo(() => new THREE.MeshStandardMaterial({ color, roughness: 0.32, metalness: 0.25 }), [color])
   const ghost = useMemo(() => new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.18, depthWrite: false, roughness: 0.5 }), [color])
@@ -1818,9 +1854,9 @@ export function Car({ v }: P) {
     [paint, ghost],
   )
   const amber = useLitMaterial('#d9c7a5', unlocked && !away, C.warn, 1, 2.2)
-  const port = useLitMaterial('#3a3f4c', charging && !away, C.ok, 1, 2.4)
+  const port = useLitMaterial('#3a3f4c', charge != null, charging ? CHARGE_YELLOW : CHARGE_GREEN, 1, 2.4)
   const pulse = useRef<THREE.SpriteMaterial>(null)
-  const pulsing = charging && !away
+  const pulsing = charging
   useAmbient(pulsing)
   useFrame(({ clock }) => {
     if (!pulsing || !pulse.current) return
@@ -1872,9 +1908,10 @@ export function Car({ v }: P) {
       <Box size={[0.012, 0.08, 0.1]} position={portAt} material={m(port)} shadow={false} />
       {pulsing && (
         <sprite position={[portAt[0] - 0.08, portAt[1], portAt[2]]} scale={[0.6, 0.6, 0.6]} renderOrder={10}>
-          <spriteMaterial ref={pulse} map={glowTexture()} color={C.ok} transparent opacity={0.4} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+          <spriteMaterial ref={pulse} map={glowTexture()} color={CHARGE_YELLOW} transparent opacity={0.4} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
         </sprite>
       )}
+      {charge && <ChargeGround state={charge} night={v.night} w={s.W} l={s.outline[0][0] - s.outline[s.outline.length - 2][0]} />}
       {away && (
         <>
           {/* parking lines: show the spot and the selection box while the car is away */}
