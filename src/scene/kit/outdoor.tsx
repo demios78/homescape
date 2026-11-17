@@ -1630,6 +1630,14 @@ type CarSpec = {
   /** B pillar and (on the SUV) roof rails */
   bPillar: number
   rails?: boolean
+  /** a tinted glass roof (instead of a painted one) */
+  glassRoof?: boolean
+  /** a chrome V framing the grille */
+  chromeV?: boolean
+  /** dark plastic cladding over the wheel arches and along the sills */
+  cladding?: boolean
+  /** rim color (default silver) */
+  rim?: string
 }
 
 const CARS: Record<string, CarSpec> = {
@@ -1679,6 +1687,43 @@ const CARS: Record<string, CarSpec> = {
     grille: [0.45, 2.0],
     bPillar: -0.45,
   },
+  // electric crossover: smooth nose without an open grille, a long raked windshield, a fastback roof of tinted glass, dark aero rims
+  crossover: {
+    W: 1.92,
+    wr: 0.37,
+    wy: 0.37,
+    wb: 1.45,
+    arch: 0.44,
+    bottom: 0.28,
+    outline: [[2.22, 0.28], [2.3, 0.48], [2.28, 0.68], [2.12, 0.84], [1.5, 0.94], [0.95, 0.99], [-1.7, 1.05], [-2.16, 1.06], [-2.3, 0.94], [-2.3, 0.45], [-2.22, 0.28]],
+    cabin: [[0.95, 0.98], [0.0, 1.55], [-1.05, 1.6], [-2.02, 1.06]],
+    roof: [[0.03, 1.53], [-0.05, 1.6], [-1.0, 1.62], [-1.25, 1.52]],
+    head: [0.8, 2.24],
+    tail: [0.97, -2.25],
+    grille: [0.42, 2.3],
+    bPillar: -0.5,
+    glassRoof: true,
+    rim: '#3a3f4a',
+  },
+  // compact SUV: an upright boxy body, a chrome V around the grille, roof rails, black arch cladding
+  compact: {
+    W: 1.84,
+    wr: 0.37,
+    wy: 0.37,
+    wb: 1.36,
+    arch: 0.46,
+    bottom: 0.3,
+    outline: [[2.2, 0.3], [2.28, 0.55], [2.26, 0.86], [2.12, 1.0], [1.3, 1.08], [0.95, 1.1], [-2.0, 1.12], [-2.24, 1.05], [-2.28, 0.48], [-2.2, 0.3]],
+    cabin: [[0.95, 1.09], [0.15, 1.64], [-1.85, 1.66], [-2.12, 1.12]],
+    roof: [[0.18, 1.61], [0.08, 1.7], [-1.85, 1.72], [-1.97, 1.62]],
+    head: [0.92, 2.22],
+    tail: [0.98, -2.25],
+    grille: [0.68, 2.29],
+    bPillar: -0.55,
+    rails: true,
+    chromeV: true,
+    cladding: true,
+  },
 }
 
 /** Extrudes a side profile along x (the width) with rounded edges; centered. */
@@ -1727,7 +1772,7 @@ function carGeometry(kind: string) {
       for (const sz of [-1, 1]) {
         const p: V3 = [sx * wheelX, s.wy, sz * s.wb]
         wheels.push({ g: cylG(s.wr, 0.22, 20), p, r: [0, 0, Math.PI / 2], c: '#23262e' })
-        wheels.push({ g: cylG(s.wr * 0.62, 0.226, 16), p, r: [0, 0, Math.PI / 2], c: '#c3c8dc' })
+        wheels.push({ g: cylG(s.wr * 0.62, 0.226, 16), p, r: [0, 0, Math.PI / 2], c: s.rim ?? '#c3c8dc' })
         wheels.push({ g: cylG(s.wr * 0.22, 0.232, 10), p, r: [0, 0, Math.PI / 2], c: '#5a6072' })
       }
     return {
@@ -1740,12 +1785,13 @@ function carGeometry(kind: string) {
   })
 }
 
-const CAR_KINDS = ['sedan', 'suv', 'hatch']
+const CAR_KINDS = ['sedan', 'suv', 'hatch', 'crossover', 'compact']
 const isAway = (domain: string, state: string) => (domain === 'device_tracker' || domain === 'person') && !['home', 'unavailable', 'unknown', ''].includes(state)
 
 /**
  * Car (1.9 × 4.6 m; length along z, front with headlights at +z, rear with red tail lights at -z). Item.variant 'sedan'
- * (default), 'suv', 'hatch'; body color Item.body (default red). Lower body with rounded edges, wheel arches, dark glass
+ * (default), 'suv', 'hatch', 'crossover' (electric, glass roof),
+ * 'compact' (compact SUV, chrome V grille, arch cladding); body color Item.body (default red). Lower body with rounded edges, wheel arches, dark glass
  * cabin, roof, pillars, mirrors, four wheels with rims.
  * States: away (main or extra device_tracker / person not 'home') the car becomes a faint transparent ghost and parking
  * lines appear on the ground; while charging (extra binary_sensor battery_charging on, or the main switch on) a green
@@ -1784,6 +1830,7 @@ export function Car({ v }: P) {
   const sh = !away
   const glass = mat('#2a3550', { roughness: 0.12, metalness: 0.4 })
   const dark = mat(C.ink, { roughness: 0.6 })
+  const chrome = mat('#e4e7ec', { metalness: 0.5, roughness: 0.2 })
   const headM = mat('#fdf6e3', { emissive: '#fff1c9', emissiveIntensity: 0.45, roughness: 0.2 })
   const tailM = mat(C.alarm, { emissive: '#ff3b30', emissiveIntensity: 0.35, roughness: 0.3 })
   const hx = s.W / 2 - 0.3
@@ -1794,7 +1841,7 @@ export function Car({ v }: P) {
     <group>
       <M g={g.lower} m={m(paint)} shadow={sh} />
       <M g={g.cabin} m={m(glass)} shadow={sh} />
-      <M g={g.roof} m={m(paint)} shadow={sh} />
+      <M g={g.roof} m={m(s.glassRoof ? glass : paint)} shadow={sh} />
       <M g={g.trim} m={m(paint)} shadow={sh} />
       <M g={g.wheels} m={away ? ghost : vcMat(0.6)} shadow={sh} />
       {[-1, 1].map((sx) => (
@@ -1806,6 +1853,21 @@ export function Car({ v }: P) {
         </group>
       ))}
       <Box size={[s.W * 0.42, 0.13, 0.04]} position={[0, s.grille[0], s.grille[1]]} material={m(dark)} shadow={false} radius={0.015} />
+      {s.chromeV &&
+        [-1, 1].map((sx) => (
+          <Box key={sx} size={[0.42, 0.03, 0.02]} position={[sx * 0.19, s.grille[0] - 0.02, s.grille[1] + 0.025]} rotation-z={sx * 0.42} material={m(chrome)} shadow={false} />
+        ))}
+      {s.cladding &&
+        [-1, 1].map((sx) => (
+          <group key={sx}>
+            <Box size={[0.02, 0.1, s.wb * 2 - s.arch * 2 - 0.04]} position={[sx * (s.W / 2 + 0.006), s.bottom + 0.06, 0]} material={m(dark)} shadow={false} />
+            {[-1, 1].map((sz) => (
+              <mesh key={sz} position={[sx * (s.W / 2 + 0.006), s.wy, sz * s.wb]} rotation-y={sx * Math.PI / 2} material={m(dark)}>
+                <ringGeometry args={[s.arch - 0.005, s.arch + 0.06, 20, 1, 0, Math.PI]} />
+              </mesh>
+            ))}
+          </group>
+        ))}
       <Box size={[0.42, 0.1, 0.015]} position={[0, (s.tail[0] + plate[1]) / 2, plate[0] - 0.06]} material={m(mat(C.white))} shadow={false} />
       <Box size={[0.012, 0.08, 0.1]} position={portAt} material={m(port)} shadow={false} />
       {pulsing && (
