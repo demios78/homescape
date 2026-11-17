@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1-dm.34 (demios78 fork)
+
+- Kids furniture: a rainbow rolling drawer cart, a kids stool and a kids activity table with paint splat tops.
+- Ceiling LED strip: choose its light color on the card.
+- Doors: optionally open and close with a bound light or plug, like a door sensor.
+
 ## 0.2.1-dm.33 (demios78 fork)
 
 - Hide a single room's name label in 3D from the Dashboard (Customize, label button on the room card).
