@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.35 (demios78 fork)
+
+- Car body styles: electric crossover (glass roof, fastback) and compact SUV (chrome V grille, roof rails, arch cladding); gray car color.
+
 ## 0.2.1-dm.34 (demios78 fork)
 
 - Kids furniture: a rainbow rolling drawer cart, a kids stool and a kids activity table with paint splat tops.

@@ -3,7 +3,7 @@
 # main after it. Raise it with every release (CONTRIBUTING.md > Releases).
 FROM node:22-alpine AS web
 ARG HOMESCAPE_REPO=https://github.com/demios78/homescape
-ARG HOMESCAPE_REF=v0.2.1-dm.34
+ARG HOMESCAPE_REF=v0.2.1-dm.35
 COPY . /files
 RUN if [ -f /files/www/index.html ]; then \
       cp -r /files/www /out; \
