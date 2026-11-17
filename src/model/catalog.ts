@@ -109,6 +109,12 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   coffeeTable: { label: t('Coffee table'), group: 'furniture', domains: [], size: [1.1, 0.6], labelY: 0.7 },
   consoleTable: { label: t('Console table'), group: 'furniture', domains: [], size: [1.2, 0.35], labelY: 1 },
   roundTable: { label: t('Round side table'), group: 'furniture', domains: [], size: [0.6, 0.6], labelY: 0.7 },
+  // Rolling drawer cart: a chrome frame on casters with ten translucent rainbow drawers; small items stand on the top
+  drawerCart: { label: t('Rainbow drawer cart'), group: 'furniture', domains: [], size: [0.4, 0.4], labelY: 1.15, wall: true },
+  // Kids stool: a rounded red top painted black with paint splats, on four plain wood legs; fits under the kids table
+  kidsStool: { label: t('Kids stool'), group: 'furniture', domains: [], size: [0.44, 0.3], labelY: 0.5 },
+  // Kids activity table: a splat top with one rounded end, a shelf pedestal, a pull-out paper tray
+  kidsTable: { label: t('Kids activity table'), group: 'furniture', domains: [], size: [1.2, 0.8], labelY: 0.85 },
   rug: { label: t('Rug'), group: 'furniture', domains: [], size: [2.6, 1.8], labelY: 0.3 },
   // Doormat with adjustable size; walked on like a rug
   doormat: { label: t('Doormat'), group: 'furniture', domains: [], size: [0.75, 0.45], labelY: 0.15 },

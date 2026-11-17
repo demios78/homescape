@@ -109,6 +109,9 @@ export const SURFACE_Y: Partial<Record<ItemKind, number>> = {
   coffeeTable: 0.44,
   consoleTable: 0.76,
   roundTable: 0.47,
+  drawerCart: 0.95,
+  kidsTable: 0.6,
+  kidsStool: 0.3,
   tvUnit: 0.5,
   nightstand: 0.48,
   bedsideChest: 0.72,
@@ -142,7 +145,7 @@ export const APPLIANCE_STACK: ItemKind[] = ['washer', 'dryer', 'dishwasher']
  * Chairs can tuck under tables and desks, a drawer unit under a desk. A power strip on the floor can go under a table or a
  * coffee table (partly under it is no collision).
  */
-const TUCKS: Partial<Record<ItemKind, ItemKind[]>> = { chair: ['diningTable', 'desk', 'writingDesk'], gamingChair: ['desk', 'diningTable', 'writingDesk'], shellChair: ['desk', 'diningTable', 'writingDesk'], taskChair: ['desk', 'diningTable', 'writingDesk'], drawerUnit: ['desk'], powerStrip: ['desk', 'diningTable', 'coffeeTable', 'roundTable'] }
+const TUCKS: Partial<Record<ItemKind, ItemKind[]>> = { chair: ['diningTable', 'desk', 'writingDesk'], gamingChair: ['desk', 'diningTable', 'writingDesk'], shellChair: ['desk', 'diningTable', 'writingDesk'], taskChair: ['desk', 'diningTable', 'writingDesk'], drawerUnit: ['desk'], kidsStool: ['kidsTable', 'desk', 'diningTable', 'coffeeTable'], powerStrip: ['desk', 'diningTable', 'coffeeTable', 'roundTable'] }
 
 /**
  * Ceiling items (ceiling layer: no collision with floor and wall items). The pergola / gazebo is in this layer too, like a

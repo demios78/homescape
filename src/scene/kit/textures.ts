@@ -1533,3 +1533,104 @@ export function wineLatticeTexture() {
     }
   })
 }
+
+/** Rounded rectangle path with separate left and right corner radii (canvas units). */
+function sideRoundRect(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, rl: number, rr: number) {
+  g.beginPath()
+  g.moveTo(x + rl, y)
+  g.lineTo(x + w - rr, y)
+  g.arcTo(x + w, y, x + w, y + rr, rr)
+  g.lineTo(x + w, y + h - rr)
+  g.arcTo(x + w, y + h, x + w - rr, y + h, rr)
+  g.lineTo(x + rl, y + h)
+  g.arcTo(x, y + h, x, y + h - rl, rl)
+  g.lineTo(x, y + rl)
+  g.arcTo(x, y, x + rl, y, rl)
+  g.closePath()
+}
+
+/** One paint splat: a blob with tapering arms ending in round drops, and a few loose drops around it. */
+function splat(g: CanvasRenderingContext2D, cx: number, cy: number, r: number, color: string, r0: () => number) {
+  g.fillStyle = color
+  g.strokeStyle = color
+  g.lineCap = 'round'
+  g.beginPath()
+  g.arc(cx, cy, r * 0.55, 0, Math.PI * 2)
+  g.fill()
+  const arms = 9 + Math.floor(r0() * 5)
+  for (let i = 0; i < arms; i++) {
+    const a = (i / arms) * Math.PI * 2 + r0() * 0.4
+    const len = r * (0.75 + r0() * 0.75)
+    const ex = cx + Math.cos(a) * len
+    const ey = cy + Math.sin(a) * len
+    g.lineWidth = r * (0.14 + r0() * 0.1)
+    g.beginPath()
+    g.moveTo(cx, cy)
+    g.lineTo(ex, ey)
+    g.stroke()
+    g.beginPath()
+    g.arc(ex, ey, r * (0.1 + r0() * 0.08), 0, Math.PI * 2)
+    g.fill()
+  }
+  for (let i = 0; i < 3; i++) {
+    const a = r0() * Math.PI * 2
+    const d = r * (1.6 + r0() * 0.4)
+    g.beginPath()
+    g.arc(cx + Math.cos(a) * d, cy + Math.sin(a) * d, r * 0.06, 0, Math.PI * 2)
+    g.fill()
+  }
+}
+
+/**
+ * Kids furniture top (stool, activity table): a red rim around a black painted field with yellow, green and blue paint
+ * splats. Drawn in the top's aspect ratio (w × d m, left and right corner radii rl / rr); u runs along x, v along -z.
+ */
+export function splatTopTexture(key: 'stool' | 'table', w: number, d: number, rl: number, rr: number) {
+  const id = `splat-${key}`
+  let t = cache.get(id)
+  if (t) return t
+  const ppm = 400
+  const c = document.createElement('canvas')
+  c.width = Math.round(w * ppm)
+  c.height = Math.round(d * ppm)
+  const g = c.getContext('2d')!
+  const W = c.width
+  const H = c.height
+  g.fillStyle = '#d8402c'
+  g.fillRect(0, 0, W, H)
+  const rim = 0.045 * ppm
+  sideRoundRect(g, rim, rim, W - rim * 2, H - rim * 2, Math.max(4, rl * ppm - rim), Math.max(4, rr * ppm - rim))
+  g.fillStyle = '#1c2230'
+  g.fill()
+  let s = key === 'stool' ? 7 : 19
+  const r0 = () => ((s = (s * 16807) % 2147483647) - 1) / 2147483646
+  g.save()
+  g.clip()
+  const spots: [number, number, number, string][] =
+    key === 'stool'
+      ? [[0.45, 0.45, 0.06, '#e9de1c'], [0.8, 0.33, 0.035, '#7ee02a'], [0.18, 0.7, 0.024, '#5aa0e8']]
+      : [[0.3, 0.4, 0.1, '#e9de1c'], [0.62, 0.3, 0.06, '#7ee02a'], [0.14, 0.62, 0.04, '#5aa0e8'], [0.8, 0.62, 0.05, '#e9de1c']]
+  for (const [x, y, r, col] of spots) splat(g, x * W, y * H, r * ppm, col, r0)
+  // worn chips and marker dots
+  for (let i = 0; i < Math.round(w * d * 40); i++) {
+    g.fillStyle = r0() < 0.6 ? '#c9b18a' : ['#5aa0e8', '#e9de1c', '#ffffff'][i % 3]
+    g.beginPath()
+    g.arc(r0() * W, r0() * H, 1 + r0() * 3, 0, Math.PI * 2)
+    g.fill()
+  }
+  g.restore()
+  // chipped rim: bare particleboard showing through
+  g.fillStyle = '#b98a5e'
+  for (let i = 0; i < 14; i++) {
+    const side = Math.floor(r0() * 4)
+    const p = r0()
+    const x = side < 2 ? p * W : side === 2 ? r0() * 6 : W - r0() * 6
+    const y = side === 0 ? r0() * 6 : side === 1 ? H - r0() * 6 : p * H
+    g.fillRect(x, y, 2 + r0() * 7, 1 + r0() * 2)
+  }
+  t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  t.anisotropy = 8
+  cache.set(id, t)
+  return t
+}

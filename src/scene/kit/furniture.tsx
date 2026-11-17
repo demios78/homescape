@@ -11,7 +11,7 @@ import { markShadows } from '../frame'
 import { Glow, StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { baseplateTopTexture, beadboardTexture, wineLatticeTexture, carvedPanelTexture, dashSeatTexture, embroideredBackTexture, paintedTopTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, wickerLatticeTexture, wickerTexture } from './textures'
+import { baseplateTopTexture, beadboardTexture, wineLatticeTexture, carvedPanelTexture, dashSeatTexture, embroideredBackTexture, paintedTopTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, splatTopTexture, wickerLatticeTexture, wickerTexture } from './textures'
 import { gainOf, type Visual } from './visual'
 
 /*
@@ -2367,6 +2367,175 @@ export function CoffeeHutch() {
       <Box size={[0.48, 0.08, 0.38]} position={[-0.6, 2.44, upZ + 0.02]} material={cherry} />
       <Box size={[0.8, 0.1, 0.4]} position={[0.04, 2.45, upZ + 0.03]} material={cherry} />
       <Box size={[0.36, 0.08, 0.38]} position={[0.7, 2.44, upZ + 0.02]} material={cherry} />
+    </group>
+  )
+}
+
+/* ---------- kids corner: rainbow drawer cart, splat stool and activity table ---------- */
+
+const CART_COLORS = ['#25c2cf', '#5a3bd6', '#ff7f9a', '#9fe33a', '#ec6fbf', '#2b40c2', '#f4e626', '#2fb043', '#f7a82a', '#e8383a']
+const CART_W = 0.36
+const CART_D = 0.36
+const CART_TOP = 0.93
+const CORNERS: [number, number][] = [[-1, -1], [-1, 1], [1, -1], [1, 1]]
+
+/**
+ * Rainbow rolling drawer cart: a chrome tube frame on four casters, ten translucent drawers (teal at the top to red at the
+ * bottom) with chrome knobs, a metal top with a loop handle on each side. Small items stand on the top (rules SURFACE_Y).
+ */
+export function DrawerCart() {
+  const chrome = mat('#dfe3e8', { metalness: 0.45, roughness: 0.22 })
+  const rh = (CART_TOP - 0.14) / CART_COLORS.length
+  return (
+    <group>
+      {CORNERS.map(([sx, sz]) => (
+        <group key={`${sx}${sz}`} position={[(sx * CART_W) / 2, 0, (sz * CART_D) / 2]}>
+          <Cyl r={0.009} h={CART_TOP - 0.06} position={[0, 0.06 + (CART_TOP - 0.06) / 2, 0]} material={chrome} segments={10} />
+          <Cyl r={0.032} h={0.022} position={[0, 0.032, 0]} rotation-x={Math.PI / 2} color="#1b1c20" segments={14} />
+          <Box size={[0.03, 0.02, 0.03]} position={[0, 0.06, 0]} color="#2a2b30" shadow={false} />
+          {/* loop handle posts rising above the top */}
+          <Cyl r={0.009} h={0.07} position={[0, CART_TOP + 0.035, 0]} material={chrome} segments={10} />
+        </group>
+      ))}
+      {[-1, 1].map((sx) => (
+        <Cyl key={sx} r={0.009} h={CART_D} position={[(sx * CART_W) / 2, CART_TOP + 0.07, 0]} rotation-x={Math.PI / 2} material={chrome} segments={10} />
+      ))}
+      <Box size={[CART_W, 0.012, CART_D]} position={[0, CART_TOP, 0]} material={chrome} />
+      {[-1, 1].map((sz) => (
+        <Box key={sz} size={[CART_W, 0.012, 0.012]} position={[0, 0.1, (sz * CART_D) / 2]} material={chrome} shadow={false} />
+      ))}
+      {CART_COLORS.map((c, i) => {
+        const y = CART_TOP - 0.01 - rh * (i + 0.5)
+        return (
+          <group key={c} position={[0, y, 0.005]}>
+            <Box size={[CART_W - 0.03, rh - 0.012, CART_D - 0.01]} material={mat(c, { opacity: 0.82, roughness: 0.25 })} shadow={false} />
+            <Box size={[CART_W - 0.012, 0.012, 0.016]} position={[0, rh / 2 - 0.012, CART_D / 2 - 0.005]} material={mat(c, { opacity: 0.9, roughness: 0.25 })} shadow={false} />
+            <Ball r={0.011} position={[0, 0, CART_D / 2 + 0.008]} material={chrome} shadow={false} />
+            {[-1, 1].map((sx) => (
+              <Box key={sx} size={[0.008, 0.006, CART_D]} position={[(sx * CART_W) / 2, rh / 2 - 0.004, 0]} material={chrome} shadow={false} />
+            ))}
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+/** Flat shape with separate left and right corner radii (x across, shape y = -z), uvs over its bounding box. */
+function sideRoundGeometry(w: number, d: number, rl: number, rr: number, depth: number) {
+  const s = new THREE.Shape()
+  const x0 = -w / 2
+  const y0 = -d / 2
+  s.moveTo(x0 + rl, y0)
+  s.lineTo(x0 + w - rr, y0)
+  s.absarc(x0 + w - rr, y0 + rr, rr, -Math.PI / 2, 0, false)
+  s.lineTo(x0 + w, y0 + d - rr)
+  s.absarc(x0 + w - rr, y0 + d - rr, rr, 0, Math.PI / 2, false)
+  s.lineTo(x0 + rl, y0 + d)
+  s.absarc(x0 + rl, y0 + d - rl, rl, Math.PI / 2, Math.PI, false)
+  s.lineTo(x0, y0 + rl)
+  s.absarc(x0 + rl, y0 + rl, rl, Math.PI, Math.PI * 1.5, false)
+  const g = depth > 0 ? new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: false, curveSegments: 16 }) : new THREE.ShapeGeometry(s, 16)
+  const pos = g.attributes.position
+  const uv = g.attributes.uv
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) + w / 2) / w, (pos.getY(i) + d / 2) / d)
+  uv.needsUpdate = true
+  g.rotateX(-Math.PI / 2)
+  return g
+}
+
+const splatGeos = new Map<string, { body: THREE.BufferGeometry; face: THREE.BufferGeometry }>()
+
+/** A kids furniture top: a red slab with the splat painted face on it (geometry built once per kind). */
+function SplatTop({ kind, w, d, rl, rr, y, thick }: { kind: 'stool' | 'table'; w: number; d: number; rl: number; rr: number; y: number; thick: number }) {
+  let g = splatGeos.get(kind)
+  if (!g) {
+    g = { body: sideRoundGeometry(w, d, rl, rr, thick), face: sideRoundGeometry(w, d, rl, rr, 0) }
+    splatGeos.set(kind, g)
+  }
+  const face = useMemo(() => new THREE.MeshStandardMaterial({ map: splatTopTexture(kind, w, d, rl, rr), roughness: 0.35 }), [kind, w, d, rl, rr])
+  useEffect(() => () => face.dispose(), [face])
+  return (
+    <group position={[0, y, 0]}>
+      <mesh geometry={g.body} material={mat('#d03a28', { roughness: 0.5 })} castShadow receiveShadow />
+      <mesh geometry={g.face} material={face} position={[0, thick + 0.001, 0]} receiveShadow />
+    </group>
+  )
+}
+
+const KID_WOOD = '#dcc08a'
+
+/** Kids stool: a rounded 42 × 28 cm top, red rim and black field with paint splats, on four plain wood legs (30 cm). */
+export function KidsStool() {
+  const wood = mat(KID_WOOD, { roughness: 0.75 })
+  return (
+    <group>
+      {CORNERS.map(([sx, sz]) => (
+        <Box key={`${sx}${sz}`} size={[0.04, 0.28, 0.04]} position={[sx * 0.15, 0.14, sz * 0.085]} material={wood} />
+      ))}
+      <SplatTop kind="stool" w={0.42} d={0.28} rl={0.035} rr={0.035} y={0.28} thick={0.022} />
+    </group>
+  )
+}
+
+const KT_W = 1.2
+const KT_D = 0.7
+const KT_Y = 0.6
+const KT_PED = 0.42
+const KT_SHELVES: { y: number; plates: [number, number, number, string][] }[] = [
+  { y: 0.05, plates: [[-0.08, 0.2, 0.34, '#3aa64a'], [0.1, 0.17, 0.28, '#3aa64a']] },
+  { y: 0.3, plates: [[-0.08, 0.2, 0.34, '#7a5434'], [0.1, 0.17, 0.28, '#2a6fd0']] },
+]
+
+/**
+ * Kids activity table: a splat top with a fully rounded left end and a red rim, on a plywood shelf pedestal at the right
+ * (two shelves open to the back, with brick baseplates and a clear box) and two wood legs at the left; a pale wood frame
+ * tray with a paper sheet under the top, a red paper roll knob on the left apron.
+ */
+export function KidsTable() {
+  const wood = mat(KID_WOOD, { roughness: 0.75 })
+  const ply = mat('#e2c590', { roughness: 0.7 })
+  const px = KT_W / 2 - KT_PED / 2 - 0.03
+  const under = KT_Y - 0.03
+  const trayL = KT_W - KT_PED - 0.24
+  const trayX = -KT_W / 2 + 0.13 + trayL / 2
+  return (
+    <group position={[0, 0, -0.04]}>
+      <SplatTop kind="table" w={KT_W} d={KT_D} rl={0.32} rr={0.05} y={under} thick={0.03} />
+      {/* pedestal: sides, a closed front panel, shelves open to the back */}
+      <group position={[px, 0, 0]}>
+        {[-1, 1].map((sx) => (
+          <Box key={sx} size={[0.018, under, KT_D - 0.06]} position={[(sx * KT_PED) / 2, under / 2, 0]} material={ply} />
+        ))}
+        <Box size={[KT_PED, under - 0.04, 0.016]} position={[0, under / 2 + 0.02, KT_D / 2 - 0.04]} material={ply} />
+        {KT_SHELVES.map((sh) => (
+          <group key={sh.y} position={[0, sh.y, 0]}>
+            <Box size={[KT_PED - 0.02, 0.018, KT_D - 0.08]} position={[0, 0, -0.01]} material={ply} />
+            {sh.plates.map(([x, w, d, c]) => (
+              <Box key={x} size={[w, 0.006, d]} position={[x, 0.012, -0.05]} color={c} shadow={false} />
+            ))}
+            <Box size={[0.12, 0.07, 0.08]} position={[0.08, 0.05, -0.14]} material={mat('#e8eef2', { opacity: 0.5, roughness: 0.1 })} shadow={false} />
+          </group>
+        ))}
+      </group>
+      {/* left legs with a foot rail */}
+      {[-1, 1].map((sz) => (
+        <Box key={sz} size={[0.045, under, 0.045]} position={[-KT_W / 2 + 0.2, under / 2, sz * 0.24]} material={wood} />
+      ))}
+      <Box size={[0.03, 0.04, 0.48]} position={[-KT_W / 2 + 0.2, 0.06, 0]} material={wood} />
+      {/* apron and paper roll knob */}
+      <Box size={[0.03, 0.06, 0.4]} position={[-KT_W / 2 + 0.1, under - 0.03, 0]} material={ply} shadow={false} />
+      <Cyl r={0.025} h={0.03} position={[-KT_W / 2 + 0.08, under - 0.03, 0]} rotation-z={Math.PI / 2} color="#c8242a" segments={14} shadow={false} />
+      {/* pull-out tray: wood frame, paper sheet */}
+      <group position={[trayX, under - 0.1, 0.1]}>
+        {[-1, 1].map((sx) => (
+          <Box key={sx} size={[0.03, 0.03, KT_D - 0.08]} position={[(sx * trayL) / 2, 0, 0]} material={wood} />
+        ))}
+        {[-1, 1].map((sz) => (
+          <Box key={sz} size={[trayL, 0.03, 0.03]} position={[0, 0, (sz * (KT_D - 0.08)) / 2]} material={wood} />
+        ))}
+        <Box size={[trayL - 0.02, 0.003, KT_D - 0.1]} position={[0, 0.006, 0]} color="#eef0f2" shadow={false} />
+      </group>
     </group>
   )
 }
