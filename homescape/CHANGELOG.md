@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.36 (demios78 fork)
+
+- Cars: the ground around a charging car pulses yellow while charging and glows green once charged (bind a wall charger such as the Tesla Wall Connector, or the car integration).
+
 ## 0.2.1-dm.35 (demios78 fork)
 
 - Car body styles: electric crossover (glass roof, fastback) and compact SUV (chrome V grille, roof rails, arch cladding); gray car color.
