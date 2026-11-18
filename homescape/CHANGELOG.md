@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.44 (demios78 fork)
+
+- Folding bistro chair: an Open / Folded switch in its card. Folding stands it flat against the nearest wall; opening steps it back out into the room.
+
 ## 0.2.1-dm.43 (demios78 fork)
 
 - Folding bistro chair remodeled like the IKEA TÄRNÖ: black painted steel X frame with curved back posts and stretchers, acacia seat and back slats.
