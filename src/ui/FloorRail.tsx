@@ -8,9 +8,10 @@ const IDLE_MS = 2000
 const STEP = 48
 
 /**
- * Floor buttons on the left edge, styled like an elevator panel: a small amber display with the current floor, round
- * buttons from the top floor down, and a lit ring that slides to the active one. Fades to 10% opacity 2 s after the
- * pointer leaves (or after a floor change made elsewhere) and wakes on hover or focus. Not shown for a single floor.
+ * Floor buttons on the left edge, styled like an elevator panel: round buttons from the top floor down and a lit amber
+ * ring that slides to the active one. 2 s after the pointer leaves (or after a floor change made elsewhere) the plate and
+ * the other buttons fade to 10% while the ring and the active floor's number stay lit; hover or focus wakes it. Not shown
+ * for a single floor.
  */
 export function FloorRail() {
   const levels = useLayout((s) => s.layout?.levels)
@@ -64,9 +65,6 @@ export function FloorRail() {
       onFocus={wake}
       onBlur={sleepSoon}
     >
-      <div className="elevator-display" aria-hidden>
-        {floorBadge(active)}
-      </div>
       <div className="relative grid gap-2">
         <span className="elevator-halo" style={{ transform: `translateY(${idx * STEP}px)` }} aria-hidden />
         {sorted.map((l) => (
