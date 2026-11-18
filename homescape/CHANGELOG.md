@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.43 (demios78 fork)
+
+- Folding bistro chair remodeled like the IKEA TÄRNÖ: black painted steel X frame with curved back posts and stretchers, acacia seat and back slats.
+- Folded chair: a new item, the same chair folded flat (92 cm high, 11 cm deep) standing against a wall.
+
 ## 0.2.1-dm.42 (demios78 fork)
 
 - Painted side table: the three legs now splay outward, close together under the top and wider apart on the floor.
