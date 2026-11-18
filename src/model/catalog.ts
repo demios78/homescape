@@ -85,6 +85,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   window: { label: t('Window'), group: 'structure', domains: ['binary_sensor', 'cover'], size: [1.2, 0.2], labelY: 2.4, wall: true },
 
   elliptical: { label: t('Elliptical trainer'), group: 'furniture', domains: ['switch', 'sensor'], size: [0.7, 1.75], labelY: 1.8 },
+  // Folded bistro chair standing flat against a wall (like IKEA TÄRNÖ folded)
+  foldedChair: { label: t('Folded chair'), group: 'furniture', domains: [], size: [0.42, 0.12], labelY: 1.05, wall: true },
   weightBench: { label: t('Weight bench'), group: 'furniture', domains: [], size: [0.55, 1.3], labelY: 0.9 },
   dumbbellRack: { label: t('Dumbbell rack'), group: 'furniture', domains: [], size: [1.1, 0.45], labelY: 1.1, wall: true },
   sofa: { label: t('Sofa'), group: 'furniture', domains: [], size: [2.2, 0.9], labelY: 1.1 },

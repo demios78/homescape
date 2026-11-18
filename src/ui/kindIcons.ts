@@ -289,6 +289,7 @@ export const KIND_ICON: Record<ItemKind, LucideIcon> = {
   toasterOven: Microwave,
   elliptical: Bike,
   weightBench: Dumbbell,
+  foldedChair: Armchair,
   dumbbellRack: Dumbbell,
   uprightFreezer: Refrigerator,
   sprinkler: Droplets,

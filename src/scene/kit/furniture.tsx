@@ -1797,23 +1797,78 @@ export function DrawerUnit({ v }: { v: Visual }) {
   )
 }
 
-/** Folding bistro chair (chair variant 'bistro'): black metal X frame, weathered wooden seat and back slats */
+const BISTRO_IRON = '#1d1e22'
+const BISTRO_WOOD = '#a87a4f'
+
+/** A tube in the side plane at x: from a to b given as (z, y) */
+function SideRod({ x, a, b, r = 0.009 }: { x: number; a: [number, number]; b: [number, number]; r?: number }) {
+  return (
+    <group rotation-y={-Math.PI / 2}>
+      <Rod a={a} b={b} z={-x} r={r} color={BISTRO_IRON} />
+    </group>
+  )
+}
+
+/** A tube across the chair (along x) at z, y */
+const CrossRod = ({ y, z, w = 0.39 }: { y: number; z: number; w?: number }) => <Cyl r={0.007} h={w} position={[0, y, z]} rotation-z={Math.PI / 2} color={BISTRO_IRON} segments={8} />
+
+/**
+ * Folding bistro chair (chair variant 'bistro', like IKEA TÄRNÖ): black painted steel X frame, acacia seat and back slats.
+ * 39 cm wide, seat at 45 cm, 79 cm high; front +z.
+ */
 function BistroChair() {
-  const iron = '#1d1e22'
-  const wood = '#9a8b78'
   return (
     <group>
-      {[-0.2, 0.2].map((x) => (
+      {[-0.195, 0.195].map((x) => (
         <group key={x}>
-          <Box size={[0.02, 0.86, 0.02]} position={[x, 0.43, 0.02]} rotation-x={0.22} color={iron} />
-          <Box size={[0.02, 0.5, 0.02]} position={[x, 0.24, -0.02]} rotation-x={-0.35} color={iron} />
+          {/* X frame: rear foot to seat front, front foot to seat rear, which carries on up as the curved back post */}
+          <SideRod x={x} a={[-0.2, 0.01]} b={[0.17, 0.43]} />
+          <SideRod x={x} a={[0.2, 0.01]} b={[-0.15, 0.44]} />
+          <SideRod x={x} a={[-0.15, 0.44]} b={[-0.19, 0.6]} />
+          <SideRod x={x} a={[-0.19, 0.6]} b={[-0.215, 0.79]} />
+          {/* seat rail under the slats */}
+          <SideRod x={x} a={[-0.17, 0.437]} b={[0.19, 0.437]} r={0.008} />
+          {/* feet */}
+          <Box size={[0.03, 0.012, 0.045]} position={[x, 0.006, -0.205]} color={BISTRO_IRON} shadow={false} />
+          <Box size={[0.03, 0.012, 0.045]} position={[x, 0.006, 0.205]} color={BISTRO_IRON} shadow={false} />
         </group>
       ))}
-      {[-0.15, -0.05, 0.05, 0.15].map((z) => (
-        <Box key={z} size={[0.42, 0.018, 0.085]} position={[0, 0.45, z + 0.03]} color={wood} />
+      {/* stretchers between the two side frames */}
+      <CrossRod y={0.1} z={0.133} />
+      <CrossRod y={0.16} z={-0.074} />
+      <CrossRod y={0.43} z={0.17} />
+      {/* seat: five slats across */}
+      {[-0.16, -0.08, 0, 0.08, 0.16].map((z) => (
+        <Box key={z} size={[0.39, 0.018, 0.07]} position={[0, 0.455, z + 0.01]} color={BISTRO_WOOD} radius={0.004} />
       ))}
-      {[0.66, 0.78].map((y) => (
-        <Box key={y} size={[0.4, 0.07, 0.016]} position={[0, y, -0.15]} rotation-x={0.22} color={wood} />
+      {/* back: two slats on the posts, leaning with them */}
+      {[0.64, 0.745].map((y) => (
+        <Box key={y} size={[0.41, 0.075, 0.016]} position={[0, y, -0.2 - (y - 0.6) * 0.13 + 0.012]} rotation-x={0.13} color={BISTRO_WOOD} radius={0.004} />
+      ))}
+    </group>
+  )
+}
+
+/**
+ * Folded bistro chair (foldedChair): the same chair folded flat, 92 cm high and 11 cm deep, standing against a wall (back -z):
+ * seven acacia slats on the front (the two back slats and the five seat slats), the black frame behind and below.
+ */
+export function FoldedChair() {
+  return (
+    <group position={[0, 0, 0.02]} rotation-x={-0.05}>
+      {[-0.19, 0.19].map((x) => (
+        <group key={x}>
+          {/* back posts and the legs folded against them */}
+          <SideRod x={x} a={[-0.01, 0.01]} b={[-0.005, 0.86]} />
+          <SideRod x={x} a={[0.025, 0.01]} b={[0.01, 0.52]} />
+          <SideRod x={x} a={[-0.035, 0.03]} b={[-0.02, 0.5]} r={0.008} />
+          <Box size={[0.03, 0.012, 0.05]} position={[x, 0.006, 0]} color={BISTRO_IRON} shadow={false} />
+        </group>
+      ))}
+      <CrossRod y={0.08} z={0.02} w={0.38} />
+      <CrossRod y={0.36} z={0.01} w={0.38} />
+      {Array.from({ length: 7 }, (_, i) => (
+        <Box key={i} size={[0.41, 0.052, 0.017]} position={[0, 0.89 - i * 0.058, 0.03]} color={BISTRO_WOOD} radius={0.004} />
       ))}
     </group>
   )

@@ -79,6 +79,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   toasterOven: S.ToasterOven,
   elliptical: F.Elliptical,
   weightBench: F.WeightBench,
+  foldedChair: F.FoldedChair,
   dumbbellRack: F.DumbbellRack,
   uprightFreezer: A.UprightFreezer,
   kitchenCounter: F.KitchenCounter,

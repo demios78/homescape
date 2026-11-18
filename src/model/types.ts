@@ -66,6 +66,7 @@ export type ItemKind =
   | 'weightBench'
   | 'dumbbellRack'
   | 'uprightFreezer'
+  | 'foldedChair'
   | 'beamLights'
   // devices
   | 'tv'
