@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1-dm.37 (demios78 fork)
+
+- Ceiling beams with string lights (Lights tab): wooden beams across a room with a strand of globe bulbs under each, lit by the bound light or plug.
+- Bay window style for windows: a fixed gridded center pane and two double-hung side windows at 45 degrees, drapes on the sides only.
+- Dining set: carved dining chairs, a carved double pedestal table, a crystal chandelier, a digital piano on an X stand and a keyboard bench.
+
 ## 0.2.1-dm.36 (demios78 fork)
 
 - Cars: the ground around a charging car pulses yellow while charging and glows green once charged (bind a wall charger such as the Tesla Wall Connector, or the car integration).
