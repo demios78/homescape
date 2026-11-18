@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.50 (demios78 fork)
+
+- Towel warmer bucket: a new freestanding bathroom item (white oval tub on chrome legs, flip-up lid). Bind its switch or climate entity: while it heats with the lid closed, a soft lavender glow lights the floor under it. Bind a lid sensor (binary sensor) as an extra and an open lid shows the towels with no glow.
+
 ## 0.2.1-dm.49 (demios78 fork)
 
 - Floor buttons: no more floor display at the top; when the panel fades, the lit amber ring and the current floor number stay fully visible.
