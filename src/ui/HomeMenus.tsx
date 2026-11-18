@@ -6,9 +6,9 @@ import { homeDir, homeLayout, switchHomeAnimated } from './homeSwitch'
 import { blockText, useSync } from '@/ha/planSync'
 import { usePlanHistory } from './planHistoryState'
 import { useHa } from '@/ha/store'
-import { activeHomeId, activeLevel, homesOf, levelName, useLayout } from '@/model/layoutStore'
+import { activeHomeId, activeLevel, floorBadge, homesOf, levelName, useLayout } from '@/model/layoutStore'
 import { type RoofMode, type RoofStyle, useView } from '@/scene/camera'
-import { floorNumber, t, tn } from '@/i18n'
+import { t, tn } from '@/i18n'
 
 /** Roof display options */
 const ROOF_MODES: [RoofMode, string][] = [
@@ -320,7 +320,7 @@ export function FloorSwitcher() {
                     setOpen(false)
                   }}
                 >
-                  <span className="grid size-6 shrink-0 place-items-center rounded-md bg-surface-2 font-mono text-[11px] font-semibold">{(l.elevation ?? 0) === 0 ? t('G') : (l.elevation ?? 0) < 0 ? t('B{number}', { number: -(l.elevation ?? 0) }) : floorNumber(l.elevation ?? 0)}</span>
+                  <span className="grid size-6 shrink-0 place-items-center rounded-md bg-surface-2 font-mono text-[11px] font-semibold">{floorBadge(l)}</span>
                   <span className="truncate">{levelName(l)}</span>
                   <span className="ml-auto shrink-0 text-[11px] font-normal text-ink-3">{tn(l.rooms.length, '{count} room', '{count} rooms')}</span>
                 </button>

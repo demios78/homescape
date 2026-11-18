@@ -225,6 +225,9 @@ const LEGACY_LEVEL_NAME = 'Ev'
 export const unnamedLevel = (l: Pick<Level, 'name'>) => !l.name || l.name === LEGACY_LEVEL_NAME
 
 /** Shown name of a level: its own name, else from its number. */
+/** Short floor label for badges and the floor buttons: G, 1, 2..., B1 */
+export const floorBadge = (l: Level) => ((l.elevation ?? 0) === 0 ? t('G') : (l.elevation ?? 0) < 0 ? t('B{number}', { number: -(l.elevation ?? 0) }) : floorNumber(l.elevation ?? 0))
+
 export function levelName(l: Level) {
   if (!unnamedLevel(l)) return l.name
   const e = l.elevation ?? 0

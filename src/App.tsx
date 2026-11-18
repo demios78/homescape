@@ -34,6 +34,7 @@ import EditToolbar from '@/ui/EditToolbar'
 import Inspector from '@/ui/Inspector'
 import KpiTiles from '@/ui/KpiTiles'
 import MapControls from '@/ui/MapControls'
+import { FloorRail } from '@/ui/FloorRail'
 import PinLayer from '@/ui/PinLayer'
 import RoomBar from '@/ui/RoomBar'
 import Toast from '@/ui/Toast'
@@ -601,6 +602,7 @@ export default function App() {
                 <>
                   {mode === 'view' ? <KpiTiles totals={totals} /> : <EditToolbar />}
                   <MapControls />
+                  <FloorRail />
                   <Inspector stats={stats} />
                   {mode === 'edit' ? <BuildBar /> : <RoomBar stats={stats} />}
                 </>
