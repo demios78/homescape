@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.47 (demios78 fork)
+
+- Fridge: a "French door" model (black stainless, 1.78 m, 91 cm wide by default) with two tall doors and bar handles, an ice and water dispenser in the left door and a bottom freezer drawer.
+
 ## 0.2.1-dm.46 (demios78 fork)
 
 - Carrom board: a new wall item (Desk and decor), 81 cm square: a black frame with raised rails around a birch playing surface with baselines and red circles, arrows from the net pockets, curled arcs and the red and black center star. Height adjustable like any wall item.
