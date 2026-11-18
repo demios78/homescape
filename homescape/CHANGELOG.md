@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.39 (demios78 fork)
+
+- Home gym items (Furniture tab): an elliptical trainer (its flywheel spins and the console lights while a bound plug is on), an adjustable weight bench and a two-tier dumbbell rack.
+- Upright freezer (Kitchen and appliances), against the wall, with a temperature panel that lights while a bound plug is on.
+
 ## 0.2.1-dm.38 (demios78 fork)
 
 - Kitchen counters can be laid out cabinet by cabinet: drawers, a trash pull-out, tray doors, a spice pull-out, a sink base, gaps for a dishwasher or a slide-in range, an optional bar overhang and runs without wall cabinets.
