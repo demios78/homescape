@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.41 (demios78 fork)
+
+- Doors with a bound door sensor (or a light or plug set to open and close the door): the swing area on the floor glows red while open and green while closed, on hinged, French, double and patio doors.
+
 ## 0.2.1-dm.40 (demios78 fork)
 
 - Doors: hinged doors are painted six-panel doors with brass knobs; a door color for every door and an outside color for exterior doors, which also adds a brass knocker on the outside.
