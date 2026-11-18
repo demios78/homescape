@@ -263,6 +263,7 @@ export type ItemKind =
   | 'pegboard'
   | 'painting'
   | 'carromBoard'
+  | 'towelBucket'
   | 'aquarium'
   | 'fishbowl'
   | 'mirror'

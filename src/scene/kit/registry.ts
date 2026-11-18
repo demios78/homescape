@@ -137,6 +137,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   fireplace: S.Fireplace,
   acOutdoor: S.AcOutdoor,
   towelWarmer: S.TowelWarmer,
+  towelBucket: S.TowelBucket,
   speaker: S.Speaker,
   soundbar: S.Soundbar,
   projector: S.Projector,

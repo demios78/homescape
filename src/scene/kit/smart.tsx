@@ -650,6 +650,87 @@ export function Boiler({ v }: P) {
 /** Towel warmer rails (height above the floor): a towel hangs in the gap. */
 const TOWEL_RAILS = [0.66, 0.74, 0.82, 0.9, 0.98, 1.12, 1.2, 1.28, 1.36]
 
+
+/** Towel warmer bucket size: width, depth (an oval in plan), body bottom and top */
+const TB = { w: 0.5, d: 0.25, y0: 0.13, y1: 0.63 }
+
+/** Stadium (oval with straight sides) of w × d, extruded h up from y 0; cached per size */
+const stadiumGeos = new Map<string, THREE.BufferGeometry>()
+function stadiumGeometry(w: number, d: number, h: number, bevel: number) {
+  const key = `${w}|${d}|${h}|${bevel}`
+  let g = stadiumGeos.get(key)
+  if (!g) {
+    const r = d / 2 - bevel
+    const x = w / 2 - d / 2
+    const s = new THREE.Shape()
+    s.absarc(x, 0, r, -Math.PI / 2, Math.PI / 2, false)
+    s.absarc(-x, 0, r, Math.PI / 2, (Math.PI * 3) / 2, false)
+    g = new THREE.ExtrudeGeometry(s, { depth: h - 2 * bevel, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 3, curveSegments: 18 })
+    g.rotateX(-Math.PI / 2)
+    g.translate(0, bevel, 0)
+    stadiumGeos.set(key, g)
+  }
+  return g
+}
+
+/** Lid of the towel warmer bucket: open when a bound binary sensor (lid / opening) says on */
+function towelLidOpen(v: Visual) {
+  const lid = v.related.find((e) => domainOf(e.entity_id) === 'binary_sensor')
+  return lid ? isActive(lid) : v.domain === 'binary_sensor' && v.on
+}
+
+/**
+ * Freestanding towel warmer bucket (towelBucket): a white oval tub with a seam near the bottom, four splayed chrome legs, a
+ * flip-up lid with a round vent on its underside and a power button on the rim. While the main switch is on and the lid is
+ * closed a soft lavender glow lights the floor under it; with the lid open (a bound lid sensor) there is no glow and the
+ * towels show. Front +z.
+ */
+export function TowelBucket({ v }: P) {
+  const white = mat('#f6f7f9', { roughness: 0.45 })
+  const chrome = mat('#dfe3e8', { metalness: 0.5, roughness: 0.18 })
+  const towel = mat('#9fb0d8', { roughness: 0.95 })
+  const tex = useMemo(() => glowTexture(), [])
+  const open = towelLidOpen(v)
+  const heating = v.on && !v.unavailable && v.domain !== 'binary_sensor'
+  const glow = heating && !open
+  const { w, d, y0, y1 } = TB
+  return (
+    <group>
+      <mesh geometry={stadiumGeometry(w, d, 0.09, 0.012)} position={[0, y0, 0]} material={white} castShadow receiveShadow />
+      <mesh geometry={stadiumGeometry(w - 0.006, d - 0.006, y1 - y0 - 0.092, 0.01)} position={[0, y0 + 0.092, 0]} material={white} castShadow receiveShadow />
+      {/* legs: a white socket on the body, a chrome leg splayed outward */}
+      {[-1, 1].flatMap((sx) =>
+        [-1, 1].map((sz) => (
+          <group key={`${sx}${sz}`}>
+            <Ball r={0.024} position={[sx * 0.19, y0 + 0.01, sz * 0.06]} material={white} detail={1} />
+            <group position={[sx * 0.215, y0 / 2, sz * 0.075]} rotation={[sz * 0.22, 0, sx * 0.36]}>
+              <Cyl r={0.011} rTop={0.016} h={y0 + 0.02} material={chrome} segments={10} />
+            </group>
+          </group>
+        )),
+      )}
+      <Cyl r={0.007} h={0.004} position={[0.14, y1 - 0.03, d / 2 - 0.004]} rotation-x={Math.PI / 2} color={heating ? '#9fe3ff' : '#c9ced6'} segments={14} shadow={false} />
+      {/* lid, hinged at the back edge */}
+      <group position={[0, y1, -d / 2 + 0.01]} rotation-x={open ? -1.25 : 0}>
+        <mesh geometry={stadiumGeometry(w, d, 0.03, 0.012)} position={[0, 0, d / 2 - 0.01]} material={white} castShadow />
+        <Cyl r={0.03} h={0.012} position={[0, -0.005, d / 2 - 0.01]} material={white} segments={20} shadow={false} />
+      </group>
+      {open && (
+        <>
+          <Ball r={0.1} position={[-0.11, y1 - 0.03, 0]} scale={[1.1, 0.45, 0.9]} material={towel} detail={2} shadow={false} />
+          <Ball r={0.1} position={[0.11, y1 - 0.025, 0.01]} scale={[1.05, 0.5, 0.85]} material={towel} detail={2} shadow={false} />
+        </>
+      )}
+      {glow && (
+        <mesh position={[0, 0.006, 0]} rotation-x={-Math.PI / 2} renderOrder={2} userData={{ selectionAid: true }}>
+          <planeGeometry args={[w + 0.45, d + 0.4]} />
+          <meshBasicMaterial map={tex} color="#b8adff" transparent opacity={v.night ? 0.9 : 0.55} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+        </mesh>
+      )}
+    </group>
+  )
+}
+
 /**
  * Towel warmer (on the wall; 0.585-1.415 m): two vertical pipes with horizontal rails between them (ladder), wall brackets,
  * a folded towel hung over the 1.12 m rail. When on the rails turn warm orange with a faint warm halo in front. Rail color

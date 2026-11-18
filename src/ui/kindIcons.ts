@@ -257,6 +257,7 @@ export const KIND_ICON: Record<ItemKind, LucideIcon> = {
   fireplace: Flame,
   acOutdoor: AirVent,
   towelWarmer: Heater,
+  towelBucket: Heater,
   speaker: Speaker,
   soundbar: Speaker,
   projector: Projector,

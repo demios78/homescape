@@ -201,6 +201,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   waterHeater: { label: t('Water heater'), group: 'climate', domains: ['water_heater', 'switch', 'climate'], size: [0.45, 0.45], labelY: 2.3, wall: true },
   fireplace: { label: t('Electric fireplace'), group: 'climate', domains: ['switch', 'climate', 'light'], size: [1.2, 0.3], labelY: 1.0, wall: true },
   acOutdoor: { label: t('AC outdoor unit'), group: 'climate', domains: ['climate', 'switch'], size: [0.8, 0.3], labelY: 0.8, wall: true },
+  // Freestanding towel warmer bucket on chrome legs: main switch or climate heats; a bound binary sensor is the lid
+  towelBucket: { label: t('Towel warmer bucket'), group: 'bath', domains: ['switch', 'climate', 'binary_sensor'], size: [0.56, 0.32], labelY: 0.9 },
   towelWarmer: { label: t('Towel warmer'), group: 'bath', domains: ['switch', 'climate'], size: [0.5, 0.08], labelY: 1.6, wall: true },
   speaker: { label: t('Smart speaker'), group: 'media', domains: ['media_player'], size: [0.15, 0.15], labelY: 0.35 },
   soundbar: { label: t('Soundbar'), group: 'media', domains: ['media_player', 'switch'], size: [0.9, 0.1], labelY: 0.3 },

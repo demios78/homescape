@@ -508,6 +508,12 @@ export function computeRoomLights(level: Level, entities: Record<string, HassEnt
       }
       continue
     }
+    // Towel warmer bucket: a faint lavender glow on the floor under it while heating with the lid closed
+    if (it.kind === 'towelBucket') {
+      const lid = (it.extras ?? []).map((id) => entities[id]).find((x) => x && x.entity_id.startsWith('binary_sensor.'))
+      if (e && isActive(e) && !e.entity_id.startsWith('binary_sensor.') && !(lid && isActive(lid))) push(it, [0, 0.05, 0], 1.4, 0.5, 0, _c.set('#b8adff'))
+      continue
+    }
     // Ring light of the diffuser: soft colored light from the base of the body onto its surroundings (table, side table, floor)
     if (it.kind === 'diffuser' && ledOf(it) === 'strip') {
       const id = ledSource(it)
