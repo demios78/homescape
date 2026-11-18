@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.48 (demios78 fork)
+
+- Floor buttons: homes with two or more floors get elevator-style floor buttons on the left edge (an amber display with the current floor, a lit ring on the active one). They fade to 10% two seconds after you stop using them and come back on hover.
+
 ## 0.2.1-dm.47 (demios78 fork)
 
 - Fridge: a "French door" model (black stainless, 1.78 m, 91 cm wide by default) with two tall doors and bar handles, an ice and water dispenser in the left door and a bottom freezer drawer.
