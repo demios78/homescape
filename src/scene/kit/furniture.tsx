@@ -2369,7 +2369,55 @@ export function KitchenCounter({ v }: { v: Visual }) {
   )
 }
 
-export function Fridge() {
+/**
+ * French door fridge (fridge variant 'french'): black stainless, 1.78 m high, width Item.len (default 91 cm). Two tall
+ * doors with long vertical bar handles in the middle, an ice and water dispenser in the left door (a dark glass control
+ * panel with the temperatures, a recessed nook with the paddle and drip tray), and a bottom freezer drawer with a wide bar
+ * handle. Front +z.
+ */
+function FrenchDoorFridge({ W }: { W: number }) {
+  // Low metalness: without an environment map a metallic finish renders near black
+  const steel = mat('#62656b', { metalness: 0.25, roughness: 0.38 })
+  const handle = mat('#55585e', { metalness: 0.3, roughness: 0.3 })
+  const dark = mat('#141518', { roughness: 0.25 })
+  const fz = 0.3
+  const dx = -W / 2 + W * 0.21
+  return (
+    <group>
+      <Box size={[W, 1.76, 0.6]} position={[0, 0.9, -0.04]} material={steel} radius={0.02} />
+      <Box size={[W - 0.02, 0.04, 0.04]} position={[0, 0.02, fz - 0.06]} color="#1a1b1e" shadow={false} />
+      {/* freezer drawer */}
+      <Box size={[W, 0.6, 0.05]} position={[0, 0.36, fz - 0.025]} material={steel} radius={0.008} />
+      <Cyl r={0.014} h={W - 0.14} position={[0, 0.6, fz + 0.035]} rotation-z={Math.PI / 2} material={handle} segments={10} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.025, 0.025, 0.04]} position={[s * (W / 2 - 0.08), 0.6, fz + 0.015]} material={handle} shadow={false} />
+      ))}
+      {/* French doors */}
+      {[-1, 1].map((s) => (
+        <group key={s}>
+          <Box size={[W / 2 - 0.004, 1.08, 0.05]} position={[s * (W / 4 + 0.001), 1.22, fz - 0.025]} material={steel} radius={0.008} />
+          <Box size={[0.026, 0.76, 0.028]} position={[s * 0.045, 1.25, fz + 0.045]} material={handle} radius={0.01} />
+          {[1.6, 0.9].map((y) => (
+            <Box key={y} size={[0.02, 0.025, 0.035]} position={[s * 0.045, y, fz + 0.015]} material={handle} shadow={false} />
+          ))}
+        </group>
+      ))}
+      {/* dispenser: control panel and the recessed nook */}
+      <Box size={[W * 0.25, 0.11, 0.004]} position={[dx, 1.33, fz + 0.002]} material={dark} shadow={false} />
+      {[-0.03, 0.03].map((x) => (
+        <Box key={x} size={[0.026, 0.016, 0.002]} position={[dx + x, 1.35, fz + 0.005]} color="#e9eef5" shadow={false} />
+      ))}
+      <Box size={[W * 0.22, 0.012, 0.002]} position={[dx, 1.3, fz + 0.005]} color="#5a5f68" shadow={false} />
+      <Box size={[W * 0.25, 0.3, 0.004]} position={[dx, 1.1, fz + 0.002]} color="#2a2c31" shadow={false} />
+      <Box size={[W * 0.21, 0.26, 0.004]} position={[dx, 1.1, fz + 0.004]} color="#0f1012" shadow={false} />
+      <Box size={[0.06, 0.15, 0.02]} position={[dx, 1.12, fz + 0.012]} color="#1e2024" radius={0.006} shadow={false} />
+      <Box size={[W * 0.21, 0.012, 0.03]} position={[dx, 0.965, fz + 0.012]} color="#3a3c41" shadow={false} />
+    </group>
+  )
+}
+
+export function Fridge({ v }: { v: Visual }) {
+  if (v.opts.variant === 'french') return <FrenchDoorFridge W={v.opts.len ?? 0.91} />
   return (
     <group>
       <Box size={[0.74, 1.9, 0.68]} position={[0, 0.95, 0]} color={C.white} radius={0.05} />

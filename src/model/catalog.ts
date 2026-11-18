@@ -1224,6 +1224,15 @@ export const OPTIONS: Partial<
     variantDef: 'open',
     note: t('Put the stairs on the lower level: in first-person walk mode you climb them to the level above. The room with the stairs is drawn without a ceiling.'),
   },
+  fridge: {
+    variantLabel: t('Model'),
+    variants: [
+      ['standard', t('Top freezer')],
+      ['french', t('French door')],
+    ],
+    variantDef: 'standard',
+    variantLen: { standard: undefined as unknown as number, french: 0.91 },
+  },
   door: {
     variantLabel: t('Type'),
     variants: [
