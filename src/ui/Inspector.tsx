@@ -4,7 +4,7 @@ import { canToggle, toggle, turnOffAll } from '@/ha/actions'
 import { friendlyName, isActive, relativeTime, stateLabel } from '@/ha/derive'
 import { useHa } from '@/ha/store'
 import { bindingsOf, boundAnywhere, emitsLight, isBound, ledOf, ledSource } from '@/model/bindings'
-import { BEAM, BED_SIZES, bedModel, BODY_COLORS, CATALOG, CONSOLE_LEN, consoleModel, DAYBED_DEPTH, ITEM_PRESETS, LIGHT_TINTS, OPTIONS, RESIZABLE, RESIZABLE2, sizeOf, TINTABLE, TOP_COLORS } from '@/model/catalog'
+import { BAY_DEPTH, BEAM, BED_SIZES, bedModel, BODY_COLORS, CATALOG, CONSOLE_LEN, consoleModel, DAYBED_DEPTH, ITEM_PRESETS, LIGHT_TINTS, OPTIONS, RESIZABLE, RESIZABLE2, sizeOf, TINTABLE, TOP_COLORS } from '@/model/catalog'
 import { kindFor, modelName, variantFor } from '@/model/generate'
 import { doorSides, isOutdoor, isStreetSurface, rectsOf, roomArea, roomAt, wallLengthAt, wallSnap, type Side } from '@/model/geometry'
 import { groupFamily, groupMates, heatingSummary } from '@/model/groups'
@@ -738,12 +738,13 @@ function FurnitureOptions({ item }: { item: Item }) {
       {opt?.sash && (
         <div className="grid gap-1.5">
           <span className="text-[12px] font-semibold text-ink-2">{t('Window style')}</span>
-          <div className="grid grid-cols-3 gap-1.5">
+          <div className="grid grid-cols-2 gap-1.5">
             {(
               [
                 ['casement', t('Casement')],
                 ['hung', t('Double-hung')],
                 ['shutters', t('With shutters')],
+                ['bay', t('Bay')],
               ] as const
             ).map(([k, label]) => (
               <button key={k} type="button" className={seg((item.sash ?? 'casement') === k)} onClick={() => updateItem(item.id, { sash: k })}>
@@ -751,6 +752,9 @@ function FurnitureOptions({ item }: { item: Item }) {
               </button>
             ))}
           </div>
+          {item.sash === 'bay' && (
+            <span className="text-[11px] text-ink-3">{t('A bay fills a room part {depth} m deep: set the width to the inside width of that recess. Drapes hang on the side windows only.', { depth: BAY_DEPTH })}</span>
+          )}
         </div>
       )}
       {opt?.shape && (

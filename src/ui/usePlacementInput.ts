@@ -38,8 +38,8 @@ function commit(keep: boolean) {
   const L = useLayout.getState()
   if (target.type === 'item') {
     // A ceiling strip fits the room part it is dropped on (Ghost draws it at the same spot)
-    const fit = target.kind === 'ceilingStrip' ? ceilingFit(activeLevel(L)?.rooms ?? [], result.x, result.z) : null
-    if (fit) L.addItem('ceilingStrip', fit.x, fit.z, 0, target.entityId ?? null, undefined, { len: fit.len, len2: fit.len2 })
+    const fit = target.kind === 'ceilingStrip' || target.kind === 'beamLights' ? ceilingFit(activeLevel(L)?.rooms ?? [], result.x, result.z) : null
+    if (fit) L.addItem(target.kind, fit.x, fit.z, 0, target.entityId ?? null, undefined, { len: fit.len, len2: fit.len2 })
     else
       L.addItem(target.kind, result.x, result.z, result.rot, target.entityId ?? null, result.y, {
         ...target.extra,

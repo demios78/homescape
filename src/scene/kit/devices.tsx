@@ -2,9 +2,10 @@ import { Billboard } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { deviceClass, domainOf, DOOR_DRIVERS, friendlyName, isActive, lightColor, lightLevel, num, opensDoor } from '@/ha/derive'
 import { isSocketEntity, SOCKET_DOMAINS, socketCount } from '@/model/bindings'
-import { BEAM, consoleModel, STRIP_PITCH, STRIP_WALL_Y, stripWidth, WINDOW_BOTTOM, windowSize } from '@/model/catalog'
+import { bayCenter, BAY_DEPTH, BEAM, consoleModel, STRIP_PITCH, STRIP_WALL_Y, stripWidth, WINDOW_BOTTOM, windowSize } from '@/model/catalog'
 import { APERTURE_INSET, inRoom, roomAt, WALL_CUT_H, WALL_H, WALL_IN, WALL_INNER_H, wallRuns, type Side } from '@/model/geometry'
 import { roofView } from '../camera'
 import { activeLevel, useLayout } from '@/model/layoutStore'
@@ -14,7 +15,7 @@ import { doorKey, useDoorTraffic } from '../doorTraffic'
 import { markShadows } from '../frame'
 import { Airflow, Glow, Mist, MusicNotes, Ripple, Spin, StripGlow, useAmbient, useEased, useLitMaterial, Wash } from './effects'
 import { C } from './palette'
-import { bandGlowTexture, glowTexture, siriTexture, softRectTexture, woodGrainTexture } from './textures'
+import { bandGlowTexture, glowTexture, pianoKeysTexture, siriTexture, softRectTexture, woodGrainTexture } from './textures'
 import { Ball, Box, Cyl, mat } from './primitives'
 import { gainOf, monitorOn, type Visual } from './visual'
 import { useFilm } from './film'
@@ -32,6 +33,10 @@ const DIM = '#9aa0b8'
 /* ---------- lights ---------- */
 
 export function Pendant({ v }: P) {
+  return v.opts.variant === 'crystal' ? <Chandelier v={v} /> : <PlainPendant v={v} />
+}
+
+function PlainPendant({ v }: P) {
   const bulb = useLitMaterial(C.offWhite, v.on, v.color, v.level)
   return (
     <group>
@@ -39,6 +44,152 @@ export function Pendant({ v }: P) {
       <Cyl r={0.008} h={0.5} position={[0, 2.33, 0]} color={C.ink} shadow={false} />
       <Cyl r={0.34} rTop={0.12} h={0.24} position={[0, 2.0, 0]} color={v.unavailable ? DIM : C.white} />
       <Ball r={0.09} position={[0, 1.88, 0]} material={bulb} shadow={false} />
+    </group>
+  )
+}
+
+/* ---------- crystal chandelier (pendant variant 'crystal') ---------- */
+
+const ARMS = 8
+const ARM_R = 0.34
+const CUP_Y = 1.74
+
+/** Glass arms, crystal drops and bead swags of the chandelier: merged once, in item space. */
+let chandelierGeo: { arms: THREE.BufferGeometry; crystals: THREE.BufferGeometry; candles: THREE.BufferGeometry; tips: [number, number, number][] } | null = null
+function chandelierGeometry() {
+  if (chandelierGeo) return chandelierGeo
+  const arms: THREE.BufferGeometry[] = []
+  const crystals: THREE.BufferGeometry[] = []
+  const candles: THREE.BufferGeometry[] = []
+  const tips: [number, number, number][] = []
+  const drop = (x: number, y: number, z: number, r: number) => crystals.push(new THREE.OctahedronGeometry(r, 0).scale(1, 1.9, 1).translate(x, y, z))
+  const bead = (x: number, y: number, z: number) => crystals.push(new THREE.IcosahedronGeometry(0.009, 0).translate(x, y, z))
+  for (let i = 0; i < ARMS; i++) {
+    const a = (i / ARMS) * Math.PI * 2 + Math.PI / ARMS
+    const c = Math.cos(a)
+    const s = Math.sin(a)
+    // S curve: out of the hub, dipping, then rising into the candle cup
+    const pts = [
+      [0.05, 1.66],
+      [0.16, 1.58],
+      [0.28, 1.6],
+      [ARM_R, 1.68],
+      [ARM_R, CUP_Y - 0.02],
+    ].map(([r, y]) => new THREE.Vector3(r * c, y, r * s))
+    arms.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 20, 0.011, 6))
+    // cup with a scalloped flare, sleeve and flame bulb (alternate arms a little taller)
+    const tall = i % 2 ? 0.05 : 0
+    arms.push(new THREE.CylinderGeometry(0.05, 0.022, 0.03, 10).translate(ARM_R * c, CUP_Y, ARM_R * s))
+    candles.push(new THREE.CylinderGeometry(0.014, 0.014, 0.1 + tall, 8).translate(ARM_R * c, CUP_Y + 0.065 + tall / 2, ARM_R * s))
+    tips.push([ARM_R * c, CUP_Y + 0.14 + tall, ARM_R * s])
+    // prisms under the cup and a bead swag from the cup back toward the column
+    drop(ARM_R * c, CUP_Y - 0.075, ARM_R * s, 0.024)
+    drop((ARM_R + 0.045) * c, CUP_Y - 0.02, (ARM_R + 0.045) * s, 0.014)
+    for (let k = 1; k < 9; k++) {
+      const t = k / 9
+      const r = ARM_R * (1 - t) + 0.06 * t
+      bead(r * c, CUP_Y + 0.02 + t * 0.32 - Math.sin(Math.PI * t) * 0.12, r * s)
+    }
+    // inner ring of drops around the bowl
+    drop(0.1 * Math.cos(a + 0.4), 1.55, 0.1 * Math.sin(a + 0.4), 0.018)
+  }
+  // column: cut-glass urn, collars and the bottom finial
+  arms.push(new THREE.CylinderGeometry(0.018, 0.018, 0.5, 8).translate(0, 1.85, 0))
+  crystals.push(new THREE.LatheGeometry([[0.001, 0], [0.05, 0.03], [0.065, 0.1], [0.045, 0.17], [0.02, 0.2]].map(([x, y]) => new THREE.Vector2(x, y)), 10).translate(0, 1.82, 0))
+  crystals.push(new THREE.CylinderGeometry(0.1, 0.06, 0.05, 12).translate(0, 2.07, 0))
+  crystals.push(new THREE.CylinderGeometry(0.11, 0.05, 0.08, 12).translate(0, 1.62, 0))
+  drop(0, 1.5, 0, 0.035)
+  drop(0, 1.43, 0, 0.022)
+  chandelierGeo = { arms: mergeGeometries(arms), crystals: mergeGeometries(crystals.map((g) => g.toNonIndexed())), candles: mergeGeometries(candles), tips }
+  arms.forEach((g) => g.dispose())
+  crystals.forEach((g) => g.dispose())
+  candles.forEach((g) => g.dispose())
+  return chandelierGeo
+}
+
+/**
+ * Crystal chandelier: a brass canopy and chain, cut-glass column, eight S-curved glass arms with candle sleeves and
+ * flame bulbs (alternating heights), prisms under each cup and bead swags. Bulbs light in the bound light's color and the
+ * crystals pick up a glow while on; the room light is the pendant's (roomLights SPEC.pendant).
+ */
+function Chandelier({ v }: P) {
+  const g = chandelierGeometry()
+  const bulb = useLitMaterial('#fff8ea', v.on, v.color, v.level, 2.2)
+  const crystal = useLitMaterial('#e9eef8', v.on, v.color, v.level * 0.35, 0.6)
+  const brass = mat('#c9a45a', { metalness: 0.6, roughness: 0.3 })
+  return (
+    <group>
+      <Cyl r={0.07} h={0.05} position={[0, 2.575, 0]} material={brass} segments={14} shadow={false} />
+      <Cyl r={0.006} h={0.5} position={[0, 2.33, 0]} material={brass} segments={6} shadow={false} />
+      <mesh geometry={g.arms} material={crystal} castShadow />
+      <mesh geometry={g.candles} material={mat(C.white)} />
+      <mesh geometry={g.crystals} material={crystal} />
+      {g.tips.map((p, i) => (
+        <Ball key={i} r={0.018} position={p} scale={[1, 1.6, 1]} material={bulb} detail={1} shadow={false} />
+      ))}
+    </group>
+  )
+}
+
+/* ---------- digital piano ---------- */
+
+/** Black keys of an 88-key keyboard, merged once: centered on x over KEYS_W, along local x. */
+const KEYS_W = 1.22
+let blackKeys: THREE.BufferGeometry | null = null
+function blackKeyGeometry() {
+  if (blackKeys) return blackKeys
+  const white = KEYS_W / 52
+  const parts: THREE.BufferGeometry[] = []
+  // white keys from A0: A B C D E F G; a black key follows A, C, D, F and G
+  const letters = 'ABCDEFG'
+  for (let i = 0; i < 51; i++) {
+    const l = letters[i % 7]
+    if (l === 'B' || l === 'E') continue
+    parts.push(new THREE.BoxGeometry(white * 0.58, 0.016, 0.09).translate(-KEYS_W / 2 + (i + 1) * white, 0, 0))
+  }
+  blackKeys = mergeGeometries(parts)
+  parts.forEach((g) => g.dispose())
+  return blackKeys
+}
+let keybed: THREE.MeshStandardMaterial | null = null
+
+/**
+ * Digital piano on an X stand (like a Yamaha P series): a slim black body with 88 keys, a music rest holding an open
+ * book of sheet music, a power light that glows green while on, and music notes rising while its media player plays.
+ */
+export function DigitalPiano({ v }: P) {
+  keybed ??= new THREE.MeshStandardMaterial({ map: pianoKeysTexture(), roughness: 0.35 })
+  const black = mat('#141518', { roughness: 0.4 })
+  const steel = mat('#1d1f24', { roughness: 0.5, metalness: 0.4 })
+  const playing = v.domain === 'media_player' && v.state === 'playing'
+  return (
+    <group>
+      {[-0.4, 0.4].map((x) => (
+        <group key={x} position={[x, 0, 0]}>
+          {[-1, 1].map((s) => (
+            <Box key={s} size={[0.028, 0.86, 0.03]} position={[0, 0.37, 0]} rotation-x={s * 0.5} material={steel} />
+          ))}
+          <Box size={[0.05, 0.03, 0.4]} position={[0, 0.72, 0]} material={steel} />
+        </group>
+      ))}
+      <Box size={[0.84, 0.03, 0.03]} position={[0, 0.37, 0]} material={steel} />
+      <Box size={[1.33, 0.11, 0.3]} position={[0, 0.79, 0]} material={black} radius={0.02} />
+      <Box size={[KEYS_W, 0.022, 0.15]} position={[0, 0.85, 0.06]} material={keybed} shadow={false} />
+      <mesh geometry={blackKeyGeometry()} position={[0, 0.866, 0.025]} material={black} />
+      <Box size={[KEYS_W + 0.04, 0.03, 0.012]} position={[0, 0.86, -0.02]} material={black} shadow={false} />
+      {[-0.6, -0.57, -0.54].map((x) => (
+        <Box key={x} size={[0.018, 0.006, 0.012]} position={[x, 0.848, -0.06]} color="#3a3d44" shadow={false} />
+      ))}
+      <Box size={[0.008, 0.006, 0.008]} position={[-0.63, 0.849, -0.06]} color={v.on ? '#46e07a' : '#2a2c30'} shadow={false} />
+      <group position={[0, 0.97, -0.1]} rotation-x={-0.22}>
+        <Box size={[0.62, 0.22, 0.008]} material={black} />
+        <Box size={[0.42, 0.16, 0.004]} position={[0, 0.02, 0.007]} color="#f6f4ee" shadow={false} />
+        <Box size={[0.003, 0.16, 0.005]} position={[0, 0.02, 0.008]} color="#c8c4ba" shadow={false} />
+        {[0.07, 0.04, 0.01, -0.02, -0.05].map((y) => (
+          <Box key={y} size={[0.38, 0.003, 0.005]} position={[0, y, 0.009]} color="#55565c" shadow={false} />
+        ))}
+      </group>
+      <MusicNotes active={playing} y={1.1} size={0.08} />
     </group>
   )
 }
@@ -1928,7 +2079,7 @@ function Grid({ w, h, cols, rows, y, z }: { w: number; h: number; cols: number; 
  * muntin grid (the upper one outside, the lower one inside); a bound window sensor slides the lower sash up. 'shutters'
  * adds two black raised-panel shutters on the outside of an exterior wall.
  */
-function HungSashes({ v, W, B, H, glass }: P & { W: number; B: number; H: number; glass: THREE.Material }) {
+function HungSashes({ v, W, B, H, glass, inset = false }: P & { W: number; B: number; H: number; glass: THREE.Material; inset?: boolean }) {
   const lower = useRef<THREE.Group>(null)
   const sh = H / 2 + 0.02
   const target = sashOpen(v) ? H * 0.4 : 0
@@ -1976,7 +2127,7 @@ function HungSashes({ v, W, B, H, glass }: P & { W: number; B: number; H: number
       {[-1, 1].map((s) => (
         <Box key={s} size={[0.09, H + 0.18, 0.02]} position={[s * (W / 2 + 0.045), B + H / 2 + 0.03, EDGE_Z + WALL_IN + 0.01]} color={C.white} shadow={false} />
       ))}
-      <Box size={[W + 0.36, 0.1, 0.03]} position={[0, B + H + 0.1, EDGE_Z + WALL_IN + 0.015]} color={C.white} shadow={false} />
+      <Box size={[W + (inset ? 0.2 : 0.36), 0.1, 0.03]} position={[0, B + H + 0.1, EDGE_Z + WALL_IN + 0.015]} color={C.white} shadow={false} />
       {v.opts.sash === 'shutters' &&
         !v.interior &&
         [-1, 1].map((s) => (
@@ -1991,6 +2142,86 @@ function HungSashes({ v, W, B, H, glass }: P & { W: number; B: number; H: number
   )
 }
 
+/**
+ * Bay window (Item.sash 'bay'): fills a rectangular recess BAY_DEPTH deep whose inner side faces are W apart. A fixed pane
+ * with a 7 × 6 grid sits in the recess's back wall (only that part of the wall is cut, apertureOf); each corner is closed
+ * by a wall at 45° holding a painted double-hung window, so the bay reads as angled from inside (and from above, a wall top
+ * caps the corner). Drapes (Item.variant other than 'none', color Item.body) hang on the side windows only, gathered toward
+ * the room; the center pane stays bare.
+ */
+function BayWindow({ v, W, B, H, glass, yoff }: P & { W: number; B: number; H: number; glass: THREE.Material; yoff: number }) {
+  const T = B + H
+  const cw = bayCenter(W)
+  const run = BAY_DEPTH * Math.SQRT2
+  const sw = Math.min(0.72, run - 0.12)
+  const floor = -yoff
+  const top = WALL_H - yoff
+  const edge = W / 2 + WALL_IN
+  const fabric = v.opts.body ?? C.brandLight
+  const drape = (v.opts.variant ?? 'curtain') !== 'none'
+  const wall = mat(C.wall)
+  const caps = useMemo(
+    () =>
+      [-1, 1].map((s) => {
+        // the corner behind each angled wall, closed at the wall top (shape y = -z, see rotateX below)
+        const sh = new THREE.Shape([new THREE.Vector2(s * (edge - BAY_DEPTH - 0.04), -EDGE_Z + 0.05), new THREE.Vector2(s * (edge + 0.05), -EDGE_Z + 0.05), new THREE.Vector2(s * (edge + 0.05), -EDGE_Z - BAY_DEPTH - 0.04)])
+        return new THREE.ShapeGeometry(sh).rotateX(-Math.PI / 2)
+      }),
+    [edge],
+  )
+  useEffect(() => () => caps.forEach((g) => g.dispose()), [caps])
+  return (
+    <>
+      {/* fixed center pane in the back wall */}
+      <Box size={[cw + 0.04, 0.06, 0.22]} position={[0, B, EDGE_Z]} color={C.white} />
+      <Box size={[cw + 0.04, 0.06, 0.22]} position={[0, T, EDGE_Z]} color={C.white} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.06, H, 0.22]} position={[(s * cw) / 2, B + H / 2, EDGE_Z]} color={C.white} />
+      ))}
+      <Box size={[cw - 0.06, H - 0.06, 0.012]} position={[0, B + H / 2, EDGE_Z]} material={glass} shadow={false} />
+      <Grid w={cw - 0.06} h={H - 0.06} cols={7} rows={6} y={B + H / 2} z={EDGE_Z + 0.012} />
+      <Box size={[cw + 0.06, 0.1, 0.03]} position={[0, T + 0.1, EDGE_Z + WALL_IN + 0.015]} color={C.white} shadow={false} />
+      <Box size={[cw + 0.04, 0.035, 0.16]} position={[0, B - 0.02, EDGE_Z + WALL_IN + 0.07]} color={C.white} />
+      {[-1, 1].map((s) => {
+        // angled corner wall: from the back wall at x = s·(edge - depth) to the recess mouth at x = s·edge
+        const mx = s * (edge - BAY_DEPTH / 2)
+        const mz = EDGE_Z + BAY_DEPTH / 2
+        const nx = -s * Math.SQRT1_2
+        const nz = Math.SQRT1_2
+        const jamb = (run - sw) / 2 + 0.03
+        return (
+          <group key={s}>
+            <mesh geometry={caps[(s + 1) / 2]} position={[0, top + 0.001, 0]} material={wall} receiveShadow />
+            <group position={[mx - nx * EDGE_Z, 0, mz - nz * EDGE_Z]} rotation-y={(-s * Math.PI) / 4}>
+              <Box size={[run + 0.06, B - floor, 0.1]} position={[0, (B + floor) / 2, EDGE_Z]} material={wall} />
+              <Box size={[run + 0.06, top - T, 0.1]} position={[0, (T + top) / 2, EDGE_Z]} material={wall} />
+              {[-1, 1].map((k) => (
+                <Box key={k} size={[jamb, H, 0.1]} position={[k * (run / 2 + 0.03 - jamb / 2), B + H / 2, EDGE_Z]} material={wall} />
+              ))}
+              <Box size={[sw + 0.04, 0.06, 0.16]} position={[0, B, EDGE_Z]} color={C.white} />
+              <Box size={[sw + 0.04, 0.06, 0.16]} position={[0, T, EDGE_Z]} color={C.white} />
+              {[-1, 1].map((k) => (
+                <Box key={k} size={[0.06, H, 0.16]} position={[(k * sw) / 2, B + H / 2, EDGE_Z]} color={C.white} />
+              ))}
+              <HungSashes v={v} W={sw} B={B} H={H} glass={glass} inset />
+              <Box size={[sw + 0.1, 0.035, 0.14]} position={[0, B - 0.02, EDGE_Z + WALL_IN + 0.06]} color={C.white} />
+              {drape && (
+                <>
+                  <Cyl r={0.012} h={sw + 0.16} position={[0, T + 0.24, EDGE_Z + 0.2]} rotation-z={Math.PI / 2} color="#8a8f96" segments={10} shadow={false} />
+                  {/* one pleated panel at the recess mouth end (local s·x), floor length */}
+                  <group position={[s * (sw / 2 - 0.12), (T + 0.2 + floor + 0.02) / 2, EDGE_Z + 0.17]} scale-x={0.34 * (s < 0 ? 1 : -1)}>
+                    <PleatPanel outer={fabric} h={T + 0.18 - floor} />
+                  </group>
+                </>
+              )}
+            </group>
+          </group>
+        )
+      })}
+    </>
+  )
+}
+
 export function Window({ v }: P) {
   const root = useRef<THREE.Group>(null)
   const full = useRef<THREE.Group>(null)
@@ -2001,7 +2232,8 @@ export function Window({ v }: P) {
   const yoff = v.at?.y ?? 0
   const gw = W - 0.06
   const gh = H - 0.06
-  const hung = v.opts.sash === 'hung' || v.opts.sash === 'shutters'
+  const bay = v.opts.sash === 'bay'
+  const hung = v.opts.sash === 'hung' || v.opts.sash === 'shutters' || bay
   // The sash opens into the room by default (negative rotation toward local +z, into the room); only with a window sensor.
   const sash = useEased(sashOpen(v) ? -0.5 : 0)
   // With a low wall the window is hidden; a thin glass line on top of the low wall stands in for it (floor plan mark).
@@ -2019,6 +2251,9 @@ export function Window({ v }: P) {
   return (
     <group ref={root}>
       <group ref={full}>
+        {bay && <BayWindow v={v} W={W} B={B} H={H} glass={glass} yoff={yoff} />}
+        {!bay && (
+          <>
         {/* frame: around the opening, inside the wall */}
         <Box size={[W + 0.04, 0.06, 0.22]} position={[0, B, EDGE_Z]} color={C.white} />
         <Box size={[W + 0.04, 0.06, 0.22]} position={[0, T, EDGE_Z]} color={C.white} />
@@ -2036,6 +2271,8 @@ export function Window({ v }: P) {
         )}
         {B + yoff > 0.3 && <Box size={[W + 0.3, 0.04, 0.2]} position={[0, B - 0.03, EDGE_Z + WALL_IN + 0.1]} color={C.white} />}
         <Shade v={v} W={W} B={B} T={T} yoff={yoff} />
+          </>
+        )}
       </group>
       {/* Sash swing direction in edit mode: outline arc on the floor (visible when the wall is low too) */}
       {v.edit && !hung && (

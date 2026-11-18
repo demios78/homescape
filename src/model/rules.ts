@@ -151,7 +151,7 @@ const TUCKS: Partial<Record<ItemKind, ItemKind[]>> = { chair: ['diningTable', 'd
  * Ceiling items (ceiling layer: no collision with floor and wall items). The pergola / gazebo is in this layer too, like a
  * roof: a garden table, bench or sun lounger goes under it.
  */
-export const CEILING: ItemKind[] = ['pendant', 'downlight', 'ceilingStrip', 'ceilingFan', 'ceilingLight', 'trackLight', 'projector', 'smokeDetector', 'pergola']
+export const CEILING: ItemKind[] = ['pendant', 'downlight', 'ceilingStrip', 'beamLights', 'ceilingFan', 'ceilingLight', 'trackLight', 'projector', 'smokeDetector', 'pergola']
 
 export function layerOf(kind: ItemKind, y?: number, variant?: string, mount?: Item['mount']): Layer {
   if (kind === 'rug' || kind === 'doormat') return 'rug'
@@ -335,13 +335,13 @@ export function checkItem(level: Level, cand: Cand, ignoreId?: string, onWall = 
   if (layer !== 'top' && layer !== 'ceiling' && !(wallish && layer !== 'floor') && !boxes.every((b) => fitsRoom(room, b, 0.02))) {
     return { ok: false, reason: t('Sticks out of the room') }
   }
-  // The ceiling strip is a ring around the room: it collides with nothing.
-  if (layer === 'rug' || layer === 'top' || cand.kind === 'ceilingStrip') return { ok: true }
+  // The ceiling strip is a ring around the room and beams fill the ceiling between fixtures: they collide with nothing.
+  if (layer === 'rug' || layer === 'top' || cand.kind === 'ceilingStrip' || cand.kind === 'beamLights') return { ok: true }
 
   for (const it of level.items) {
     if (it.id === ignoreId) continue
     const name = it.name || CATALOG[it.kind].label
-    if (it.kind === 'ceilingStrip') continue
+    if (it.kind === 'ceilingStrip' || it.kind === 'beamLights') continue
     if (cand.kind === 'door' || it.kind === 'door') {
       // A door may open onto stairs (a basement door at the top of the basement stairs)
       if (cand.kind === 'stairs' || it.kind === 'stairs') continue

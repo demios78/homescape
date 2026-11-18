@@ -5,7 +5,8 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { deviceClass, domainOf, isActive, lightColor, lightLevel, num } from '@/ha/derive'
 import type { HassEntity } from '@/ha/types'
-import { APERTURE_INSET, WALL_CUT_H, WALL_INNER_H } from '@/model/geometry'
+import { BEAM_STRING_Z, beamRows } from '@/model/catalog'
+import { APERTURE_INSET, WALL_CUT_H, WALL_H, WALL_INNER_H } from '@/model/geometry'
 import { roofView, useView } from '../camera'
 import { markShadows } from '../frame'
 import { Glow, Mist, Spin, useAmbient, useEased, useLitMaterial } from './effects'
@@ -535,6 +536,76 @@ export function StringLights({ v }: P) {
           <Ball r={0.025} position={[0, POLE_H + 0.01, 0]} color={pole} detail={1} shadow={false} />
         </group>
       ))}
+      <M g={g.wire} m={mat(C.ink)} shadow={false} />
+      <M g={g.sockets} m={mat('#2c3140')} shadow={false} />
+      <M g={g.bulbs} m={bulb} shadow={false} />
+      {v.on && v.night && <points geometry={g.halo} material={halo} renderOrder={10} {...AID} />}
+    </group>
+  )
+}
+
+/* ---------- ceiling beams with string lights ---------- */
+
+const BEAM_W = 0.13
+const BEAM_H = 0.16
+const STRING_TOP = 2.53
+const SCALLOP = 0.07
+
+function beamGeometry(w: number, d: number) {
+  return cached(`beams-${w.toFixed(2)}-${d.toFixed(2)}`, () => {
+    const rows = beamRows(d)
+    // The beams reach the walls: the area stops 15 cm short of each wall (ceilingFit), the inner face is 5 cm in.
+    const span = w + 0.2
+    const beams = merge(rows.map((z) => ({ g: boxG(span, BEAM_H, BEAM_W), p: [0, WALL_H - BEAM_H / 2 - 0.002, z] as V3 })), true)
+    const clips = Math.max(1, Math.round(w / 1.2))
+    const wireY = (x: number) => {
+      const t = (((x + w / 2) / w) * clips) % 1
+      return STRING_TOP - SCALLOP * 4 * t * (1 - t)
+    }
+    const wires: THREE.BufferGeometry[] = []
+    const at: V3[] = []
+    rows.forEach((z0, r) => {
+      const z = z0 + BEAM_STRING_Z
+      const pts = Array.from({ length: clips * 8 + 1 }, (_, i) => {
+        const x = -w / 2 + (i / (clips * 8)) * w
+        return new THREE.Vector3(x, wireY(x), z + Math.sin(i * 0.9 + r) * 0.01)
+      })
+      wires.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), clips * 16, 0.005, 5))
+      const n = Math.max(2, Math.floor(w / 0.32))
+      for (let i = 0; i < n; i++) {
+        const x = -w / 2 + ((i + 0.5) * w) / n
+        at.push([x, wireY(x) - 0.06, z])
+      }
+    })
+    const wire = mergeGeometries(wires)
+    wires.forEach((g) => g.dispose())
+    const sockets = merge(at.map(([x, y, z]) => ({ g: cylG(0.012, 0.03, 8), p: [x, y + 0.035, z] as V3 })))
+    const bulbs = merge(at.map(([x, y, z]) => ({ g: icoG(0.026, 1), p: [x, y, z] as V3, s: [1, 1.1, 1] as V3 })))
+    const halo = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(at.flat(), 3))
+    return { beams, wire, sockets, bulbs, halo }
+  })
+}
+
+/**
+ * Exposed wooden ceiling beams with a string of globe bulbs in front of each (like bistro lights under rustic beams).
+ * The area is Item.len × Item.len2 (dropped, it fills the room part like the ceiling LED strip); beams run along x about
+ * a meter apart and reach the walls. The bulbs follow the bound light or switch; at night each gets a soft halo. Hidden
+ * in plan view (it would cover the floor plan).
+ */
+export function BeamLights({ v }: P) {
+  const w = v.opts.len ?? 3
+  const d = v.opts.len2 ?? 3
+  const g = beamGeometry(w, d)
+  const plan = useView((s) => s.plan)
+  const bulb = useLitMaterial('#f4efe0', v.on, v.color, v.level, 2.4)
+  const halo = useMemo(
+    () => new THREE.PointsMaterial({ map: glowTexture(), color: v.color, size: 0.55, sizeAttenuation: true, transparent: true, opacity: Math.min(1, 0.4 + 0.5 * v.level), depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }),
+    [v.color, v.level],
+  )
+  useEffect(() => () => halo.dispose(), [halo])
+  return (
+    <group visible={!plan}>
+      <M g={g.beams} m={woodMat(v.opts.body ?? '#6e4c33')} />
       <M g={g.wire} m={mat(C.ink)} shadow={false} />
       <M g={g.sockets} m={mat('#2c3140')} shadow={false} />
       <M g={g.bulbs} m={bulb} shadow={false} />

@@ -1,6 +1,7 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { domainOf, isActive, lightColor, lightLevel } from '@/ha/derive'
 import { t } from '@/i18n'
 import { HEADBOARD } from '@/model/bindings'
@@ -11,7 +12,7 @@ import { markShadows } from '../frame'
 import { Glow, StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { baseplateTopTexture, beadboardTexture, wineLatticeTexture, carvedPanelTexture, dashSeatTexture, embroideredBackTexture, paintedTopTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, splatTopTexture, wickerLatticeTexture, wickerTexture } from './textures'
+import { baseplateTopTexture, diamondFabricTexture, woodGrainTexture, beadboardTexture, wineLatticeTexture, carvedPanelTexture, dashSeatTexture, embroideredBackTexture, paintedTopTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, splatTopTexture, wickerLatticeTexture, wickerTexture } from './textures'
 import { gainOf, type Visual } from './visual'
 
 /*
@@ -1846,9 +1847,165 @@ function EmbroideredChair() {
   )
 }
 
+/* ---------- carved dining set ---------- */
+
+const woods = new Map<string, THREE.MeshStandardMaterial>()
+function sharedWood(color: string, roughness: number) {
+  let m = woods.get(color)
+  if (!m) {
+    m = new THREE.MeshStandardMaterial({ color, map: woodGrainTexture(), roughness })
+    woods.set(color, m)
+  }
+  return m
+}
+let seatFabric: THREE.MeshStandardMaterial | null = null
+
+/** Lattice of the carved chair back: four bowed bars crossing into pointed ovals, built once (0 at the seat). */
+let latticeGeo: THREE.BufferGeometry | null = null
+function chairLattice() {
+  if (latticeGeo) return latticeGeo
+  const bars = [-0.16, -0.055, 0.055, 0.16].map((x0) => {
+    const bow = Math.abs(x0) < 0.1 ? Math.sign(x0) * 0.075 : -Math.sign(x0) * 0.06
+    const pts = Array.from({ length: 9 }, (_, i) => {
+      const t = i / 8
+      return new THREE.Vector3(x0 + bow * Math.sin(Math.PI * t), 0.16 + t * 0.33, 0)
+    })
+    return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.011, 6)
+  })
+  latticeGeo = mergeGeometries(bars)
+  bars.forEach((g) => g.dispose())
+  return latticeGeo
+}
+
+/**
+ * Carved dining chair (chair variant 'carved'): honey-toned wood, fluted tapered front legs, raked back legs, a seat in a
+ * gold diamond weave, a tall back with a carved leaf top rail, rosettes on the post tops and a lattice of bowed bars.
+ */
+function CarvedChair() {
+  const wood = sharedWood('#9b5f2c', 0.55)
+  seatFabric ??= new THREE.MeshStandardMaterial({ map: diamondFabricTexture(), roughness: 0.9 })
+  return (
+    <group>
+      {[-0.2, 0.2].map((x) => (
+        <group key={x}>
+          <Cyl r={0.017} rTop={0.024} h={0.43} position={[x, 0.215, 0.19]} material={wood} segments={10} />
+          <Cyl r={0.027} h={0.04} position={[x, 0.4, 0.19]} material={wood} segments={10} shadow={false} />
+          <Box size={[0.035, 0.45, 0.04]} position={[x, 0.22, -0.2]} rotation-x={0.12} material={wood} />
+        </group>
+      ))}
+      <Box size={[0.47, 0.07, 0.44]} position={[0, 0.43, 0]} material={wood} />
+      <Box size={[0.49, 0.075, 0.46]} position={[0, 0.495, 0.01]} material={seatFabric} radius={0.03} />
+      <group position={[0, 0.46, -0.215]} rotation-x={-0.1}>
+        {[-1, 1].map((sx) => (
+          <group key={sx}>
+            <Box size={[0.04, 0.62, 0.035]} position={[sx * 0.205, 0.31, 0]} material={wood} />
+            <Cyl r={0.03} h={0.05} position={[sx * 0.215, 0.6, -0.01]} rotation-z={Math.PI / 2} material={wood} segments={14} />
+          </group>
+        ))}
+        <Box size={[0.42, 0.11, 0.04]} position={[0, 0.55, 0]} material={wood} />
+        {Array.from({ length: 9 }, (_, i) => (
+          <Box key={i} size={[0.02, 0.055, 0.012]} position={[-0.16 + i * 0.04, 0.55, 0.022]} color="#7d4a20" shadow={false} />
+        ))}
+        <Box size={[0.4, 0.035, 0.03]} position={[0, 0.15, 0]} material={wood} />
+        <mesh geometry={chairLattice()} material={wood} castShadow />
+      </group>
+    </group>
+  )
+}
+
+/** Keyboard bench (chair variant 'keyboardBench'): black padded seat on two crossed steel legs with T feet, 48 cm high. */
+function KeyboardBench() {
+  const steel = mat('#1d1f24', { roughness: 0.5, metalness: 0.4 })
+  return (
+    <group>
+      {[-0.22, 0.22].map((x) => (
+        <group key={x} position={[x, 0, 0]}>
+          {[-1, 1].map((s) => (
+            <Box key={s} size={[0.025, 0.52, 0.03]} position={[0, 0.23, 0]} rotation-x={s * 0.62} material={steel} />
+          ))}
+          {[-1, 1].map((s) => (
+            <Box key={s} size={[0.04, 0.03, 0.06]} position={[0, 0.015, s * 0.14]} material={steel} />
+          ))}
+        </group>
+      ))}
+      <Box size={[0.44, 0.025, 0.025]} position={[0, 0.23, 0]} material={steel} />
+      <Box size={[0.56, 0.03, 0.26]} position={[0, 0.425, 0]} material={steel} />
+      <Box size={[0.6, 0.06, 0.3]} position={[0, 0.47, 0]} color="#15161a" radius={0.025} />
+    </group>
+  )
+}
+
+/** Top outline of the pedestal table: a rectangle whose corners are cut by concave quarter circles. */
+function notchedTop(L: number, D: number, r: number, depth: number) {
+  const s = new THREE.Shape()
+  const x = L / 2
+  const z = D / 2
+  s.moveTo(-x + r, -z)
+  s.lineTo(x - r, -z)
+  s.absarc(x, -z, r, Math.PI, Math.PI / 2, true)
+  s.lineTo(x, z - r)
+  s.absarc(x, z, r, -Math.PI / 2, -Math.PI, true)
+  s.lineTo(-x + r, z)
+  s.absarc(-x, z, r, 0, -Math.PI / 2, true)
+  s.lineTo(-x, -z + r)
+  s.absarc(-x, -z, r, Math.PI / 2, 0, true)
+  const g = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.008, bevelSegments: 2, curveSegments: 10 })
+  g.rotateX(Math.PI / 2)
+  // wood grain across the top: uv from x and z
+  const p = g.attributes.position
+  const uv = g.attributes.uv
+  for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 1.2, p.getZ(i) / 1.2)
+  return g
+}
+const tops = new Map<string, THREE.BufferGeometry>()
+
+/**
+ * Pedestal dining table (diningTable variant 'pedestal'): an Item.len × Item.len2 top (default 1.85 × 1.0) with concave
+ * notched corners, a darker inlaid field and a molded apron, on two pedestals of three carved columns each (in a row across
+ * the table) on shaped plinths. Walnut, no cloth.
+ */
+function PedestalTable({ L, D }: { L: number; D: number }) {
+  const key = `${L.toFixed(2)}x${D.toFixed(2)}`
+  let top = tops.get(key)
+  if (!top) {
+    top = notchedTop(L, D, 0.1, 0.035)
+    tops.set(key, top)
+  }
+  const wood = sharedWood('#8a5428', 0.4)
+  const dark = sharedWood('#5e3519', 0.45)
+  const px = L / 2 - Math.min(0.45, L * 0.24)
+  const cols = [-0.24, 0, 0.24].map((z) => z * Math.min(1, D))
+  return (
+    <group>
+      <mesh geometry={top} position={[0, 0.79, 0]} material={wood} castShadow receiveShadow />
+      <Box size={[L - 0.36, 0.002, D - 0.3]} position={[0, 0.7995, 0]} material={dark} shadow={false} />
+      <Box size={[L - 0.16, 0.08, D - 0.14]} position={[0, 0.71, 0]} material={wood} />
+      <Box size={[L - 0.2, 0.025, D - 0.18]} position={[0, 0.66, 0]} material={dark} />
+      {[-1, 1].map((s) => (
+        <group key={s} position={[s * px, 0, 0]}>
+          <Box size={[0.16, 0.06, D * 0.72]} position={[0, 0.62, 0]} material={wood} />
+          {cols.map((z) => (
+            <group key={z} position={[0, 0, z]}>
+              <Cyl r={0.06} h={0.08} position={[0, 0.55, 0]} material={wood} segments={12} />
+              <Cyl r={0.045} rTop={0.06} h={0.06} position={[0, 0.48, 0]} material={dark} segments={12} />
+              <Cyl r={0.042} h={0.3} position={[0, 0.3, 0]} material={wood} segments={12} />
+              <Cyl r={0.05} h={0.05} position={[0, 0.2, 0]} material={dark} segments={12} />
+              <Cyl r={0.055} rTop={0.045} h={0.06} position={[0, 0.14, 0]} material={wood} segments={12} />
+            </group>
+          ))}
+          <Box size={[0.26, 0.05, D * 0.78]} position={[0, 0.085, 0]} material={wood} radius={0.02} />
+          <Box size={[0.32, 0.06, D * 0.86]} position={[0, 0.03, 0]} material={dark} radius={0.025} />
+        </group>
+      ))}
+    </group>
+  )
+}
+
 export function Chair({ v }: { v: Visual }) {
   if (v.opts.variant === 'bistro') return <BistroChair />
   if (v.opts.variant === 'embroidered') return <EmbroideredChair />
+  if (v.opts.variant === 'carved') return <CarvedChair />
+  if (v.opts.variant === 'keyboardBench') return <KeyboardBench />
   return (
     <group>
       {legs4(0.44, 0.44, 0.44, C.ink, 0.022)}
@@ -1858,7 +2015,8 @@ export function Chair({ v }: { v: Visual }) {
   )
 }
 
-export function DiningTable() {
+export function DiningTable({ v }: { v: Visual }) {
+  if (v.opts.variant === 'pedestal') return <PedestalTable L={v.opts.len ?? 1.85} D={v.opts.len2 ?? 1} />
   return (
     <group>
       <Box size={[1.4, 0.06, 0.85]} position={[0, 0.75, 0]} color={C.white} radius={0.03} />

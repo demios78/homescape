@@ -107,7 +107,7 @@ function ItemGhost({ kind, extra }: { kind: ItemKind; extra?: Partial<Item> }) {
     const chk = checkItem(level, { kind, x, z, rot, y, variant: tvMode ?? extra?.variant, mount: extra?.mount, len: extra?.len, len2: extra?.len2 }, undefined, onWall)
 
     // A ceiling strip fits the room part under the pointer; the ghost stretches the 3 × 3 model to that size.
-    const fit = kind === 'ceilingStrip' ? ceilingFit(level.rooms, x, z) : null
+    const fit = kind === 'ceilingStrip' || kind === 'beamLights' ? ceilingFit(level.rooms, x, z) : null
     if (fit) {
       x = fit.x
       z = fit.z

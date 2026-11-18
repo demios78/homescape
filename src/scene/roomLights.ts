@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { isActive, lightColor, lightLevel, opensDoor } from '@/ha/derive'
 import type { HassEntity } from '@/ha/types'
 import { bindingsOf, ledOf, ledSource } from '@/model/bindings'
-import { BEAM, bedModel } from '@/model/catalog'
+import { BEAM, BEAM_STRING_Z, beamRows, bedModel } from '@/model/catalog'
 import { apertureOf, doorSides, isOutdoor, rectsOf, roomAt, WALL_H, WALL_T } from '@/model/geometry'
 import type { Item, ItemKind, Level, Rect, Room } from '@/model/types'
 import { openNeighbors } from '@/model/walls'
@@ -513,6 +513,16 @@ export function computeRoomLights(level: Level, entities: Record<string, HassEnt
       const id = ledSource(it)
       const src = id ? entities[id] : undefined
       if (src && isActive(src)) push(it, [0, 0.066, 0], 2.2, 0.7, 0, _c.set(lightColor(src)).multiplyScalar(Math.max(0.35, lightLevel(src))))
+      continue
+    }
+    // Strings under ceiling beams: a line light along each string (at most 4; more strings share their power)
+    if (it.kind === 'beamLights') {
+      if (e && isActive(e)) {
+        const rows = beamRows(it.len2 ?? 3)
+        const n = Math.min(4, rows.length)
+        const c = _c.set(lightColor(e)).multiplyScalar(Math.max(0.35, lightLevel(e)))
+        for (let i = 0; i < n; i++) push(it, [0, 2.45, rows[Math.floor(((i + 0.5) * rows.length) / n)] + BEAM_STRING_Z], 4, (2 * rows.length) / n, 3, c, (it.len ?? 3) / 2)
+      }
       continue
     }
     // Decorative string lights: a line light at 2.05 m between two poles (length Item.len)

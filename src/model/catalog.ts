@@ -51,8 +51,10 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   mirrorLight: { label: t('Mirror light'), group: 'light', domains: LIGHTISH, size: [0.8, 0.2], labelY: 2.3, wall: true },
   downlight: { label: t('Downlight'), group: 'light', domains: LIGHTISH, size: [0.15, 0.15], labelY: 2.75 },
   ceilingStrip: { label: t('Ceiling LED strip'), group: 'light', domains: LIGHTISH, size: [3, 3], labelY: 2.75 },
+  beamLights: { label: t('Ceiling beams with string lights'), group: 'light', domains: LIGHTISH, size: [3, 3], labelY: 2.75 },
 
   // TV and TV unit are separate items: the TV goes on a unit/table or hangs on the wall.
+  digitalPiano: { label: t('Digital piano'), group: 'media', domains: ['media_player', 'switch'], size: [1.34, 0.42], labelY: 1.15 },
   tv: { label: t('TV'), group: 'media', domains: ['media_player', 'switch', 'remote'], size: [1.3, 0.2], labelY: 1.75, wall: true },
   // Model and pose in Item.variant (ps5-v, ps5-h, xbox-v, xbox-h); the length (Item.len) follows it, CONSOLE_LEN
   console: { label: t('Game console'), group: 'media', domains: ['media_player', 'switch'], size: [0.13, 0.3], labelY: 0.6 },
@@ -1099,6 +1101,26 @@ export const OPTIONS: Partial<
       ['plain', t('Plain')],
       ['bistro', t('Folding bistro')],
       ['embroidered', t('Embroidered folding')],
+      ['carved', t('Carved dining')],
+      ['keyboardBench', t('Keyboard bench')],
+    ],
+    variantDef: 'plain',
+  },
+  diningTable: {
+    variantLabel: t('Model'),
+    variants: [
+      ['plain', t('Plain')],
+      ['pedestal', t('Carved double pedestal')],
+    ],
+    variantDef: 'plain',
+    variantLen: { plain: 1.4, pedestal: 1.85 },
+    variantLen2: { plain: 0.85, pedestal: 1 },
+  },
+  pendant: {
+    variantLabel: t('Model'),
+    variants: [
+      ['plain', t('Plain')],
+      ['crystal', t('Crystal chandelier')],
     ],
     variantDef: 'plain',
   },
@@ -1341,6 +1363,7 @@ export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; lab
   planter: { min: 0.6, max: 4, label: t('Planter length') },
   speedBump: { min: 1, max: 10, label: t('Speed bump length') },
   ledStrip: { min: 0.3, max: 8 },
+  beamLights: { min: 1, max: 10, label: t('Beam length') },
 }
 /** Second size (Item.len2): the arm of an L counter (L shapes only), the height of a window */
 export const RESIZABLE2: Partial<Record<ItemKind, { min: number; max: number; label: string; def: number; onlyL?: boolean }>> = {
@@ -1352,6 +1375,7 @@ export const RESIZABLE2: Partial<Record<ItemKind, { min: number; max: number; la
   rug: { min: 0.5, max: 5, label: t('Rug length'), def: 1.8 },
   doormat: { min: 0.3, max: 1.5, label: t('Doormat length'), def: 0.45 },
   pool: { min: 1, max: 8, label: t('Pool width'), def: 2.5 },
+  beamLights: { min: 0.8, max: 10, label: t('Area covered by beams'), def: 3 },
 }
 
 /**
@@ -1381,6 +1405,11 @@ export const ITEM_PRESETS: ItemPreset[] = [
 /** Window size: width (Item.len), height (Item.len2), bottom edge 0.9 m above the floor (moves with Item.y). */
 export const WINDOW_BOTTOM = 0.9
 export const windowSize = (it: { len?: number; len2?: number }) => ({ w: it.len ?? 1.2, h: it.len2 ?? 1.2 })
+
+/** Depth of a bay window's recess (m): the room part it sits in, whose two corners the side windows cross at 45°. */
+export const BAY_DEPTH = 0.5
+/** Width of a bay window's fixed center pane: the bay (Item.len, between the recess's inner side faces) less both angled sides */
+export const bayCenter = (w: number) => Math.max(0.4, w + 0.1 - 2 * BAY_DEPTH)
 
 /** The item's real footprint: the adjusted length if there is one. */
 /** Default width of a sliding closet door (Item.variant 'sliding', width Item.len) */
@@ -1412,7 +1441,7 @@ export const frenchWidth = (it: DoorLike) => (it.kind === 'door' && it.variant =
 export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, number] {
   const [w, d] = CATALOG[kind].size
   // The second size only for kinds that use it as depth (ceiling strip, rug); the L arm of a counter is computed separately.
-  if (kind === 'ceilingStrip' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel' || kind === 'coffeeTable') return [len ?? w, len2 ?? d]
+  if (kind === 'ceilingStrip' || kind === 'beamLights' || kind === 'diningTable' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel' || kind === 'coffeeTable') return [len ?? w, len2 ?? d]
   // A ceiling fan is round: the blade span in both directions
   if (kind === 'ceilingFan') return [len ?? w, len ?? d]
   // The minifigure clock is round: its diameter (Item.len2) is its width on the wall
@@ -1430,7 +1459,15 @@ export const consoleModel = (variant?: string) => ({ brand: variant?.startsWith(
 /** Beam angle of a downlight (degrees, full cone): limits of the card slider and the default (Item.beam). */
 export const BEAM = { min: 20, max: 150, def: 90 }
 
-export const LIGHT_KINDS: ItemKind[] = ['pendant', 'floorLamp', 'studioLight', 'deskLamp', 'wallLight', 'ledStrip', 'mirrorLight', 'downlight', 'ceilingStrip', 'ceilingLight', 'trackLight', 'tableLamp', 'gardenLight', 'stringLights', 'streetLamp']
+export const LIGHT_KINDS: ItemKind[] = ['pendant', 'floorLamp', 'studioLight', 'deskLamp', 'wallLight', 'ledStrip', 'mirrorLight', 'downlight', 'ceilingStrip', 'beamLights', 'ceilingLight', 'trackLight', 'tableLamp', 'gardenLight', 'stringLights', 'streetLamp']
+
+/** Ceiling beams (beamLights) in an area of depth d (m): the z of each beam, about one per meter, beams along x. */
+export function beamRows(d: number) {
+  const n = Math.max(1, Math.round(d / 1.05))
+  return Array.from({ length: n }, (_, i) => -d / 2 + ((i + 0.5) * d) / n)
+}
+/** Each beam's string of bulbs runs this far in front of it (+z) */
+export const BEAM_STRING_Z = 0.24
 
 export function isLightKind(kind: ItemKind) {
   return LIGHT_KINDS.includes(kind)

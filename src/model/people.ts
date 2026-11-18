@@ -397,7 +397,7 @@ const TOUCH: Partial<Record<ItemKind, number>> = {
   wallLight: 1.4,
   mirrorLight: 1.2,
 }
-const CEILING_LIGHTS: ItemKind[] = ['pendant', 'downlight', 'ceilingStrip', 'ceilingLight', 'ceilingFan', 'trackLight']
+const CEILING_LIGHTS: ItemKind[] = ['pendant', 'downlight', 'ceilingStrip', 'beamLights', 'ceilingLight', 'ceilingFan', 'trackLight']
 
 /**
  * Standing spot to reach a device from: its front, then its sides, then its back; the first one inside the room and free in

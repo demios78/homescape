@@ -1634,3 +1634,49 @@ export function splatTopTexture(key: 'stool' | 'table', w: number, d: number, rl
   cache.set(id, t)
   return t
 }
+
+/** Keybed of an 88-key piano seen from above: 52 white keys with thin gaps (the black keys are separate boxes). */
+export function pianoKeysTexture() {
+  return base(
+    'piano-keys',
+    (g, s) => {
+      g.fillStyle = '#f6f4ee'
+      g.fillRect(0, 0, s, s)
+      g.fillStyle = '#9a9890'
+      for (let i = 1; i < 52; i++) g.fillRect(Math.round((i / 52) * s) - 1, 0, 2, s)
+    },
+    1024,
+  )
+}
+
+/**
+ * Upholstery of a carved dining chair seat: gold and olive weave with a scalloped diamond lattice in dark blue-gray lines
+ * (repeats seamlessly).
+ */
+export function diamondFabricTexture() {
+  return base('diamond-fabric', (g, s) => {
+    g.fillStyle = '#b79c5c'
+    g.fillRect(0, 0, s, s)
+    let seed = 11
+    const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280
+    for (let i = 0; i < 900; i++) {
+      g.fillStyle = rnd() < 0.5 ? 'rgba(222, 200, 140, 0.55)' : 'rgba(120, 104, 60, 0.4)'
+      g.fillRect(rnd() * s, rnd() * s, 2 + rnd() * 5, 1 + rnd() * 1.5)
+    }
+    // scalloped lattice: arcs bowing between the diamond corners, 4 diamonds per tile
+    const p = s / 4
+    g.strokeStyle = '#3c4650'
+    g.lineWidth = 2.2
+    for (let i = -1; i <= 4; i++)
+      for (let j = -1; j <= 4; j++) {
+        const x = i * p
+        const y = j * p
+        g.beginPath()
+        g.moveTo(x, y)
+        g.quadraticCurveTo(x + p * 0.62, y + p * 0.38, x + p, y + p)
+        g.moveTo(x + p, y)
+        g.quadraticCurveTo(x + p * 0.38, y + p * 0.38, x, y + p)
+        g.stroke()
+      }
+  })
+}
