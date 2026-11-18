@@ -5,6 +5,7 @@ import { friendlyName, isActive, relativeTime, stateLabel } from '@/ha/derive'
 import { useHa } from '@/ha/store'
 import { bindingsOf, boundAnywhere, emitsLight, isBound, ledOf, ledSource } from '@/model/bindings'
 import { BAY_DEPTH, BEAM, BED_SIZES, bedModel, BODY_COLORS, CATALOG, CONSOLE_LEN, consoleModel, DAYBED_DEPTH, ITEM_PRESETS, LIGHT_TINTS, OPTIONS, RESIZABLE, RESIZABLE2, sizeOf, TINTABLE, TOP_COLORS } from '@/model/catalog'
+import { TUB_FULL_GAL } from '@/scene/kit/water'
 import { kindFor, modelName, variantFor } from '@/model/generate'
 import { doorSides, isOutdoor, isStreetSurface, rectsOf, roomArea, roomAt, wallLengthAt, wallSnap, type Side } from '@/model/geometry'
 import { groupFamily, groupMates, heatingSummary } from '@/model/groups'
@@ -471,6 +472,33 @@ function BeamAngle({ item }: { item: Item }) {
       </div>
       <input id={`beam-${item.id}`} type="range" min={BEAM.min} max={BEAM.max} step={5} value={deg} onPointerDown={() => checkpoint()} onChange={(e) => set(Number(e.target.value), false)} />
       <span className="text-[11px] text-ink-3">{t('A narrow angle focuses the light on one spot, a wide angle spreads it into the room.')}</span>
+    </div>
+  )
+}
+
+/** Bathtub bound to a water total sensor: how many gallons fill it (more overflows). */
+function TubFullAt({ item }: { item: Item }) {
+  if (item.kind !== 'bathtub' || !item.entityId?.startsWith('sensor.')) return null
+  const gal = item.fullAt ?? TUB_FULL_GAL
+  const { updateItem, checkpoint } = useLayout.getState()
+  const set = (n: number, record: boolean) => updateItem(item.id, { fullAt: n === TUB_FULL_GAL ? undefined : n }, record)
+  return (
+    <div className="grid gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <label htmlFor={`fullat-${item.id}`} className="text-[12px] font-semibold text-ink-2">
+          {t('Full at')}
+        </label>
+        <span className="flex items-center gap-2">
+          {gal !== TUB_FULL_GAL && (
+            <button type="button" onClick={() => set(TUB_FULL_GAL, true)} className="rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-brand hover:bg-brand-50">
+              {t('Default')}
+            </button>
+          )}
+          <span className="font-mono text-[12px] font-semibold tabular-nums text-ink">{t('{n} gal', { n: gal })}</span>
+        </span>
+      </div>
+      <input id={`fullat-${item.id}`} type="range" min={20} max={1000} step={10} value={gal} onPointerDown={() => checkpoint()} onChange={(e) => set(Number(e.target.value), false)} />
+      <span className="text-[11px] text-ink-3">{t('The tub fills with the water used so far; past this amount it overflows.')}</span>
     </div>
   )
 }
@@ -1061,6 +1089,7 @@ function ItemEdit({ item, room }: { item: Item; room?: Room }) {
         <LightIntensity item={item} />
         <LightTint item={item} />
         <BeamAngle item={item} />
+        <TubFullAt item={item} />
 
         <GroupInfo item={item} />
         <BindingEditor key={item.id} item={item} room={room} />

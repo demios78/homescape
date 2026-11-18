@@ -264,6 +264,7 @@ export type ItemKind =
   | 'painting'
   | 'carromBoard'
   | 'towelBucket'
+  | 'waterMeter'
   | 'aquarium'
   | 'fishbowl'
   | 'mirror'
@@ -352,6 +353,8 @@ export interface Item {
   mount?: 'wall'
   /** Beam angle of a downlight (degrees, full cone; 20-150 on the card, 90 when not given). */
   beam?: number
+  /** Bathtub bound to a water total: the gallons that fill it (more overflows; 200 when not given) */
+  fullAt?: number
   /**
    * Built-in sink and faucet of the kitchen counter: its position, or none. When not given it sits in the middle unless a
    * separate sink stands next to the counter (model/counter.ts).

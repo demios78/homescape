@@ -10,6 +10,7 @@ import { DRAWER_SLIDE } from '@/model/containers'
 import { counterFronts, isGap, SINK_W, type CounterFront } from '@/model/counter'
 import { markShadows } from '../frame'
 import { Glow, Spin, StripGlow, useEased, useLitMaterial, Wash } from './effects'
+import { FaucetFlow, ShowerFlow, TubWater } from './waterFx'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
 import { baseplateTopTexture, diamondFabricTexture, woodGrainTexture, beadboardTexture, wineLatticeTexture, carvedPanelTexture, dashSeatTexture, embroideredBackTexture, paintedTopTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, splatTopTexture, wickerLatticeTexture, wickerTexture } from './textures'
@@ -141,6 +142,7 @@ function CounterTop({ len, color, sinkAt, y = 0.885, d = 0.62 }: { len: number; 
         <Cyl r={0.017} h={0.012} position={[0, 0.24, 0.19]} color={C.inkSoft} segments={14} shadow={false} />
         <Box size={[0.012, 0.012, 0.09]} position={[0.03, 0.13, 0.02]} rotation={[0.35, 0.5, 0]} material={steelBright} />
       </group>
+      <FaucetFlow at={[sinkAt, top + 0.232, -0.055]} length={0.232 + D - 0.01} />
     </group>
   )
 }
@@ -1724,6 +1726,7 @@ export function Shower({ v }: { v: Visual }) {
       <Box size={[0.14, 0.06, 0.05]} position={[-S / 2 + 0.3, 1.05, -S / 2 + 0.03]} color={C.steel} />
       <Cyl r={0.012} h={1.0} position={[-S / 2 + 0.3, 1.55, -S / 2 + 0.03]} color={C.steel} segments={8} />
       <Cyl r={0.09} h={0.02} position={[-S / 2 + 0.3, 2.05, -S / 2 + 0.12]} rotation={[0.35, 0, 0]} color={C.steel} segments={20} />
+      <ShowerFlow at={[-S / 2 + 0.3, 2.03, -S / 2 + 0.15]} length={1.96} top={0.08} bottom={0.24} />
     </group>
   )
 }
@@ -2523,12 +2526,30 @@ export function Sink() {
   )
 }
 
-export function Bathtub() {
+/**
+ * Bathtub: a hollow white tub (rim walls around a basin, its floor 12 cm up) with a spout at the left end. Bound to a water
+ * total sensor (today's water use, e.g. a Flume) it fills with that much water up to Item.fullAt gallons and overflows past
+ * it (waterFx.tsx > TubWater).
+ */
+export function Bathtub({ v }: { v: Visual }) {
+  const W = 1.6
+  const D = 0.75
+  const H = 0.55
+  const t = 0.08
+  const white = mat(C.white, { roughness: 0.3 })
   return (
     <group>
-      <Box size={[1.6, 0.55, 0.75]} position={[0, 0.275, 0]} color={C.white} radius={0.08} />
-      <Box size={[1.4, 0.02, 0.56]} position={[0, 0.555, 0]} material={mat('#bfe0ff', { roughness: 0.15 })} shadow={false} />
-      <Cyl r={0.02} h={0.2} position={[-0.7, 0.68, -0.3]} color={C.steel} />
+      <Box size={[W, 0.12, D]} position={[0, 0.06, 0]} material={white} radius={0.04} />
+      {[-1, 1].map((s) => (
+        <group key={s}>
+          <Box size={[W, H - 0.1, t]} position={[0, 0.1 + (H - 0.1) / 2, s * (D / 2 - t / 2)]} material={white} radius={0.03} />
+          <Box size={[t, H - 0.1, D - 2 * t + 0.02]} position={[s * (W / 2 - t / 2), 0.1 + (H - 0.1) / 2, 0]} material={white} radius={0.03} />
+        </group>
+      ))}
+      <Cyl r={0.03} h={0.006} position={[-W / 2 + 0.2, 0.123, 0]} color={C.steel} segments={16} shadow={false} />
+      <Cyl r={0.02} h={0.16} position={[-W / 2 + 0.05, H + 0.08, -D / 2 + 0.05]} color={C.steel} />
+      <Cyl r={0.014} h={0.12} position={[-W / 2 + 0.1, H + 0.15, -D / 2 + 0.05]} rotation-z={Math.PI / 2} color={C.steel} />
+      <TubWater v={v} w={W - 2 * t} d={D - 2 * t} y0={0.12} y1={H} ow={W} od={D} />
     </group>
   )
 }
@@ -2549,6 +2570,8 @@ export function Washbasin() {
       <Box size={[0.6, 0.5, 0.42]} position={[0, 0.55, 0]} color={C.white} radius={0.03} />
       <Box size={[0.42, 0.02, 0.28]} position={[0, 0.81, 0.02]} color={C.steel} shadow={false} />
       <Cyl r={0.018} h={0.18} position={[0, 0.88, -0.15]} color={C.steel} />
+      <Cyl r={0.012} h={0.08} position={[0, 0.955, -0.115]} rotation-x={Math.PI / 2} color={C.steel} />
+      <FaucetFlow at={[0, 0.945, -0.08]} length={0.13} />
     </group>
   )
 }

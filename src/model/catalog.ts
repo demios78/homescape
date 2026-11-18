@@ -142,7 +142,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   uprightFreezer: { label: t('Upright freezer'), group: 'appliance', domains: ['switch', 'sensor', 'binary_sensor'], size: [0.7, 0.68], labelY: 1.95, wall: true },
   stove: { label: t('Stove'), group: 'appliance', domains: [], size: [0.75, 0.62], labelY: 1.2, wall: true },
   sink: { label: t('Sink'), group: 'appliance', domains: [], size: [1, 0.62], labelY: 1.2, wall: true },
-  bathtub: { label: t('Bathtub'), group: 'bath', domains: [], size: [1.6, 0.75], labelY: 0.9, wall: true },
+  // Bind a water total sensor (today's use) and the tub fills with it (Item.fullAt gallons is full)
+  bathtub: { label: t('Bathtub'), group: 'bath', domains: ['sensor'], size: [1.6, 0.75], labelY: 0.9, wall: true },
   toilet: { label: t('Toilet'), group: 'bath', domains: [], size: [0.4, 0.65], labelY: 0.9, wall: true },
   washbasin: { label: t('Washbasin'), group: 'bath', domains: [], size: [0.6, 0.45], labelY: 1.1, wall: true },
   shoeCabinet: { label: t('Shoe cabinet'), group: 'furniture', domains: [], size: [1, 0.35], labelY: 1.2, wall: true },
@@ -221,6 +222,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   printer: { label: t('Printer'), group: 'device', domains: ['sensor', 'switch'], size: [0.45, 0.35], labelY: 0.5 },
   // The smart pet feeder is in the Pets tab; when it feeds, the pets run to it (model/pets.ts > feedingNow)
   petFeeder: { label: t('Smart pet feeder'), group: 'pet', domains: ['switch', 'button', 'sensor'], size: [0.25, 0.3], labelY: 0.55 },
+  // Water meter on the main pipe (a Flume or similar): main entity today's total; a flow rate extra runs the sinks and showers
+  waterMeter: { label: t('Water meter'), group: 'device', domains: ['sensor'], size: [0.56, 0.16], labelY: 0.8, wall: true },
   powerMeter: { label: t('Energy meter'), group: 'device', domains: ['sensor'], size: [0.3, 0.1], labelY: 2.1, wall: true },
   coffeeMachine: { label: t('Coffee machine'), group: 'appliance', domains: ['switch'], size: [0.25, 0.35], labelY: 0.55 },
   kettle: { label: t('Kettle'), group: 'appliance', domains: ['switch'], size: [0.2, 0.18], labelY: 0.45 },

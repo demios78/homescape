@@ -9,6 +9,7 @@ import * as F from './furniture'
 import * as O from './outdoor'
 import * as Pt from './pets'
 import * as S from './smart'
+import * as W from './waterFx'
 import * as St from './street'
 import type { Visual } from './visual'
 
@@ -138,6 +139,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   acOutdoor: S.AcOutdoor,
   towelWarmer: S.TowelWarmer,
   towelBucket: S.TowelBucket,
+  waterMeter: W.WaterMeter,
   speaker: S.Speaker,
   soundbar: S.Soundbar,
   projector: S.Projector,

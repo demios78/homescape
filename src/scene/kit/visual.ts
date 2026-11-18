@@ -57,6 +57,8 @@ export interface ItemOpts {
   mount?: 'wall'
   /** Beam angle of a downlight (degrees, Item.beam) */
   beam?: number
+  /** Bathtub: gallons of today's water use that fill it (Item.fullAt) */
+  fullAt?: number
   /** Built-in sink of a kitchen counter: its center on the counter's local x (omitted when there is none; model/counter.ts) */
   sinkAt?: number
   fronts?: string

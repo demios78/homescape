@@ -258,6 +258,7 @@ export const KIND_ICON: Record<ItemKind, LucideIcon> = {
   acOutdoor: AirVent,
   towelWarmer: Heater,
   towelBucket: Heater,
+  waterMeter: Droplets,
   speaker: Speaker,
   soundbar: Speaker,
   projector: Projector,
