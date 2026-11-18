@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.46 (demios78 fork)
+
+- Carrom board: a new wall item (Desk and decor), 81 cm square: a black frame with raised rails around a birch playing surface with baselines and red circles, arrows from the net pockets, curled arcs and the red and black center star. Height adjustable like any wall item.
+
 ## 0.2.1-dm.45 (demios78 fork)
 
 - Carved wingback chair: lower arms (about 8 cm) running straight forward, perpendicular to the back.
