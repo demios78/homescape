@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1-dm.51 (demios78 fork)
+
+- Water meter: a new item (Smart devices) for a Flume or similar: a meter on the main pipe showing today's total, a red flow star that spins while water runs and a sensor light (blue while flowing, red on a leak).
+- Running water from the meter's flow: below 2 gal/min the sinks run, from 2 gal/min the showers spray.
+- Bathtubs bound to today's water use fill up with it; "Full at" (200 gal by default) sets how much fills the tub, and past it the tub overflows.
+
 ## 0.2.1-dm.50 (demios78 fork)
 
 - Towel warmer bucket: a new freestanding bathroom item (white oval tub on chrome legs, flip-up lid). Bind its switch or climate entity: while it heats with the lid closed, a soft lavender glow lights the floor under it. Bind a lid sensor (binary sensor) as an extra and an open lid shows the towels with no glow.
