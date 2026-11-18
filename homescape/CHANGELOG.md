@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.42 (demios78 fork)
+
+- Painted side table: the three legs now splay outward, close together under the top and wider apart on the floor.
+
 ## 0.2.1-dm.41 (demios78 fork)
 
 - Doors with a bound door sensor (or a light or plug set to open and close the door): the swing area on the floor glows red while open and green while closed, on hinged, French, double and patio doors.
