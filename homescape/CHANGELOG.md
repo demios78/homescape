@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.40 (demios78 fork)
+
+- Doors: hinged doors are painted six-panel doors with brass knobs; a door color for every door and an outside color for exterior doors, which also adds a brass knocker on the outside.
+- Double doors: a new door type with two painted six-panel leaves; only one leaf opens for passage, both when a bound sensor says open.
+
 ## 0.2.1-dm.39 (demios78 fork)
 
 - Home gym items (Furniture tab): an elliptical trainer (its flywheel spins and the console lights while a bound plug is on), an adjustable weight bench and a two-tier dumbbell rack.
