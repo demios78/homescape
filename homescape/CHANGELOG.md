@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.49 (demios78 fork)
+
+- Floor buttons: no more floor display at the top; when the panel fades, the lit amber ring and the current floor number stay fully visible.
+
 ## 0.2.1-dm.48 (demios78 fork)
 
 - Floor buttons: homes with two or more floors get elevator-style floor buttons on the left edge (an amber display with the current floor, a lit ring on the active one). They fade to 10% two seconds after you stop using them and come back on hover.
