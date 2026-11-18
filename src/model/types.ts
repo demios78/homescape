@@ -62,6 +62,10 @@ export type ItemKind =
   | 'ceilingStrip'
   | 'digitalPiano'
   | 'toasterOven'
+  | 'elliptical'
+  | 'weightBench'
+  | 'dumbbellRack'
+  | 'uprightFreezer'
   | 'beamLights'
   // devices
   | 'tv'

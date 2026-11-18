@@ -183,3 +183,23 @@ export function WaterDispenser({ v }: P) {
     </group>
   )
 }
+
+/**
+ * Upright freezer (70 × 68 cm, 1.75 m tall, back to the wall): one full-height white door with a long vertical handle on the
+ * right, a kick plate grille and a temperature panel at the top of the door. A bound plug that is on lights the panel.
+ */
+export function UprightFreezer({ v }: P) {
+  const led = useLitMaterial('#9aa0b8', v.on, C.cool, 1, 2)
+  const FH = 1.75
+  const FD = 0.68
+  return (
+    <group>
+      <Box size={[0.7, FH, FD - 0.04]} position={[0, FH / 2, -0.02]} color={C.white} radius={0.02} />
+      <Box size={[0.68, FH - 0.12, 0.05]} position={[0, (FH - 0.12) / 2 + 0.1, FD / 2 - 0.025]} color="#f4f5f7" radius={0.015} />
+      <Box size={[0.025, 0.7, 0.035]} position={[0.29, 1.05, FD / 2 + 0.025]} color={C.steel} />
+      <Box size={[0.66, 0.08, 0.012]} position={[0, 0.05, FD / 2 - 0.02]} color="#3a3d47" shadow={false} />
+      <Box size={[0.14, 0.04, 0.006]} position={[0, FH - 0.14, FD / 2 + 0.003]} color="#2a2d36" shadow={false} />
+      <Box size={[0.05, 0.014, 0.004]} position={[0, FH - 0.14, FD / 2 + 0.007]} material={led} shadow={false} />
+    </group>
+  )
+}

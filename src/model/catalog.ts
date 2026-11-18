@@ -84,6 +84,9 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   door: { label: t('Door'), group: 'structure', domains: ['binary_sensor', 'lock', 'cover'], size: [1, 0.2], labelY: 2.4, wall: true },
   window: { label: t('Window'), group: 'structure', domains: ['binary_sensor', 'cover'], size: [1.2, 0.2], labelY: 2.4, wall: true },
 
+  elliptical: { label: t('Elliptical trainer'), group: 'furniture', domains: ['switch', 'sensor'], size: [0.7, 1.75], labelY: 1.8 },
+  weightBench: { label: t('Weight bench'), group: 'furniture', domains: [], size: [0.55, 1.3], labelY: 0.9 },
+  dumbbellRack: { label: t('Dumbbell rack'), group: 'furniture', domains: [], size: [1.1, 0.45], labelY: 1.1, wall: true },
   sofa: { label: t('Sofa'), group: 'furniture', domains: [], size: [2.2, 0.9], labelY: 1.1 },
   armchair: { label: t('Armchair'), group: 'furniture', domains: [], size: [0.9, 0.85], labelY: 1.1 },
   // Round swivel cuddle chair: a round seat with a low curved back, two pillows; fabric Item.body
@@ -134,6 +137,7 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   tvUnit: { label: t('TV unit'), group: 'furniture', domains: [], size: [1.8, 0.42], labelY: 0.8, wall: true },
   kitchenCounter: { label: t('Kitchen counter'), group: 'appliance', domains: ['light', 'switch'], size: [2, 0.62], labelY: 1.2, wall: true },
   fridge: { label: t('Fridge'), group: 'appliance', domains: [], size: [0.75, 0.7], labelY: 2.1, wall: true },
+  uprightFreezer: { label: t('Upright freezer'), group: 'appliance', domains: ['switch', 'sensor', 'binary_sensor'], size: [0.7, 0.68], labelY: 1.95, wall: true },
   stove: { label: t('Stove'), group: 'appliance', domains: [], size: [0.75, 0.62], labelY: 1.2, wall: true },
   sink: { label: t('Sink'), group: 'appliance', domains: [], size: [1, 0.62], labelY: 1.2, wall: true },
   bathtub: { label: t('Bathtub'), group: 'bath', domains: [], size: [1.6, 0.75], labelY: 0.9, wall: true },

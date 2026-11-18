@@ -9,7 +9,7 @@ import { BED_FLORAL, bedModel, CATALOG, COVER_LEAF, CUSHION_FLORAL, RUG_DEFAULT,
 import { DRAWER_SLIDE } from '@/model/containers'
 import { counterFronts, isGap, SINK_W, type CounterFront } from '@/model/counter'
 import { markShadows } from '../frame'
-import { Glow, StripGlow, useEased, useLitMaterial, Wash } from './effects'
+import { Glow, Spin, StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
 import { baseplateTopTexture, diamondFabricTexture, woodGrainTexture, beadboardTexture, wineLatticeTexture, carvedPanelTexture, dashSeatTexture, embroideredBackTexture, paintedTopTexture, chintzTexture, damaskStripeTexture, floralTexture, latticeTexture, leafPrintTexture, medallionTexture, rugTexture, splatTopTexture, wickerLatticeTexture, wickerTexture } from './textures'
@@ -2957,6 +2957,134 @@ export function KidsTable() {
         ))}
         <Box size={[trayL - 0.02, 0.003, KT_D - 0.1]} position={[0, 0.006, 0]} color="#eef0f2" shadow={false} />
       </group>
+    </group>
+  )
+}
+
+/**
+ * Elliptical trainer (1.75 × 0.7 m): the drive housing with its flywheel at the back (-z, against the wall), a long base rail,
+ * pedal arms on rollers, moving handles and a console on the mast. A bound plug or switch that is on spins the flywheel and
+ * lights the console display.
+ */
+export function Elliptical({ v }: { v: Visual }) {
+  const frame = mat('#1d1f24', { roughness: 0.5, metalness: 0.35 })
+  const shell = mat('#4d525b', { roughness: 0.45 })
+  const display = useLitMaterial('#1a2230', v.on, '#5fd0ff', 0.9, 1.6)
+  return (
+    <group>
+      <Box size={[0.12, 0.08, 1.5]} position={[0, 0.06, 0.1]} material={frame} />
+      {[-0.78, 0.82].map((z) => (
+        <Box key={z} size={[0.66, 0.05, 0.08]} position={[0, 0.025, z]} material={frame} />
+      ))}
+      <Box size={[0.26, 0.55, 0.5]} position={[0, 0.33, -0.56]} material={shell} radius={0.06} />
+      <group position={[0, 0.33, -0.56]} rotation-y={Math.PI / 2}>
+        <Spin speed={v.on ? 6 : 0}>
+          {[-1, 1].map((s) => (
+            <Cyl key={s} r={0.2} h={0.02} position={[0, 0, s * 0.14]} rotation-x={Math.PI / 2} color="#2a2d33" segments={28} />
+          ))}
+          {[-1, 1].map((s) => (
+            <Box key={s} size={[0.3, 0.025, 0.012]} position={[0, 0, s * 0.152]} color="#8a8f99" shadow={false} />
+          ))}
+        </Spin>
+      </group>
+      {[-1, 1].map((s) => (
+        <group key={s}>
+          <Box size={[0.05, 0.05, 1.05]} position={[s * 0.12, 0.3, 0.02]} rotation-x={0.17} material={frame} />
+          <Cyl r={0.04} h={0.04} position={[s * 0.12, 0.13, 0.52]} rotation-z={Math.PI / 2} color="#2a2d33" segments={16} />
+          <Box size={[0.15, 0.035, 0.38]} position={[s * 0.15, 0.3, 0.2]} color="#2a2d33" />
+          <Box size={[0.03, 1.15, 0.03]} position={[s * 0.24, 0.95, -0.36]} rotation-x={0.22} material={frame} />
+          <Box size={[0.04, 0.22, 0.04]} position={[s * 0.24, 1.6, -0.21]} rotation-x={0.22} color="#1a1b1f" />
+          <Box size={[0.03, 0.03, 0.3]} position={[s * 0.15 + s * 0.03, 0.62, -0.44]} rotation-x={-0.6} material={frame} />
+        </group>
+      ))}
+      <Box size={[0.08, 1.05, 0.08]} position={[0, 0.98, -0.6]} rotation-x={-0.12} material={shell} />
+      <group position={[0, 1.48, -0.56]} rotation-x={-0.5}>
+        <Box size={[0.38, 0.22, 0.06]} material={shell} radius={0.02} />
+        <Box size={[0.2, 0.1, 0.006]} position={[0, 0.02, 0.031]} material={display} shadow={false} />
+        <Box size={[0.4, 0.03, 0.03]} position={[0, -0.13, 0.04]} color="#1a1b1f" />
+      </group>
+    </group>
+  )
+}
+
+/**
+ * Adjustable weight bench (0.55 × 1.3 m): a steel spine with front and rear feet, a seat and an inclined back pad on a strut,
+ * foam leg rollers at the front (+z) and transport wheels at the back.
+ */
+export function WeightBench() {
+  const steel = mat('#1d1f24', { roughness: 0.5, metalness: 0.4 })
+  const pad = '#141518'
+  return (
+    <group>
+      <Box size={[0.08, 0.06, 1.2]} position={[0, 0.2, 0]} rotation-x={-0.02} material={steel} />
+      {[-0.55, 0.55].map((z) => (
+        <group key={z}>
+          <Box size={[0.07, 0.2, 0.06]} position={[0, 0.1, z]} material={steel} />
+          <Box size={[0.52, 0.05, 0.07]} position={[0, 0.025, z]} material={steel} />
+        </group>
+      ))}
+      {[-1, 1].map((s) => (
+        <Cyl key={s} r={0.04} h={0.03} position={[s * 0.28, 0.045, -0.6]} rotation-z={Math.PI / 2} color="#2a2d33" segments={14} />
+      ))}
+      <Box size={[0.06, 0.2, 0.06]} position={[0, 0.32, 0.32]} material={steel} />
+      <Box size={[0.28, 0.07, 0.36]} position={[0, 0.45, 0.33]} color={pad} radius={0.025} />
+      <Box size={[0.05, 0.36, 0.05]} position={[0, 0.34, -0.15]} rotation-x={0.5} material={steel} />
+      <Box size={[0.28, 0.07, 0.78]} position={[0, 0.58, -0.22]} rotation-x={0.32} color={pad} radius={0.025} />
+      <Box size={[0.05, 0.25, 0.05]} position={[0, 0.3, 0.58]} rotation-x={-0.3} material={steel} />
+      {[0.4, 0.26].map((y, i) => (
+        <group key={y} position={[0, y, 0.6 + i * 0.03]}>
+          <Cyl r={0.012} h={0.36} rotation-z={Math.PI / 2} material={steel} segments={8} shadow={false} />
+          {[-1, 1].map((s) => (
+            <Cyl key={s} r={0.05} h={0.13} position={[s * 0.1, 0, 0]} rotation-z={Math.PI / 2} color={pad} segments={16} />
+          ))}
+        </group>
+      ))}
+    </group>
+  )
+}
+
+/** Hex dumbbell lying along z: a knurled steel handle and two black hex heads of radius r. */
+function Dumbbell({ r, position }: { r: number; position: [number, number, number] }) {
+  const L = 0.12 + r * 1.6
+  return (
+    <group position={position}>
+      <Cyl r={0.016} h={L} rotation-x={Math.PI / 2} color="#b9bcc2" segments={8} shadow={false} />
+      {[-1, 1].map((s) => (
+        <Cyl key={s} r={r} h={r * 0.9} position={[0, 0, s * (L / 2 + r * 0.35)]} rotation-x={Math.PI / 2} color="#1b1c20" segments={6} />
+      ))}
+    </group>
+  )
+}
+
+/**
+ * Two-tier dumbbell rack (1.1 × 0.45 m, back to the wall): A-frame ends with angled rails, ten hex dumbbells from light (top,
+ * back) to heavy (bottom, front).
+ */
+export function DumbbellRack() {
+  const steel = mat('#1d1f24', { roughness: 0.5, metalness: 0.4 })
+  const tiers: [number, number, number[]][] = [
+    [0.78, -0.07, [0.04, 0.042, 0.045, 0.048, 0.05]],
+    [0.46, 0.09, [0.055, 0.06, 0.065, 0.07, 0.075]],
+  ]
+  return (
+    <group>
+      {[-0.52, 0.52].map((x) => (
+        <group key={x} position={[x, 0, 0]}>
+          <Box size={[0.05, 0.04, 0.44]} position={[0, 0.02, 0]} material={steel} />
+          <Box size={[0.04, 0.82, 0.04]} position={[0, 0.41, -0.08]} rotation-x={0.12} material={steel} />
+          <Box size={[0.04, 0.5, 0.04]} position={[0, 0.25, 0.12]} rotation-x={-0.12} material={steel} />
+        </group>
+      ))}
+      {tiers.map(([y, z, rs]) => (
+        <group key={y}>
+          {[-0.09, 0.09].map((dz) => (
+            <Box key={dz} size={[1.08, 0.03, 0.03]} position={[0, y, z + dz]} material={steel} />
+          ))}
+          {rs.map((r, i) => (
+            <Dumbbell key={i} r={r} position={[-0.4 + i * 0.2, y + 0.015 + r * 0.87, z]} />
+          ))}
+        </group>
+      ))}
     </group>
   )
 }
