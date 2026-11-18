@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.45 (demios78 fork)
+
+- Carved wingback chair: lower arms (about 8 cm) running straight forward, perpendicular to the back.
+
 ## 0.2.1-dm.44 (demios78 fork)
 
 - Folding bistro chair: an Open / Folded switch in its card. Folding stands it flat against the nearest wall; opening steps it back out into the room.
