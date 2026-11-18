@@ -942,6 +942,45 @@ function HeatingKind({ item }: { item: Item }) {
 }
 
 /**
+ * Folding bistro chair: open (a chair, variant 'bistro') or folded (foldedChair, flat against the nearest wall). Folding
+ * stands it against the closest wall within 1.5 m; opening steps it 20 cm out from the wall, facing the same way.
+ */
+function ChairFold({ item }: { item: Item }) {
+  const folded = item.kind === 'foldedChair'
+  if (!folded && !(item.kind === 'chair' && item.variant === 'bistro')) return null
+  const set = (fold: boolean) => {
+    const level = activeLevel(useLayout.getState())
+    if (!level || fold === folded) return
+    let patch: Partial<Item>
+    if (fold) {
+      const [w, d] = CATALOG.foldedChair.size
+      const at = wallSnap(level.rooms, item.x, item.z, d, 1.5, w)
+      if (!at) return useHa.setState({ notice: t('Move the chair next to a wall to fold it against it.') })
+      patch = { kind: 'foldedChair', x: at.x, z: at.z, rot: at.rot, variant: undefined }
+    } else {
+      patch = { kind: 'chair', variant: 'bistro', x: item.x + Math.sin(item.rot) * 0.2, z: item.z + Math.cos(item.rot) * 0.2 }
+    }
+    const next = { ...item, ...patch }
+    const chk = checkItem(level, { kind: next.kind, x: next.x, z: next.z, rot: next.rot, variant: next.variant }, item.id)
+    if (!chk.ok) return useHa.setState({ notice: t("{item} doesn't fit here: {reason}", { item: CATALOG[next.kind].label, reason: chk.reason ?? '' }) })
+    useLayout.getState().updateItem(item.id, patch)
+  }
+  return (
+    <div className="grid gap-1.5">
+      <span className="text-[12px] font-semibold text-ink-2">{t('Chair')}</span>
+      <div className="flex gap-1.5">
+        <button type="button" id="chair-open" className={seg(!folded)} onClick={() => set(false)}>
+          {t('Open')}
+        </button>
+        <button type="button" id="chair-folded" className={seg(folded)} onClick={() => set(true)}>
+          {t('Folded')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/**
  * Inside or on top of a cabinet (a TV unit, anything that opens): when the item stands on or inside furniture with doors,
  * drawers or shelves, "On top" and its compartments (lower compartment, shelf, drawer...) can be picked; the item drops to
  * the base of the chosen compartment and is centered. A wall-mounted item (boiler) stays on the wall behind the cabinet:
@@ -1014,6 +1053,7 @@ function ItemEdit({ item, room }: { item: Item; room?: Room }) {
         {(item.kind === 'door' || item.kind === 'window') && !(item.kind === 'door' && (item.variant === 'sliding' || item.variant === 'opening')) && <OpeningEdit item={item} />}
         <DoorDriven item={item} />
         <HeatingKind item={item} />
+        <ChairFold item={item} />
         <Placement item={item} />
         <WindowPresets item={item} />
         <MountHeight item={item} />
