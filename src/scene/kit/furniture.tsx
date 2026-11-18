@@ -2756,11 +2756,11 @@ export function WingChair({ v }: { v: Visual }) {
           return <Ball key={i} r={0.008} position={[Math.cos(t) * 0.3, 0.62 + Math.sin(t) * 0.3, 0.14]} material={brass} detail={0} shadow={false} />
         })}
       </group>
-      {/* wings: curved side panels from the back into the arms, wood edged */}
+      {/* arms: upholstered side panels running straight forward from the back (perpendicular to it), wood edged */}
       {[-1, 1].map((s) => (
-        <group key={s} position={[s * 0.33, 0.62, -0.08]} rotation-y={s * -0.35}>
-          <Box size={[0.08, 0.42, 0.42]} material={fabric} radius={0.04} />
-          <Box size={[0.03, 0.44, 0.03]} position={[s * 0.02, 0, 0.21]} material={wood} />
+        <group key={s} position={[s * 0.33, 0.575, -0.07]}>
+          <Box size={[0.08, 0.33, 0.44]} material={fabric} radius={0.04} />
+          <Box size={[0.03, 0.35, 0.03]} position={[s * 0.02, 0, 0.22]} material={wood} />
         </group>
       ))}
       <Box size={[0.3, 0.3, 0.08]} position={[0, 0.66, -0.12]} rotation-x={-0.12} color="#1f2a44" radius={0.03} />
