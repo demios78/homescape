@@ -1514,6 +1514,27 @@ function SwingArc({ at, r, strong, outline = false }: { at: [number, number, num
   )
 }
 
+
+/**
+ * Swing area of a door with a bound sensor (or a driving light/plug): a quarter disc from the hinge that glows red while the
+ * sensor says open and green while it says closed, with a brighter rim. Replaces the plain swing arc on those doors.
+ */
+function StateSweep({ at, r, open, night }: { at: [number, number, number]; r: number; open: boolean; night: boolean }) {
+  const color = open ? C.alarm : C.ok
+  return (
+    <group position={at} rotation-x={-Math.PI / 2}>
+      <mesh renderOrder={2} userData={{ selectionAid: true }}>
+        <ringGeometry args={[r - 0.03, r, 40, 1, -Math.PI / 2, Math.PI / 2]} />
+        <meshBasicMaterial color={color} transparent opacity={0.85} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh renderOrder={1} userData={{ selectionAid: true }}>
+        <circleGeometry args={[r, 40, -Math.PI / 2, Math.PI / 2]} />
+        <meshBasicMaterial color={color} transparent opacity={night ? 0.42 : 0.3} depthWrite={false} toneMapped={false} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  )
+}
+
 /**
  * Door state from the main and related entities: whether the door sensor / cover is open, lock state. With the door's
  * "driven" checkbox on (Item.driven), a bound light or plug (ha/derive.ts > DOOR_DRIVERS) drives it like a sensor: on is open.
@@ -1527,7 +1548,7 @@ function doorState(v: Visual) {
   const sensedOpen = (mainContact && v.on) || contacts.some((e) => isActive(e))
   // Without a sensor: an interior door is drawn open (passage), an exterior door closed; closed when locked.
   const open = hasContact ? sensedOpen : lock === 'locked' ? false : v.interior
-  return { open, sensedOpen, lock }
+  return { open, sensedOpen, lock, hasContact }
 }
 
 /**
@@ -1699,7 +1720,7 @@ function FrenchDoor({ v }: P) {
   const tall = useRef<THREE.Group>(null)
   const W = v.opts.len ?? 1.2
   const lw = W / 2 - 0.04
-  const { open, sensedOpen, lock } = doorState(v)
+  const { open, sensedOpen, lock, hasContact } = doorState(v)
   const passing = useDoorTraffic((s) => (v.at ? Boolean(s.open[doorKey(v.at.x, v.at.z)]) : false))
   const solid = v.opts.variant === 'double'
   const a = open || passing ? Math.PI / 2 - 0.12 : 0
@@ -1729,7 +1750,15 @@ function FrenchDoor({ v }: P) {
       </group>
       <Box size={[W - 0.08, 0.012, v.interior ? 0.42 : 0.22]} position={[0, 0.006, EDGE_Z]} color={C.woodFloor} shadow={false} />
       <Mirror x={false} z={v.swingOut}>
-        {(v.interior || v.edit) && !fps && (
+        {hasContact && !fps && (
+          <>
+            <StateSweep at={[-W / 2 + 0.04, 0.013, -0.12]} r={lw} open={sensedOpen} night={v.night} />
+            <group scale-x={-1}>
+              <StateSweep at={[-W / 2 + 0.04, 0.013, -0.12]} r={lw} open={sensedOpen} night={v.night} />
+            </group>
+          </>
+        )}
+        {!hasContact && (v.interior || v.edit) && !fps && (
           <>
             <SwingArc at={[-W / 2 + 0.04, 0.012, -0.12]} r={lw} strong={v.edit} />
             <group scale-x={-1}>
@@ -1737,7 +1766,6 @@ function FrenchDoor({ v }: P) {
             </group>
           </>
         )}
-        {sensedOpen && <Box size={[W - 0.1, 0.01, lw]} position={[0, 0.008, lw / 2 - 0.05]} material={mat(C.sun, { opacity: 0.25 })} shadow={false} />}
       </Mirror>
     </group>
   )
@@ -1777,7 +1805,7 @@ function PatioDoor({ v }: P) {
   const W = v.opts.len ?? 2.5
   const DW = 0.9
   const side = (W - DW - 0.12) / 2
-  const { open, sensedOpen } = doorState(v)
+  const { open, sensedOpen, hasContact } = doorState(v)
   const passing = useDoorTraffic((s) => (v.at ? Boolean(s.open[doorKey(v.at.x, v.at.z)]) : false))
   const leaf = useEased(open || passing ? -Math.PI / 2 + 0.08 : 0)
   const glass = fps ? mat(C.glass, { opacity: 0.15, roughness: 0.05 }) : mat(C.glass, { opacity: 0.45, roughness: 0.1 })
@@ -1815,8 +1843,8 @@ function PatioDoor({ v }: P) {
       </group>
       <Box size={[DW, 0.012, v.interior ? 0.42 : 0.22]} position={[0, 0.006, EDGE_Z]} color={C.woodFloor} shadow={false} />
       <Mirror x={v.hingeRight} z={v.swingOut}>
-        {(v.interior || v.edit) && !fps && <SwingArc at={[-DW / 2 + 0.02, 0.012, -0.12]} r={DW - 0.04} strong={v.edit} />}
-        {sensedOpen && <Box size={[DW, 0.01, DW]} position={[0, 0.008, 0.4]} material={mat(C.sun, { opacity: 0.25 })} shadow={false} />}
+        {hasContact && !fps && <StateSweep at={[-DW / 2 + 0.02, 0.013, -0.12]} r={DW - 0.04} open={sensedOpen} night={v.night} />}
+        {!hasContact && (v.interior || v.edit) && !fps && <SwingArc at={[-DW / 2 + 0.02, 0.012, -0.12]} r={DW - 0.04} strong={v.edit} />}
       </Mirror>
     </group>
   )
@@ -1835,7 +1863,7 @@ function HingedDoor({ v }: P) {
   const fps = useView((s) => s.fps)
   const root = useRef<THREE.Group>(null)
   const tall = useRef<THREE.Group>(null)
-  const { open, sensedOpen, lock } = doorState(v)
+  const { open, sensedOpen, lock, hasContact } = doorState(v)
   // A person, pet or the walk mode player passing by opens the door (scene/doorTraffic.ts; does not touch HA)
   const passing = useDoorTraffic((s) => (v.at ? Boolean(s.open[doorKey(v.at.x, v.at.z)]) : false))
   const leaf = useEased(open || passing ? -Math.PI / 2 + 0.08 : 0)
@@ -1859,8 +1887,8 @@ function HingedDoor({ v }: P) {
       <Box size={[0.92, 0.012, v.interior ? 0.42 : 0.22]} position={[0, 0.006, EDGE_Z]} color={C.woodFloor} shadow={false} />
       <Mirror x={v.hingeRight} z={v.swingOut}>
         {/* Swing arc (floor plan mark): always on interior doors, on all doors in edit mode. */}
-        {(v.interior || v.edit) && !fps && <SwingArc at={[-0.46, 0.012, -0.12]} r={0.9} strong={v.edit} />}
-        {sensedOpen && <Box size={[0.9, 0.01, 0.9]} position={[0, 0.008, 0.4]} material={mat(C.sun, { opacity: 0.25 })} shadow={false} />}
+        {hasContact && !fps && <StateSweep at={[-0.46, 0.013, -0.12]} r={0.9} open={sensedOpen} night={v.night} />}
+        {!hasContact && (v.interior || v.edit) && !fps && <SwingArc at={[-0.46, 0.012, -0.12]} r={0.9} strong={v.edit} />}
       </Mirror>
     </group>
   )
