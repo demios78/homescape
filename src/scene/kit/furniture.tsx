@@ -876,10 +876,12 @@ function PaintedTable() {
         <circleGeometry args={[0.255, 40]} />
       </mesh>
       {[0, 1, 2].map((i) => {
+        // Splayed outward: tops close together under the tray (11 cm from the center), feet on a wider triangle (21 cm)
         const a = (i / 3) * Math.PI * 2
+        const tilt = Math.atan2(0.1, 0.44)
         return (
-          <group key={i} position={[Math.sin(a) * 0.14, 0.22, Math.cos(a) * 0.14]} rotation={[Math.cos(a) * 0.18, 0, -Math.sin(a) * 0.18]}>
-            <Cyl r={0.012} rTop={0.022} h={0.46} material={wood} segments={10} />
+          <group key={i} position={[Math.sin(a) * 0.16, 0.22, Math.cos(a) * 0.16]} rotation={[-Math.cos(a) * tilt, 0, Math.sin(a) * tilt]}>
+            <Cyl r={0.012} rTop={0.022} h={0.452} material={wood} segments={10} />
           </group>
         )
       })}
