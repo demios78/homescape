@@ -285,6 +285,7 @@ export const KIND_ICON: Record<ItemKind, LucideIcon> = {
   stringLights: Sparkles,
   beamLights: Rows3,
   digitalPiano: Piano,
+  toasterOven: Microwave,
   sprinkler: Droplets,
   lawnMower: Bot,
   grill: Flame,

@@ -214,6 +214,7 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   powerMeter: { label: t('Energy meter'), group: 'device', domains: ['sensor'], size: [0.3, 0.1], labelY: 2.1, wall: true },
   coffeeMachine: { label: t('Coffee machine'), group: 'appliance', domains: ['switch'], size: [0.25, 0.35], labelY: 0.55 },
   kettle: { label: t('Kettle'), group: 'appliance', domains: ['switch'], size: [0.2, 0.18], labelY: 0.45 },
+  toasterOven: { label: t('Toaster oven'), group: 'appliance', domains: ['switch', 'sensor'], size: [0.47, 0.37], labelY: 0.5 },
   microwave: { label: t('Microwave'), group: 'appliance', domains: ['switch', 'sensor'], size: [0.5, 0.38], labelY: 0.5 },
   airFryer: { label: t('Air fryer'), group: 'appliance', domains: ['switch'], size: [0.3, 0.32], labelY: 0.5 },
   waterValve: { label: t('Main water valve'), group: 'device', domains: ['valve', 'switch'], size: [0.25, 0.12], labelY: 0.8, wall: true },
@@ -919,6 +920,7 @@ export const OPTIONS: Partial<
       ['echo', t('Cylinder (Echo)')],
       ['nest', t('Dome (Nest)')],
       ['sonos', t('Column (Sonos)')],
+      ['hub', t('Smart display (Nest Hub)')],
     ],
     variantDef: 'echo',
     body: t('Color'),
@@ -1103,6 +1105,7 @@ export const OPTIONS: Partial<
       ['embroidered', t('Embroidered folding')],
       ['carved', t('Carved dining')],
       ['keyboardBench', t('Keyboard bench')],
+      ['barStool', t('Swivel bar stool')],
     ],
     variantDef: 'plain',
   },
@@ -1116,11 +1119,28 @@ export const OPTIONS: Partial<
     variantLen: { plain: 1.4, pedestal: 1.85 },
     variantLen2: { plain: 0.85, pedestal: 1 },
   },
+  stove: {
+    variantLabel: t('Model'),
+    variants: [
+      ['plain', t('Plain')],
+      ['range', t('Stainless slide-in range')],
+    ],
+    variantDef: 'plain',
+  },
+  dishwasher: {
+    variantLabel: t('Model'),
+    variants: [
+      ['plain', t('Plain')],
+      ['steel', t('Stainless')],
+    ],
+    variantDef: 'plain',
+  },
   pendant: {
     variantLabel: t('Model'),
     variants: [
       ['plain', t('Plain')],
       ['crystal', t('Crystal chandelier')],
+      ['jar', t('Mason jar')],
     ],
     variantDef: 'plain',
   },

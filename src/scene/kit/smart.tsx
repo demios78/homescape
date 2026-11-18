@@ -840,6 +840,10 @@ function nestDome() {
  * playing (state 'playing') the ring / lights glow cyan-blue and music notes rise (not when muted). Fabric color Item.body.
  */
 export function Speaker({ v }: P) {
+  return v.opts.variant === 'hub' ? <SmartDisplay v={v} /> : <SpeakerBody v={v} />
+}
+
+function SpeakerBody({ v }: P) {
   const variant = v.opts.variant ?? 'echo'
   const playing = v.state === 'playing'
   const muted = v.attrs.is_volume_muted === true
@@ -1892,7 +1896,110 @@ export function Kettle({ v }: P) {
  * the right (display, two knobs, door button). When on the cavity glows warm yellow (visible through the glass), the
  * turntable spins, the display lights up and a warm halo falls in front. Body color Item.body.
  */
+/**
+ * Over-the-range microwave (microwave variant 'otr'): a 76 cm stainless unit hung under the wall cabinet above a range, its
+ * underside working as the hood. Dark glass door with a bar handle, a black control panel with a display on the right, a
+ * vent grille along the top. On: the window glows warm and the display lights.
+ */
+function OtrMicrowave({ v }: P) {
+  const steel = mat('#c9ccd2', { metalness: 0.55, roughness: 0.32 })
+  const glass = useLitMaterial('#15171c', v.on, '#ffcf7a', 0.7, 1.1)
+  const display = useLitMaterial('#1a2230', v.on, '#5fd0ff', 0.9, 1.6)
+  return (
+    <group>
+      <Box size={[0.76, 0.42, 0.4]} position={[0, 0.21, 0]} material={steel} radius={0.01} />
+      <Box size={[0.54, 0.3, 0.008]} position={[-0.1, 0.2, 0.202]} material={glass} shadow={false} />
+      <Box size={[0.6, 0.04, 0.008]} position={[-0.07, 0.385, 0.202]} color="#2a2c33" shadow={false} />
+      <Cyl r={0.012} h={0.28} position={[0.19, 0.2, 0.225]} material={steel} segments={10} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.02, 0.02, 0.025]} position={[0.19, 0.2 + s * 0.13, 0.212]} material={steel} shadow={false} />
+      ))}
+      <Box size={[0.14, 0.32, 0.008]} position={[0.29, 0.2, 0.202]} color="#16181d" shadow={false} />
+      <Box size={[0.07, 0.025, 0.004]} position={[0.29, 0.3, 0.207]} material={display} shadow={false} />
+      {[0.22, 0.18, 0.14, 0.1].map((y) => (
+        <Box key={y} size={[0.09, 0.012, 0.004]} position={[0.29, y, 0.207]} color="#3a3d47" shadow={false} />
+      ))}
+      <Box size={[0.7, 0.012, 0.3]} position={[0, -0.002, 0.02]} color="#2a2c33" shadow={false} />
+    </group>
+  )
+}
+
+/**
+ * Countertop toaster oven like a Breville Smart Oven: brushed steel body (47 × 28 × 37 cm), a dark glass door with a long
+ * steel handle, a black control panel on the right with an LCD and three knobs. On: the elements glow orange through the
+ * glass and the LCD lights. Things can stand on its top (SURFACE_Y).
+ */
+export function ToasterOven({ v }: P) {
+  const steel = mat('#c4c7cc', { metalness: 0.5, roughness: 0.38 })
+  const glass = useLitMaterial('#14161b', v.on, '#ff8a3a', 0.8, 1.4)
+  const lcd = useLitMaterial('#1a1d24', v.on, '#ff9a4a', 0.9, 1.6)
+  return (
+    <group>
+      {[-1, 1].flatMap((sx) => [-1, 1].map((sz) => <Cyl key={`${sx}${sz}`} r={0.012} h={0.012} position={[sx * 0.2, 0.006, sz * 0.14]} color="#202227" segments={10} shadow={false} />))}
+      <Box size={[0.47, 0.265, 0.37]} position={[0, 0.145, 0]} material={steel} radius={0.012} />
+      <Box size={[0.33, 0.2, 0.008]} position={[-0.06, 0.135, 0.186]} material={glass} shadow={false} />
+      <Box size={[0.3, 0.014, 0.014]} position={[-0.06, 0.255, 0.205]} material={steel} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.014, 0.02, 0.02]} position={[-0.06 + s * 0.14, 0.25, 0.195]} material={steel} shadow={false} />
+      ))}
+      <Box size={[0.1, 0.24, 0.008]} position={[0.175, 0.145, 0.186]} color="#141519" shadow={false} />
+      <Box size={[0.07, 0.04, 0.004]} position={[0.175, 0.23, 0.191]} material={lcd} shadow={false} />
+      {[0.17, 0.11, 0.05].map((y) => (
+        <Cyl key={y} r={0.016} h={0.018} position={[0.175, y + 0.02, 0.198]} rotation-x={Math.PI / 2} material={steel} segments={14} shadow={false} />
+      ))}
+    </group>
+  )
+}
+
+/** Photo frame screen of the smart display: soft colored bands (an ambient picture), drawn once. */
+let hubScreen: THREE.MeshBasicMaterial | null = null
+function hubScreenMaterial() {
+  if (hubScreen) return hubScreen
+  const c = document.createElement('canvas')
+  c.width = 128
+  c.height = 80
+  const g = c.getContext('2d')!
+  const bands = ['#3b2a7a', '#3f5fd0', '#2fa7c9', '#3cc48a', '#e3d34b', '#f08a3c', '#e2457a']
+  bands.forEach((col, i) => {
+    g.fillStyle = col
+    g.beginPath()
+    g.ellipse(64, 80 + 8, 120 - i * 14, 70 - i * 9, 0, Math.PI, 0)
+    g.fill()
+  })
+  g.fillStyle = '#ffffff'
+  g.font = 'bold 14px sans-serif'
+  g.fillText('10:42', 8, 18)
+  const tex = new THREE.CanvasTexture(c)
+  tex.colorSpace = THREE.SRGBColorSpace
+  hubScreen = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })
+  return hubScreen
+}
+
+/**
+ * Smart display like a Google Nest Hub (speaker variant 'hub'): a 7 inch screen tilted back on a fabric speaker base. The
+ * screen shows an ambient picture while the media player is on (not off or unavailable), dark glass otherwise.
+ */
+function SmartDisplay({ v }: P) {
+  const fabric = bodyOf(v, '#e6e3dc')
+  const on = v.state !== 'off' && !v.unavailable && v.state !== 'unknown'
+  return (
+    <group>
+      <Box size={[0.18, 0.06, 0.07]} position={[0, 0.03, 0]} material={mat(fabric, { roughness: 0.95 })} radius={0.025} />
+      <group position={[0, 0.075, 0.005]} rotation-x={-0.26}>
+        <Box size={[0.18, 0.12, 0.012]} color="#f4f4f2" radius={0.006} />
+        <mesh position={[0, 0.004, 0.0065]} material={on ? hubScreenMaterial() : mat('#0e1014', { roughness: 0.2 })}>
+          <planeGeometry args={[0.15, 0.09]} />
+        </mesh>
+      </group>
+    </group>
+  )
+}
+
 export function Microwave({ v }: P) {
+  return v.opts.variant === 'otr' ? <OtrMicrowave v={v} /> : <CounterMicrowave v={v} />
+}
+
+function CounterMicrowave({ v }: P) {
   const body = bodyOf(v, '#e9ebf2')
   const dark = '#2a2c33'
   const cavity = useLitMaterial('#cfd3df', v.on, '#ffcf7a', 0.75, 0.9)

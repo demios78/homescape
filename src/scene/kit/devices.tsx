@@ -33,7 +33,28 @@ const DIM = '#9aa0b8'
 /* ---------- lights ---------- */
 
 export function Pendant({ v }: P) {
+  if (v.opts.variant === 'jar') return <JarPendant v={v} />
   return v.opts.variant === 'crystal' ? <Chandelier v={v} /> : <PlainPendant v={v} />
+}
+
+/** Mason jar pendant (pendant variant 'jar'): black cord and cap with side clips, a clear jar around an Edison bulb. */
+function JarPendant({ v }: P) {
+  const bulb = useLitMaterial('#f4e3c0', v.on, v.color, v.level, 2.4)
+  const black = mat('#1a1b1f', { roughness: 0.5, metalness: 0.3 })
+  const glass = mat('#dfe8ef', { opacity: 0.32, roughness: 0.05 })
+  return (
+    <group>
+      <Cyl r={0.04} h={0.015} position={[0, 2.592, 0]} material={black} segments={14} shadow={false} />
+      <Cyl r={0.004} h={0.76} position={[0, 2.21, 0]} material={black} segments={6} shadow={false} />
+      <Cyl r={0.05} h={0.04} position={[0, 1.81, 0]} material={black} segments={20} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.01, 0.07, 0.012]} position={[s * 0.058, 1.79, 0]} material={black} shadow={false} />
+      ))}
+      <Cyl r={0.062} rTop={0.05} h={0.2} position={[0, 1.69, 0]} material={glass} segments={24} shadow={false} />
+      <Cyl r={0.012} h={0.04} position={[0, 1.77, 0]} color="#8a6a3a" segments={10} shadow={false} />
+      <Ball r={0.034} position={[0, 1.71, 0]} scale={[1, 1.25, 1]} material={bulb} detail={2} shadow={false} />
+    </group>
+  )
 }
 
 function PlainPendant({ v }: P) {

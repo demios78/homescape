@@ -89,12 +89,12 @@ function ItemNodeImpl({ item, entity, related, night, levelId, still = false }: 
   const aimed = useFps((s) => s.aim?.itemId === item.id)
   const hingeRight = item.hinge === 'right'
   const swingOut = item.swing === 'out'
-  const { len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, driven } = item
+  const { len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, driven, fronts, uppers, bar } = item
   // Built-in sink of the kitchen counter (model/counter.ts): in the middle unless there is a separate sink next to it
   const sinkAt = useLayout((s) => (item.kind === 'kitchenCounter' ? (counterSink(lvOf(s)?.items ?? [], item) ?? undefined) : undefined))
   const opts = useMemo(
-    () => ({ len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, sinkAt, driven }),
-    [len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, sinkAt, driven],
+    () => ({ len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, sinkAt, driven, fronts, uppers, bar }),
+    [len, drawers, top, body, fedAt, shape, sash, variant, len2, led, ledEntity, intensity, mount, beam, sinkAt, driven, fronts, uppers, bar],
   )
   useCursor(hover && interactive && !busy())
   // If the quick on/off pill opens on this item, it is placed by this group's body (scene/QuickAnchor.tsx)
@@ -231,7 +231,7 @@ function ItemNodeImpl({ item, entity, related, night, levelId, still = false }: 
       const [bw, bd] = sizeOf(box.box.kind, box.box.len)
       if (Math.abs(lx) < bw / 2 - 0.03 && Math.abs(lz) < bd / 2) ny = cur.y
     }
-    const chk = checkItem(level, { kind: item.kind, x, z, rot, y: ny, swing: item.swing, len: item.len, len2: item.len2, variant: item.variant, mount: item.mount }, item.id, onWall)
+    const chk = checkItem(level, { kind: item.kind, x, z, rot, y: ny, swing: item.swing, len: item.len, len2: item.len2, variant: item.variant, mount: item.mount, fronts: item.fronts }, item.id, onWall)
     usePlacement.getState().setMoving({ id: item.id, ok: chk.ok, reason: chk.reason })
     if (x !== item.x || z !== item.z || rot !== item.rot || ny !== item.y) {
       // Moving a cabinet carries its contents along (their local positions are kept)

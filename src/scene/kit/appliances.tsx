@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import { Glow, Spin, useLitMaterial } from './effects'
 import { C } from './palette'
-import { Ball, Box, Cyl } from './primitives'
+import { Ball, Box, Cyl, mat } from './primitives'
 import type { Visual } from './visual'
 
 /*
@@ -65,10 +65,13 @@ export function Dryer({ v }: P) {
 /** Dishwasher: full height door, horizontal handle and LED strip at the top. */
 export function Dishwasher({ v }: P) {
   const led = useLitMaterial('#9aa0b8', v.on, C.cool, 1, 2.2)
+  // Stainless (variant 'steel'): a brushed steel door, like a built-in under a worktop
+  const steel = v.opts.variant === 'steel'
+  const face = steel ? mat('#c9ccd2', { metalness: 0.55, roughness: 0.32 }) : undefined
   return (
     <group>
-      <Box size={[W, H, D]} position={[0, H / 2, 0]} color={C.white} radius={0.02} />
-      <Box size={[W - 0.03, H - 0.14, 0.014]} position={[0, (H - 0.14) / 2 + 0.03, FRONT + 0.005]} color={C.offWhite} shadow={false} />
+      <Box size={[W, H, D]} position={[0, H / 2, 0]} color={steel ? '#2a2c33' : C.white} radius={0.02} />
+      <Box size={[W - 0.03, H - 0.14, 0.014]} position={[0, (H - 0.14) / 2 + 0.03, FRONT + 0.005]} color={C.offWhite} material={face} shadow={false} />
       <Box size={[W - 0.03, 0.08, 0.014]} position={[0, H - 0.06, FRONT + 0.005]} color={C.steel} shadow={false} />
       <Box size={[0.36, 0.02, 0.03]} position={[0, H - 0.17, FRONT + 0.022]} color={C.steel} />
       <Box size={[0.2, 0.012, 0.008]} position={[0.12, H - 0.06, FRONT + 0.014]} material={led} shadow={false} />

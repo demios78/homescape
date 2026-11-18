@@ -7,7 +7,7 @@ import { t } from '@/i18n'
 import { HEADBOARD } from '@/model/bindings'
 import { BED_FLORAL, bedModel, CATALOG, COVER_LEAF, CUSHION_FLORAL, RUG_DEFAULT, sizeOf } from '@/model/catalog'
 import { DRAWER_SLIDE } from '@/model/containers'
-import { SINK_W } from '@/model/counter'
+import { counterFronts, isGap, SINK_W, type CounterFront } from '@/model/counter'
 import { markShadows } from '../frame'
 import { Glow, StripGlow, useEased, useLitMaterial, Wash } from './effects'
 import { BOOK_COLORS, C } from './palette'
@@ -2006,6 +2006,7 @@ export function Chair({ v }: { v: Visual }) {
   if (v.opts.variant === 'embroidered') return <EmbroideredChair />
   if (v.opts.variant === 'carved') return <CarvedChair />
   if (v.opts.variant === 'keyboardBench') return <KeyboardBench />
+  if (v.opts.variant === 'barStool') return <BarStool />
   return (
     <group>
       {legs4(0.44, 0.44, 0.44, C.ink, 0.022)}
@@ -2083,6 +2084,197 @@ function CounterRun({ len, top, body, door, led, lit, v, uppers = true, sinkAt }
   )
 }
 
+/* ---------- counter run laid out with fronts (Item.fronts) ---------- */
+
+const BRONZE = '#3b342e'
+/** Raised panel front: a flat frame and a raised center panel, slightly lighter. */
+function PanelFront({ x, y, w, h, color, z = 0.309 }: { x: number; y: number; w: number; h: number; color: string; z?: number }) {
+  return (
+    <group position={[x, y, z]}>
+      <Box size={[w, h, 0.02]} color={color} shadow={false} />
+      {w > 0.16 && h > 0.14 && <Box size={[w - 0.11, h - 0.11, 0.012]} position={[0, 0, 0.014]} color={shade(color, 1.07)} shadow={false} />}
+    </group>
+  )
+}
+/** Cup pull (drawers) and round knob (doors), oil-rubbed bronze */
+const Cup = ({ x, y, z = 0.335 }: { x: number; y: number; z?: number }) => (
+  <Cyl r={0.02} h={0.075} position={[x, y, z]} rotation-z={Math.PI / 2} color={BRONZE} segments={10} shadow={false} />
+)
+const Knob = ({ x, y, z = 0.335 }: { x: number; y: number; z?: number }) => <Ball r={0.015} position={[x, y, z]} color={BRONZE} detail={1} shadow={false} />
+
+/** One base cabinet front between x0 and x1 (body from 0.1 to 0.86 m). */
+function BaseFront({ f, color }: { f: CounterFront; color: string }) {
+  const w = f.x1 - f.x0 - 0.008
+  const x = (f.x0 + f.x1) / 2
+  const top = 0.855
+  const bottom = 0.11
+  const H = top - bottom
+  const drawerH = 0.17
+  switch (f.kind) {
+    case 'dw':
+    case 'range':
+      return null
+    case 'corner':
+      return <Box size={[w + 0.008, H, 0.02]} position={[x, bottom + H / 2, 0.305]} color={shade(color, 0.92)} shadow={false} />
+    case 'door':
+    case 'spice':
+      return (
+        <>
+          <PanelFront x={x} y={bottom + H / 2} w={w} h={H} color={color} />
+          <Knob x={f.kind === 'spice' ? x : x + w / 2 - 0.05} y={top - 0.07} />
+        </>
+      )
+    case 'doors':
+      return (
+        <>
+          {[-1, 1].map((s) => (
+            <group key={s}>
+              <PanelFront x={x + (s * w) / 4} y={bottom + H / 2} w={w / 2 - 0.004} h={H} color={color} />
+              <Knob x={x + s * 0.04} y={top - 0.07} />
+            </group>
+          ))}
+        </>
+      )
+    case 'drawer':
+    case 'trash':
+    case 'sink': {
+      const dh = H - drawerH - 0.006
+      return (
+        <>
+          <PanelFront x={x} y={top - drawerH / 2} w={w} h={drawerH} color={color} />
+          {f.kind !== 'sink' && <Cup x={x} y={top - drawerH / 2} />}
+          {f.kind === 'sink' ? (
+            [-1, 1].map((s) => (
+              <group key={s}>
+                <PanelFront x={x + (s * w) / 4} y={bottom + dh / 2} w={w / 2 - 0.004} h={dh} color={color} />
+                <Knob x={x + s * 0.04} y={bottom + dh - 0.07} />
+              </group>
+            ))
+          ) : (
+            <>
+              <PanelFront x={x} y={bottom + dh / 2} w={w} h={dh} color={color} />
+              {f.kind === 'trash' ? <Knob x={x} y={bottom + dh - 0.06} /> : <Knob x={x + w / 2 - 0.05} y={bottom + dh - 0.07} />}
+            </>
+          )}
+        </>
+      )
+    }
+    case 'drawers': {
+      const hs = [0.18, (H - 0.18) / 2, (H - 0.18) / 2]
+      let y = top
+      return (
+        <>
+          {hs.map((h, i) => {
+            const cy = y - h / 2
+            y -= h
+            return (
+              <group key={i}>
+                <PanelFront x={x} y={cy} w={w} h={h - 0.006} color={color} />
+                <Cup x={x} y={i ? cy + h / 2 - 0.07 : cy} />
+              </group>
+            )
+          })}
+        </>
+      )
+    }
+  }
+}
+
+/** Contiguous stretches of fronts not interrupted by the given kinds: [x0, x1] pairs. */
+function stretches(fronts: CounterFront[], cut: (f: CounterFront) => boolean) {
+  const out: [number, number][] = []
+  let start: number | null = null
+  fronts.forEach((f, i) => {
+    if (!cut(f) && start == null) start = f.x0
+    if (start != null && !cut(f) && (i === fronts.length - 1 || cut(fronts[i + 1]))) {
+      out.push([start, f.x1])
+      start = null
+    }
+  })
+  return out
+}
+
+/**
+ * Counter run laid out with fronts (Item.fronts, model/counter.ts): raised panel doors and drawers with bronze cup pulls
+ * and knobs in the given order; appliance gaps hold a separate dishwasher or range (no cabinet; over a range no worktop
+ * either, and the wall cabinet above it is a short one over the microwave). uppers false leaves the wall cabinets out;
+ * bar adds a worktop overhang at the back over a beadboard back panel, for bar stools.
+ */
+function LaidRun({ len, fronts, top, body, sinkAt, uppers, bar }: { len: number; fronts: CounterFront[]; top: string; body: string; sinkAt?: number; uppers: boolean; bar: number }) {
+  const boxes = stretches(fronts, (f) => isGap(f.kind))
+  const tops = stretches(fronts, (f) => f.kind === 'range')
+  const back = useMemo(() => {
+    if (!bar) return null
+    const map = beadboardTexture().clone()
+    map.needsUpdate = true
+    map.repeat.set(len / 0.6, 1)
+    return new THREE.MeshStandardMaterial({ map, color: body, roughness: 0.6 })
+  }, [bar, len, body])
+  useEffect(() => () => back?.dispose(), [back])
+  const upperDoors = (x0: number, x1: number, y: number, h: number) => {
+    const n = Math.max(1, Math.round((x1 - x0) / 0.45))
+    const dw = (x1 - x0) / n
+    return Array.from({ length: n }, (_, i) => {
+      const cx = x0 + dw * (i + 0.5)
+      return (
+        <group key={`${x0}-${i}`}>
+          <PanelFront x={cx} y={y + h / 2} w={dw - 0.01} h={h - 0.01} color={body} z={0.05} />
+          <Knob x={cx + (i % 2 ? -1 : 1) * (dw / 2 - 0.05)} y={y + 0.07} z={0.075} />
+        </group>
+      )
+    })
+  }
+  return (
+    <group>
+      {boxes.map(([a, b]) => (
+        <group key={`c${a}`} position={[(a + b) / 2, 0, 0]}>
+          <Box size={[b - a, 0.1, 0.52]} position={[0, 0.05, -0.04]} color={shade(body, 0.7)} />
+          <Carcass w={b - a} h={0.77} d={0.6} y={0.09} color={body} shelves={[0.37]} top={false} />
+        </group>
+      ))}
+      {fronts.map((f) => (
+        <BaseFront key={`f${f.x0}`} f={f} color={body} />
+      ))}
+      {tops.map(([a, b]) => (
+        <group key={`t${a}`} position={[(a + b) / 2, 0, 0]}>
+          <CounterTop len={b - a + (a <= -len / 2 + 0.001 || b >= len / 2 - 0.001 ? 0.01 : 0)} color={top} sinkAt={sinkAt != null && sinkAt > a && sinkAt < b ? sinkAt - (a + b) / 2 : undefined} />
+        </group>
+      ))}
+      {bar > 0 && back && (
+        <>
+          <Box size={[len + 0.02, 0.05, bar]} position={[0, 0.885, -0.31 - bar / 2]} color={top} />
+          <mesh position={[0, 0.45, -0.31]} material={back} castShadow receiveShadow>
+            <boxGeometry args={[len, 0.86, 0.02]} />
+          </mesh>
+          {[-1, 1].map((s) => (
+            <Box key={s} size={[0.02, 0.86, 0.62]} position={[s * (len / 2 - 0.01), 0.45, 0]} color={body} />
+          ))}
+        </>
+      )}
+      {uppers &&
+        fronts.map((f) => {
+          const short = f.kind === 'range'
+          const y = short ? 1.98 : 1.6
+          const h = 2.3 - y
+          return (
+            <group key={`u${f.x0}`}>
+              <group position={[(f.x0 + f.x1) / 2, 0, 0]}>
+                <Carcass w={f.x1 - f.x0} h={h} d={0.34} y={y} z={-0.13} color={body} shelves={short ? [] : [0.3]} />
+              </group>
+              {upperDoors(f.x0, f.x1, y, h)}
+            </group>
+          )
+        })}
+      {uppers && (
+        <>
+          <Box size={[len + 0.04, 0.06, 0.4]} position={[0, 2.33, -0.11]} color={shade(body, 0.85)} />
+          <Box size={[len + 0.02, 0.025, 0.37]} position={[0, 2.3, -0.12]} color="#2b2420" shadow={false} />
+        </>
+      )}
+    </group>
+  )
+}
+
 /**
  * Kitchen counter: adjustable length (v.opts.len); the L variants (left or right corner) add a second run along the side
  * wall (len2: total length of that run from the corner). Counter and cabinet colors are selectable. With a light bound, the
@@ -2104,9 +2296,11 @@ export function KitchenCounter({ v }: { v: Visual }) {
   const leg = Math.max(D + 0.2, v.opts.len2 ?? 1.8)
   const sx = variant === 'lRight' ? 1 : -1
   const run = { top, body, door, led, lit, v: lv }
+  const laid = variant === 'straight' ? counterFronts(v.opts.fronts, L) : null
+  if (laid) return <LaidRun len={L} fronts={laid} top={top} body={body} sinkAt={v.opts.sinkAt} uppers={v.opts.uppers !== false} bar={v.opts.bar ?? 0} />
   return (
     <group>
-      <CounterRun len={L} {...run} sinkAt={v.opts.sinkAt} />
+      <CounterRun len={L} {...run} sinkAt={v.opts.sinkAt} uppers={v.opts.uppers !== false} />
       {isL && (
         // Run along the side wall: starts after the corner square, its front faces into the room (towards the opposite corner).
         <group position={[sx * (L / 2 - D / 2), 0, D / 2 + (leg - D) / 2]} rotation-y={sx > 0 ? -Math.PI / 2 : Math.PI / 2}>
@@ -2129,7 +2323,76 @@ export function Fridge() {
   )
 }
 
-export function Stove() {
+/**
+ * Slide-in range (stove variant 'range'): stainless, 76 cm, flush with the worktop. Black glass cooktop with four burner
+ * rings, a front control strip with knobs and a display, an oven door with a window and a bar handle, a storage drawer at
+ * the bottom. No hood: an over-the-range microwave above it does that job.
+ */
+function SlideInRange() {
+  const steel = mat('#c9ccd2', { metalness: 0.55, roughness: 0.32 })
+  return (
+    <group>
+      <Box size={[0.76, 0.82, 0.6]} position={[0, 0.43, -0.01]} material={steel} />
+      <Box size={[0.76, 0.014, 0.63]} position={[0, 0.912, 0]} color="#101114" />
+      {[
+        [-0.18, -0.12, 0.1],
+        [0.18, -0.12, 0.08],
+        [-0.18, 0.14, 0.08],
+        [0.18, 0.14, 0.1],
+      ].map(([x, z, r]) => (
+        <mesh key={`${x}${z}`} position={[x, 0.9205, z]} rotation-x={-Math.PI / 2}>
+          <ringGeometry args={[r - 0.008, r, 32]} />
+          <meshStandardMaterial color="#4a4d55" roughness={0.4} />
+        </mesh>
+      ))}
+      <Box size={[0.74, 0.09, 0.03]} position={[0, 0.85, 0.3]} color="#2a2c33" shadow={false} />
+      {[-0.3, -0.2, 0.2, 0.3].map((x) => (
+        <Cyl key={x} r={0.02} h={0.025} position={[x, 0.85, 0.322]} rotation-x={Math.PI / 2} material={steel} segments={14} shadow={false} />
+      ))}
+      <Box size={[0.2, 0.04, 0.004]} position={[0, 0.85, 0.317]} color="#14161c" shadow={false} />
+      <Box size={[0.72, 0.52, 0.02]} position={[0, 0.5, 0.3]} material={steel} shadow={false} />
+      <Box size={[0.5, 0.26, 0.006]} position={[0, 0.48, 0.312]} color="#15171c" shadow={false} />
+      <Cyl r={0.013} h={0.64} position={[0, 0.73, 0.345]} rotation-z={Math.PI / 2} material={steel} segments={10} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.02, 0.02, 0.04]} position={[s * 0.3, 0.73, 0.325]} material={steel} shadow={false} />
+      ))}
+      <Box size={[0.72, 0.15, 0.02]} position={[0, 0.14, 0.3]} material={steel} shadow={false} />
+      <Cyl r={0.01} h={0.5} position={[0, 0.19, 0.325]} rotation-z={Math.PI / 2} material={steel} segments={10} />
+      <Box size={[0.76, 0.05, 0.5]} position={[0, 0.025, -0.04]} color="#202227" />
+    </group>
+  )
+}
+
+/**
+ * Swivel bar stool (chair variant 'barStool'): espresso wood, four splayed legs with a ring footrest, a round black padded
+ * seat at 76 cm and a ladder back of two curved slats.
+ */
+function BarStool() {
+  const wood = mat('#3a2418', { roughness: 0.55 })
+  const footring = useMemo(() => new THREE.TorusGeometry(0.2, 0.014, 8, 36).rotateX(Math.PI / 2), [])
+  useEffect(() => () => footring.dispose(), [footring])
+  return (
+    <group>
+      {[-1, 1].flatMap((sx) =>
+        [-1, 1].map((sz) => (
+          <Box key={`${sx}${sz}`} size={[0.038, 0.74, 0.038]} position={[sx * 0.165, 0.37, sz * 0.165]} rotation={[sz * -0.07, 0, sx * 0.07]} material={wood} />
+        )),
+      )}
+      <mesh geometry={footring} position={[0, 0.28, 0]} material={wood} castShadow />
+      <Cyl r={0.2} h={0.04} position={[0, 0.725, 0]} material={wood} segments={28} />
+      <Cyl r={0.205} rTop={0.19} h={0.07} position={[0, 0.78, 0]} color="#141416" segments={28} />
+      {[-1, 1].map((s) => (
+        <Box key={s} size={[0.035, 0.36, 0.035]} position={[s * 0.15, 0.96, -0.17]} rotation-x={-0.1} material={wood} />
+      ))}
+      {[0.93, 1.08].map((y) => (
+        <Box key={y} size={[0.34, 0.065, 0.025]} position={[0, y, -0.18 - (y - 0.93) * 0.1]} rotation-x={-0.1} material={wood} />
+      ))}
+    </group>
+  )
+}
+
+export function Stove({ v }: { v: Visual }) {
+  if (v.opts.variant === 'range') return <SlideInRange />
   return (
     <group>
       <Box size={[0.74, 0.86, 0.6]} position={[0, 0.43, 0]} color={C.white} />

@@ -61,6 +61,7 @@ export type ItemKind =
   | 'downlight'
   | 'ceilingStrip'
   | 'digitalPiano'
+  | 'toasterOven'
   | 'beamLights'
   // devices
   | 'tv'
@@ -349,6 +350,12 @@ export interface Item {
    * separate sink stands next to the counter (model/counter.ts).
    */
   sink?: 'none' | 'left' | 'center' | 'right'
+  /** Kitchen counter: base cabinet fronts left to right, "kind:width,..." (model/counter.ts > counterFronts) */
+  fronts?: string
+  /** Kitchen counter: false leaves out the wall cabinets (a run under a window) */
+  uppers?: boolean
+  /** Kitchen counter: worktop overhang at the back (m) with a paneled back, for bar stools (a peninsula) */
+  bar?: number
   /**
    * Group id (grouped lights bind to the same entity). Bindings of items in the same group change together (layoutStore
    * bind / unbind / makeMain).

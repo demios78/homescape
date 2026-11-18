@@ -243,7 +243,7 @@ function makeGrid(level: Level, species: Mover, cell: number): PetGrid {
   for (const it of level.items) {
     if (PASS.includes(it.kind) || under.includes(it.kind)) continue
     if (layerOf(it.kind, it.y, it.variant, it.mount) !== 'floor') continue
-    for (const f of footprints({ kind: it.kind, x: it.x, z: it.z, rot: it.rot, len: it.len, len2: it.len2, variant: it.variant, mount: it.mount })) {
+    for (const f of footprints({ kind: it.kind, x: it.x, z: it.z, rot: it.rot, len: it.len, len2: it.len2, variant: it.variant, mount: it.mount, fronts: it.fronts })) {
       if (Math.min(f.maxX - f.minX, f.maxZ - f.minZ) < 0.1) continue
       const m = clear * 0.7
       block(f.minX - m, f.maxX + m, f.minZ - m, f.maxZ + m, () => true)

@@ -67,7 +67,7 @@ export function buildColliders(level: Level, rails: { a: { x: number; z: number 
   for (const it of level.items) {
     if (WALKABLE.includes(it.kind)) continue
     if (layerOf(it.kind, it.y, it.variant, it.mount) !== 'floor') continue
-    for (const b of footprints({ kind: it.kind, x: it.x, z: it.z, rot: it.rot, len: it.len, len2: it.len2, variant: it.variant, mount: it.mount }, 0.04)) {
+    for (const b of footprints({ kind: it.kind, x: it.x, z: it.z, rot: it.rot, len: it.len, len2: it.len2, variant: it.variant, mount: it.mount, fronts: it.fronts }, 0.04)) {
       // Very thin poles and small items are not obstacles (lamp stand, sensor)
       if (Math.min(b.maxX - b.minX, b.maxZ - b.minZ) < 0.18) continue
       boxes.push(b)

@@ -1,6 +1,7 @@
 import { t } from '@/i18n'
 import { CATALOG, frenchWidth, openingWidth, sizeOf, slidingWidth, WINDOW_BOTTOM, windowSize } from './catalog'
 import { inRoom, rectsOf, roomAt, WALL_H, WALL_IN } from './geometry'
+import { counterFronts, isGap } from './counter'
 import type { Item, ItemKind, Level, Rect, Room } from './types'
 
 /*
@@ -117,6 +118,7 @@ export const SURFACE_Y: Partial<Record<ItemKind, number>> = {
   bedsideChest: 0.72,
   writingDesk: 0.96,
   kitchenCounter: 0.91,
+  toasterOven: 0.285,
   shoeCabinet: 0.9,
   drawerUnit: 0.72,
   dresser: 0.81,
@@ -133,7 +135,7 @@ export const SURFACE_Y: Partial<Record<ItemKind, number>> = {
 }
 
 /** Small items that can be stacked on a surface. */
-export const STACKABLE: ItemKind[] = ['brickModel', 'monitor', 'deskLamp', 'console', 'vibrationSensor', 'diffuser', 'keyboard', 'mouse', 'mousePad', 'monitorV', 'deskPlant', 'deskPalm', 'fishbowl', 'soapDispenser', 'deskFan', 'powerStrip', 'homepod', 'deskCamera', 'tableLamp', 'humidifier', 'speaker', 'soundbar', 'computer', 'airQuality', 'smartButton', 'router', 'nas', 'printer', 'coffeeMachine', 'kettle', 'microwave', 'airFryer']
+export const STACKABLE: ItemKind[] = ['brickModel', 'monitor', 'deskLamp', 'console', 'vibrationSensor', 'diffuser', 'keyboard', 'mouse', 'mousePad', 'monitorV', 'deskPlant', 'deskPalm', 'fishbowl', 'soapDispenser', 'deskFan', 'powerStrip', 'homepod', 'deskCamera', 'tableLamp', 'humidifier', 'speaker', 'soundbar', 'computer', 'airQuality', 'smartButton', 'router', 'nas', 'printer', 'coffeeMachine', 'kettle', 'microwave', 'airFryer', 'toasterOven']
 
 /** Items that only go on a surface (desk, coffee table, cabinet, washbasin): pointless on the floor. */
 export const DESK_ONLY: ItemKind[] = ['keyboard', 'mouse', 'mousePad', 'monitorV', 'deskPlant', 'deskPalm', 'fishbowl', 'soapDispenser', 'deskFan', 'tableLamp', 'coffeeMachine', 'kettle', 'microwave', 'airFryer', 'smartButton']
@@ -202,7 +204,7 @@ function localBox(x: number, z: number, rot: number, cx: number, cz: number, w: 
 }
 
 /** An item with a shape: kind, position, rotation and size settings (an L counter is two rectangles). */
-export type Shape = { kind: ItemKind; x: number; z: number; rot: number; len?: number; len2?: number; variant?: string; mount?: Item['mount'] }
+export type Shape = { kind: ItemKind; x: number; z: number; rot: number; len?: number; len2?: number; variant?: string; mount?: Item['mount']; fronts?: string }
 
 /** Footprint rectangle in the item's own (local) frame: center (cx, cz) and w × d. The selection frame draws it too. */
 export interface LocalRect {
@@ -223,6 +225,23 @@ export function localFootprints(s: Omit<Shape, 'x' | 'z' | 'rot'>): LocalRect[] 
   if (s.kind === 'sofa' && (s.variant === 'chaiseLeft' || s.variant === 'chaiseRight')) {
     const sx = s.variant === 'chaiseLeft' ? -1 : 1
     return [main, { cx: sx * (w / 2 - 0.36), cz: d / 2 + 0.33, w: 0.72, d: 0.66 }]
+  }
+  // A mason jar pendant is small: several hang in a row over a counter
+  if (s.kind === 'pendant' && s.variant === 'jar') return [{ cx: 0, cz: 0, w: 0.2, d: 0.2 }]
+  // A straight counter laid out with fronts: its appliance gaps (dishwasher, range) are free for those items
+  const laid = s.kind === 'kitchenCounter' && (s.variant ?? 'straight') === 'straight' ? counterFronts(s.fronts, w) : null
+  if (laid?.some((f) => isGap(f.kind))) {
+    const out: LocalRect[] = []
+    let start: number | null = null
+    laid.forEach((f, i) => {
+      if (!isGap(f.kind) && start == null) start = f.x0
+      const end = i === laid.length - 1 || isGap(laid[i + 1].kind)
+      if (!isGap(f.kind) && end && start != null) {
+        out.push({ cx: (start + f.x1) / 2, cz: 0, w: f.x1 - start, d })
+        start = null
+      }
+    })
+    return out
   }
   if (s.kind !== 'kitchenCounter' || (s.variant !== 'lLeft' && s.variant !== 'lRight')) return [main]
   const L = s.len ?? CATALOG.kitchenCounter.size[0]
