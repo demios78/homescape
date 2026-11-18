@@ -1620,10 +1620,78 @@ function FrenchLeaf({ W, glass, cols = 2 }: { W: number; glass: THREE.Material; 
   )
 }
 
+
+/** Raised panels of a six-panel door leaf W wide (2 columns × 3 rows) on one face, merged into one geometry per width. */
+const panelGeos = new Map<string, THREE.BufferGeometry>()
+function panelGeometry(W: number, side: 1 | -1) {
+  const key = `${W.toFixed(3)}|${side}`
+  let g = panelGeos.get(key)
+  if (!g) {
+    const pw = W * 0.34
+    const rows: [number, number][] = [
+      [1.83, 0.34],
+      [1.2, 0.7],
+      [0.46, 0.6],
+    ]
+    const parts = [0.27, 0.73].flatMap((cx) => rows.map(([cy, h]) => new THREE.BoxGeometry(pw, h, 0.006).translate(W * cx, cy, side * (LEAF_T / 2 + 0.003))))
+    g = mergeGeometries(parts)!
+    parts.forEach((p) => p.dispose())
+    panelGeos.set(key, g)
+  }
+  return g
+}
+
+const LEAF_T = 0.045
+const BRASS = '#c9a227'
+
+/**
+ * Painted six-panel door leaf, hinged at x = 0 and W wide: its two faces can have different paint (front +z, back -z), brass
+ * knobs on both sides near the free edge (the lock state's color when a lock is bound) and an optional brass knocker on one
+ * face (a front door).
+ */
+function PanelLeaf({ W, front, back, knob, knocker }: { W: number; front: string; back: string; knob: string; knocker?: 1 | -1 }) {
+  const brass = mat(BRASS, { metalness: 0.6, roughness: 0.3 })
+  return (
+    <group>
+      <Box size={[W, 2.12, LEAF_T]} position={[W / 2, 1.06, 0]} color={front} radius={0.01} />
+      {back !== front && <Box size={[W - 0.004, 2.116, 0.004]} position={[W / 2, 1.06, -LEAF_T / 2 - 0.002]} color={back} shadow={false} />}
+      <mesh geometry={panelGeometry(W, 1)} material={mat(darker(front, 0.94))} />
+      <mesh geometry={panelGeometry(W, -1)} material={mat(back === '#1b1c20' ? '#2a2b30' : darker(back, 0.94))} />
+      {[-1, 1].map((sz) => (
+        <Ball key={sz} r={0.03} position={[W - 0.07, 1.0, sz * (LEAF_T / 2 + 0.03)]} color={knob} material={knob === BRASS ? brass : undefined} detail={1} shadow={false} />
+      ))}
+      {knocker && (
+        <group position={[W / 2, 1.5, knocker * (LEAF_T / 2 + 0.008)]}>
+          <Box size={[0.05, 0.13, 0.012]} material={brass} shadow={false} />
+          <mesh position={[0, -0.09, knocker * 0.012]} material={brass}>
+            <torusGeometry args={[0.05, 0.009, 8, 24]} />
+          </mesh>
+        </group>
+      )}
+    </group>
+  )
+}
+
+/** Door paint: the room side (Item.body) and the outside of an exterior door (Item.top), per leaf face after the swing mirror. */
+function doorPaint(v: Visual, def: string, lock: string | undefined) {
+  const inside = v.opts.body ?? def
+  const outside = (!v.interior && v.opts.top) || inside
+  const knob = lock ? (lock === 'locked' ? C.alarm : C.ok) : BRASS
+  // The leaf's +z face is the room side unless the door swings out (mirrored across the wall line)
+  return {
+    front: v.swingOut ? outside : inside,
+    back: v.swingOut ? inside : outside,
+    knob,
+    knocker: !v.interior && v.opts.top ? ((v.swingOut ? 1 : -1) as 1 | -1) : undefined,
+  }
+}
+
 /**
  * French doors (Item.variant 'french'): a pair of white glazed leaves (2 × 5 panes each) in a frame as wide as Item.len,
  * hinged at both jambs and opening toward each other's middle, into the room (or out with Item.swing). Open and closed
  * like any door: a bound sensor or cover, else open on an interior wall; someone passing opens them.
+ * Double doors (Item.variant 'double'): the same pair as painted six-panel leaves. Only the active leaf (the right one, the
+ * left with hinge right) opens for passage; both open when a bound sensor says open.
  */
 function FrenchDoor({ v }: P) {
   const fps = useView((s) => s.fps)
@@ -1631,11 +1699,15 @@ function FrenchDoor({ v }: P) {
   const tall = useRef<THREE.Group>(null)
   const W = v.opts.len ?? 1.2
   const lw = W / 2 - 0.04
-  const { open, sensedOpen } = doorState(v)
+  const { open, sensedOpen, lock } = doorState(v)
   const passing = useDoorTraffic((s) => (v.at ? Boolean(s.open[doorKey(v.at.x, v.at.z)]) : false))
+  const solid = v.opts.variant === 'double'
   const a = open || passing ? Math.PI / 2 - 0.12 : 0
-  const left = useEased(-a)
-  const right = useEased(a)
+  const both = !solid || sensedOpen
+  const left = useEased(both || v.hingeRight ? -a : 0)
+  const right = useEased(both || !v.hingeRight ? a : 0)
+  const paint = doorPaint(v, C.white, lock)
+  const leafOf = () => (solid ? <PanelLeaf W={lw} {...paint} /> : <FrenchLeaf W={lw} glass={glass} />)
   const glass = fps ? mat(C.glass, { opacity: 0.15, roughness: 0.05 }) : mat(C.glass, { opacity: 0.45, roughness: 0.1 })
   useWallHeight(root, v.interior, (h) => {
     if (tall.current) tall.current.scale.y = Math.max(0.02, h / FULL_H)
@@ -1648,12 +1720,10 @@ function FrenchDoor({ v }: P) {
         <Box size={[W + 0.08, 0.08, 0.24]} position={[0, 2.19, EDGE_Z]} color={C.white} />
         <Mirror x={false} z={v.swingOut}>
           <group ref={left} position={[-W / 2 + 0.04, 0, -0.12]}>
-            <FrenchLeaf W={lw} glass={glass} />
+            {leafOf()}
           </group>
           <group ref={right} position={[W / 2 - 0.04, 0, -0.12]}>
-            <group scale-x={-1}>
-              <FrenchLeaf W={lw} glass={glass} />
-            </group>
+            <group scale-x={-1}>{leafOf()}</group>
           </group>
         </Mirror>
       </group>
@@ -1756,7 +1826,7 @@ export function Door({ v }: P) {
   if (v.opts.variant === 'patio') return <PatioDoor v={v} />
   if (v.opts.variant === 'opening') return <CasedOpening v={v} />
   if (v.opts.variant === 'sliding') return <SlidingDoor v={v} />
-  if (v.opts.variant === 'french') return <FrenchDoor v={v} />
+  if (v.opts.variant === 'french' || v.opts.variant === 'double') return <FrenchDoor v={v} />
   return <HingedDoor v={v} />
 }
 
@@ -1769,7 +1839,7 @@ function HingedDoor({ v }: P) {
   // A person, pet or the walk mode player passing by opens the door (scene/doorTraffic.ts; does not touch HA)
   const passing = useDoorTraffic((s) => (v.at ? Boolean(s.open[doorKey(v.at.x, v.at.z)]) : false))
   const leaf = useEased(open || passing ? -Math.PI / 2 + 0.08 : 0)
-  const lockColor = lock ? (lock === 'locked' ? C.alarm : C.ok) : C.sun
+  const paint = doorPaint(v, C.brand, lock)
   useWallHeight(root, v.interior, (h) => {
     if (tall.current) tall.current.scale.y = Math.max(0.02, h / FULL_H)
   })
@@ -1781,9 +1851,7 @@ function HingedDoor({ v }: P) {
         <Box size={[1.08, 0.08, 0.24]} position={[0, 2.19, EDGE_Z]} color={C.white} />
         <Mirror x={v.hingeRight} z={v.swingOut}>
           <group ref={leaf} position={[-0.46, 0, -0.12]}>
-            <Box size={[0.92, 2.12, 0.045]} position={[0.46, 1.06, 0]} color={C.brand} radius={0.015} />
-            <Box size={[0.66, 0.78, 0.01]} position={[0.46, 1.5, 0.026]} color={C.brandDark} shadow={false} />
-            <Ball r={0.035} position={[0.82, 1.02, 0.05]} color={lockColor} />
+            <PanelLeaf W={0.92} {...paint} />
           </group>
         </Mirror>
       </group>
