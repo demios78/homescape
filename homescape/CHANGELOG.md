@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.38 (demios78 fork)
+
+- Kitchen counters can be laid out cabinet by cabinet: drawers, a trash pull-out, tray doors, a spice pull-out, a sink base, gaps for a dishwasher or a slide-in range, an optional bar overhang and runs without wall cabinets.
+- New models: stainless slide-in range, over-the-range microwave, stainless dishwasher, mason jar pendant, swivel bar stool, a smart display (Nest Hub) look for speakers and a countertop toaster oven.
+
 ## 0.2.1-dm.37 (demios78 fork)
 
 - Ceiling beams with string lights (Lights tab): wooden beams across a room with a strand of globe bulbs under each, lit by the bound light or plug.
