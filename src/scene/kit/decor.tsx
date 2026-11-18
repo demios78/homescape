@@ -5,7 +5,7 @@ import { useAmbient, useLitMaterial } from './effects'
 import { C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
 import { useScreen } from './screens'
-import { artTexture, keyboardTexture, pegboardTexture, shutterFrameTexture } from './textures'
+import { artTexture, carromTexture, keyboardTexture, pegboardTexture, shutterFrameTexture } from './textures'
 import { monitorOn, type Visual } from './visual'
 
 /*
@@ -119,6 +119,35 @@ export function Painting({ v }: P) {
     </group>
   )
 }
+
+/**
+ * Carrom board hung on the wall (or leaning, its height set like any wall item): a black frame with raised cushion rails
+ * around a light birch playing surface with baselines, arrows, the center star and net pockets. 81 cm square, front +z.
+ */
+export function CarromBoard() {
+  const tex = carromTexture()
+  const S = 0.81
+  const rail = 0.065
+  const black = mat('#141416', { roughness: 0.45 })
+  return (
+    <group position={[0, CARROM_Y, 0]}>
+      <Box size={[S, S, 0.03]} position={[0, 0, -0.005]} material={black} />
+      <mesh position={[0, 0, 0.0105]}>
+        <planeGeometry args={[S - 2 * rail, S - 2 * rail]} />
+        <meshStandardMaterial map={tex} roughness={0.35} />
+      </mesh>
+      {[-1, 1].map((k) => (
+        <group key={k}>
+          <Box size={[S, rail, 0.014]} position={[0, k * (S / 2 - rail / 2), 0.016]} material={black} shadow={false} />
+          <Box size={[rail, S - 2 * rail, 0.014]} position={[k * (S / 2 - rail / 2), 0, 0.016]} material={black} shadow={false} />
+        </group>
+      ))}
+    </group>
+  )
+}
+
+/** Height of the carrom board's center at its default mount height */
+const CARROM_Y = 1.2
 
 /* ---------- mirror and soap dispenser ---------- */
 

@@ -262,6 +262,7 @@ export type ItemKind =
   | 'deskPalm'
   | 'pegboard'
   | 'painting'
+  | 'carromBoard'
   | 'aquarium'
   | 'fishbowl'
   | 'mirror'

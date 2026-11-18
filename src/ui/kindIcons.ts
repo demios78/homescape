@@ -242,6 +242,7 @@ export const KIND_ICON: Record<ItemKind, LucideIcon> = {
   deskPalm: TreePalm,
   pegboard: Grid3x3,
   painting: Frame,
+  carromBoard: Grid3x3,
   aquarium: Fish,
   ceilingLight: LampCeiling,
   trackLight: Spotlight,

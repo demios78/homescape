@@ -515,6 +515,162 @@ export function artTexture() {
   })
 }
 
+/**
+ * Carrom board playing surface (1 = the surface's width): light birch with a faint grain, gray net pockets in the corners,
+ * a baseline on each side (a thick black outer line, a thin inner one, red circles at both ends), diagonal arrows from the
+ * pockets with curled arrow arcs, and the center star in red and black inside a circle.
+ */
+export function carromTexture() {
+  return base(
+    'carrom',
+    (g, s) => {
+      g.fillStyle = '#efe5cc'
+      g.fillRect(0, 0, s, s)
+      // Grain: long soft wavy lines
+      const r = Math.sin
+      g.lineWidth = 2
+      for (let i = 0; i < 46; i++) {
+        const y0 = (i / 46) * s * 1.2 - s * 0.1
+        g.strokeStyle = `rgba(170, 140, 95, ${0.06 + 0.06 * Math.abs(r(i * 2.3))})`
+        g.beginPath()
+        for (let x = 0; x <= s; x += 16) g.lineTo(x, y0 + r(x / 140 + i) * 18 + r(x / 47 + i * 1.7) * 5)
+        g.stroke()
+      }
+      const P = (v: number) => v * s
+      const ink = '#1c1b1f'
+      const red = '#d6372e'
+      // Pockets
+      for (const [x, y] of [[0.035, 0.035], [0.965, 0.035], [0.035, 0.965], [0.965, 0.965]]) {
+        g.fillStyle = '#8d8f94'
+        g.beginPath()
+        g.arc(P(x), P(y), P(0.032), 0, Math.PI * 2)
+        g.fill()
+        g.strokeStyle = 'rgba(60, 62, 68, 0.6)'
+        g.lineWidth = 1
+        for (let k = -4; k <= 4; k++) {
+          g.beginPath()
+          g.moveTo(P(x + k * 0.007), P(y - 0.03))
+          g.lineTo(P(x + k * 0.007), P(y + 0.03))
+          g.moveTo(P(x - 0.03), P(y + k * 0.007))
+          g.lineTo(P(x + 0.03), P(y + k * 0.007))
+          g.stroke()
+        }
+      }
+      // One side's markings drawn along the top edge, then rotated for the other three
+      const side = () => {
+        g.strokeStyle = ink
+        g.lineWidth = P(0.008)
+        g.beginPath()
+        g.moveTo(P(0.2), P(0.148))
+        g.lineTo(P(0.8), P(0.148))
+        g.stroke()
+        g.lineWidth = P(0.0025)
+        g.beginPath()
+        g.moveTo(P(0.2), P(0.19))
+        g.lineTo(P(0.8), P(0.19))
+        g.stroke()
+        for (const x of [0.2, 0.8]) {
+          g.fillStyle = '#f7f1e3'
+          g.strokeStyle = ink
+          g.lineWidth = P(0.003)
+          g.beginPath()
+          g.arc(P(x), P(0.169), P(0.023), 0, Math.PI * 2)
+          g.fill()
+          g.stroke()
+          g.fillStyle = red
+          g.beginPath()
+          g.arc(P(x), P(0.169), P(0.016), 0, Math.PI * 2)
+          g.fill()
+        }
+        // Diagonal arrow from the top left pocket toward the center, with a curled arc near its inner end
+        g.strokeStyle = ink
+        g.lineWidth = P(0.0022)
+        g.beginPath()
+        g.moveTo(P(0.085), P(0.085))
+        g.lineTo(P(0.365), P(0.365))
+        g.stroke()
+        g.beginPath()
+        g.moveTo(P(0.085), P(0.085))
+        g.lineTo(P(0.1), P(0.088))
+        g.moveTo(P(0.085), P(0.085))
+        g.lineTo(P(0.088), P(0.1))
+        g.stroke()
+        // The arc is open toward the board's center; an arrowhead at each end points along it into the gap
+        const a0 = Math.PI * 0.6
+        const a1 = Math.PI * 1.9
+        g.beginPath()
+        g.arc(P(0.33), P(0.33), P(0.05), a0, a1)
+        g.stroke()
+        for (const [a, dir] of [[a0, -1], [a1, 1]] as const) {
+          const x = P(0.33 + Math.cos(a) * 0.05)
+          const y = P(0.33 + Math.sin(a) * 0.05)
+          const tx = -Math.sin(a) * dir
+          const ty = Math.cos(a) * dir
+          g.beginPath()
+          for (const k of [-0.5, 0.5]) {
+            g.moveTo(x, y)
+            g.lineTo(x - P(0.012) * (tx * Math.cos(k) - ty * Math.sin(k)), y - P(0.012) * (tx * Math.sin(k) + ty * Math.cos(k)))
+          }
+          g.stroke()
+        }
+      }
+      for (let k = 0; k < 4; k++) {
+        g.save()
+        g.translate(s / 2, s / 2)
+        g.rotate((k * Math.PI) / 2)
+        g.translate(-s / 2, -s / 2)
+        side()
+        g.restore()
+      }
+      // Side labels
+      g.fillStyle = ink
+      g.font = `bold ${Math.round(P(0.022))}px serif`
+      g.textAlign = 'center'
+      g.textBaseline = 'middle'
+      for (const [x, a] of [[0.155, Math.PI / 2], [0.845, -Math.PI / 2]] as const) {
+        g.save()
+        g.translate(P(x), s / 2)
+        g.rotate(a)
+        g.fillText('Carrom', 0, 0)
+        g.restore()
+      }
+      // Center star: a circle, four long points (red and black halves) and four shorter black diagonal points
+      const c = s / 2
+      g.strokeStyle = ink
+      g.lineWidth = P(0.002)
+      g.beginPath()
+      g.arc(c, c, P(0.115), 0, Math.PI * 2)
+      g.stroke()
+      const point = (a: number, len: number, w: number, left: string, right: string) => {
+        const tip = [c + Math.cos(a) * P(len), c + Math.sin(a) * P(len)]
+        const sideL = [c + Math.cos(a - Math.PI / 2) * P(w), c + Math.sin(a - Math.PI / 2) * P(w)]
+        const sideR = [c + Math.cos(a + Math.PI / 2) * P(w), c + Math.sin(a + Math.PI / 2) * P(w)]
+        g.fillStyle = left
+        g.beginPath()
+        g.moveTo(c, c)
+        g.lineTo(sideL[0], sideL[1])
+        g.lineTo(tip[0], tip[1])
+        g.fill()
+        g.fillStyle = right
+        g.beginPath()
+        g.moveTo(c, c)
+        g.lineTo(sideR[0], sideR[1])
+        g.lineTo(tip[0], tip[1])
+        g.fill()
+      }
+      for (let k = 0; k < 4; k++) point(Math.PI / 4 + (k * Math.PI) / 2, 0.095, 0.016, ink, '#3a3940')
+      for (let k = 0; k < 4; k++) point((k * Math.PI) / 2, 0.11, 0.016, red, '#a82a23')
+      g.fillStyle = red
+      g.strokeStyle = ink
+      g.beginPath()
+      g.arc(c, c, P(0.026), 0, Math.PI * 2)
+      g.fill()
+      g.stroke()
+    },
+    1024,
+  )
+}
+
 /** Keyboard keys: top view, light keys on a dark base. */
 export function keyboardTexture() {
   return base(

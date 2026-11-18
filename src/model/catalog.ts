@@ -175,6 +175,8 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   deskPalm: { label: t('Mini palm'), group: 'decor', domains: [], size: [0.2, 0.2], labelY: 0.5 },
   pegboard: { label: t('Pegboard'), group: 'decor', domains: [], size: [0.76, 0.08], labelY: 1.85, wall: true },
   painting: { label: t('Painting'), group: 'decor', domains: [], size: [0.8, 0.05], labelY: 2.05, wall: true },
+  // Carrom board on the wall: 81 cm square, center at 1.2 m by default (height adjustable like any wall item)
+  carromBoard: { label: t('Carrom board'), group: 'decor', domains: [], size: [0.81, 0.05], labelY: 1.75, wall: true },
   aquarium: { label: t('Aquarium'), group: 'decor', domains: ['light', 'switch', 'sensor', 'button'], size: [1, 0.42], labelY: 1.45 },
   fishbowl: { label: t('Fishbowl'), group: 'decor', domains: ['light', 'switch', 'button'], size: [0.28, 0.28], labelY: 0.38 },
   // Carved frame with an arched mirror and two spindle shutters; wall-hung (rules.ts > WALL_SPAN)

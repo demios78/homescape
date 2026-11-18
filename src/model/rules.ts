@@ -19,7 +19,7 @@ export type Layer = 'floor' | 'wall' | 'ceiling' | 'rug' | 'top'
  * Wall-mounted items: their height is adjustable (Item.y = offset up/down from the default; for an LED strip the strip's
  * height above the floor). Items standing on the floor against a wall (cabinet, counter, fridge) are not in this list.
  */
-export const WALL_MOUNTED: ItemKind[] = ['minifigClock', 'wallLight', 'ledStrip', 'mirrorLight', 'acUnit', 'camera', 'motionSensor', 'tempSensor', 'alarmPanel', 'wallSwitch', 'plug', 'window', 'painting', 'pegboard', 'mirror', 'mirrorCabinet', 'wallFan', 'thermostat', 'waterHeater', 'boiler', 'towelWarmer', 'projectorScreen', 'wallPanel', 'doorbell', 'siren', 'powerMeter', 'waterValve', 'awning', 'evCharger', 'toolWall', 'shutterMirror']
+export const WALL_MOUNTED: ItemKind[] = ['minifigClock', 'wallLight', 'ledStrip', 'mirrorLight', 'acUnit', 'camera', 'motionSensor', 'tempSensor', 'alarmPanel', 'wallSwitch', 'plug', 'window', 'painting', 'carromBoard', 'pegboard', 'mirror', 'mirrorCabinet', 'wallFan', 'thermostat', 'waterHeater', 'boiler', 'towelWarmer', 'projectorScreen', 'wallPanel', 'doorbell', 'siren', 'powerMeter', 'waterValve', 'awning', 'evCharger', 'toolWall', 'shutterMirror']
 
 /**
  * Items that can optionally hang on a wall (Item.mount 'wall', e.g. a power strip). While hung they behave like wall
@@ -48,6 +48,7 @@ const WALL_SPAN: Record<string, [number, number]> = {
   plug: [0.255, 0.385],
   window: [0.87, 2.2],
   painting: [1.25, 1.85],
+  carromBoard: [0.795, 1.605],
   pegboard: [1.02, 1.58],
   'mirror:tall': [0.25, 1.87],
   'mirror:small': [1.267, 1.833],

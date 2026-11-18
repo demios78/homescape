@@ -122,6 +122,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   deskPalm: Dc.DeskPalm,
   pegboard: Dc.Pegboard,
   painting: Dc.Painting,
+  carromBoard: Dc.CarromBoard,
   aquarium: Dc.Aquarium,
   ceilingLight: S.CeilingLight,
   trackLight: S.TrackLight,
