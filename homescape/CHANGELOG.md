@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.57 (demios78 fork)
+
+- Brick models hung on the wall now float on their own, as if on invisible fishing line, with no shelf or brackets underneath.
+
 ## 0.2.1-dm.56 (demios78 fork)
 
 - Concorde brick model: the drooped nose now points forward, and on the wall it hangs on two slim brackets instead of standing on a shelf.
