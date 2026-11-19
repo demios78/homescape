@@ -24,8 +24,6 @@ export function CameraRig() {
   const plan = useView((s) => s.plan)
   const levelId = useLayout((s) => s.levelId)
   const hasLayout = useLayout((s) => Boolean(s.layout))
-  // In edit mode the build bar at the bottom grows, so the framing is recomputed.
-  const mode = useLayout((s) => s.mode)
   // The framing is refreshed when the plan becomes empty and when the first room is drawn (empty ground from afar, first room up close).
   const empty = useLayout((s) => (activeLevel(s)?.rooms.length ?? 0) === 0)
 
@@ -36,13 +34,22 @@ export function CameraRig() {
 
   useEffect(() => {
     if (controls) apply()
-  }, [controls, nonce, plan, levelId, hasLayout, mode, empty])
+  }, [controls, nonce, plan, levelId, hasLayout, empty])
 
   // When the right panel opens, closes or changes width the scene center shifts (the framing stays)
   useEffect(
     () =>
       usePanel.subscribe((p, q) => {
         if (p.open !== q.open || p.width !== q.width || p.sheet !== q.sheet) cameraApi.reoffset()
+      }),
+    [],
+  )
+
+  // Switching between View and Edit keeps the zoom and angle; only the center shifts for the taller build bar
+  useEffect(
+    () =>
+      useLayout.subscribe((s, p) => {
+        if (s.mode !== p.mode) cameraApi.reoffset()
       }),
     [],
   )
