@@ -265,6 +265,7 @@ export const CATALOG: Record<ItemKind, KindMeta> = {
   // Built-in display bookcase: two bays of shelves with models; main entity = model lights, first extra = grow light
   displayShelf: { label: t('Display bookcase'), group: 'furniture', domains: ['switch', 'light'], size: [2.4, 0.35], labelY: 2.5, wall: true },
   // Tall slim wall shelf unit (like a LACK): five open compartments from 0.65 to 2.45 m, with brick trees, a brick cabin, a doll and books
+  wallCabinetShelf: { label: t('Wall cabinet with shelf'), group: 'furniture', domains: [], size: [2, 0.4], labelY: 2.45, wall: true },
   wallShelfUnit: { label: t('Tall wall shelf'), group: 'furniture', domains: [], size: [0.3, 0.26], labelY: 2.5, wall: true },
   // Built-in coffee bar hutch: black base with a granite top, cherry trim, glass cabinets, a wine rack and drawers above
   coffeeHutch: { label: t('Coffee bar hutch'), group: 'appliance', domains: [], size: [1.75, 0.6], labelY: 2.6, wall: true },
@@ -1114,6 +1115,25 @@ export const OPTIONS: Partial<
   },
   bicycle: { variantLabel: t('Type'), variants: [['bike', t('Bicycle')], ['ebike', t('E-bike')]], variantDef: 'bike', body: t('Bike frame color'), bodyList: ACCENT_COLORS },
   motorcycle: { variantLabel: t('Type'), variants: [['motorbike', t('Motorcycle')], ['scooter', t('Scooter')]], variantDef: 'motorbike', body: t('Color'), bodyList: ACCENT_COLORS },
+  wallCabinetShelf: {
+    body: t('Cabinet color'),
+    bodyList: [
+      [t('Oak'), '#b5824e'],
+      [t('Light oak'), '#dcb98c'],
+      [t('Walnut'), '#8a5a3b'],
+      [t('White'), '#f4f3ef'],
+    ],
+    bodyDef: '#b5824e',
+    top: t('Shelf color'),
+    topList: [
+      [t('Black'), '#26272b'],
+      [t('Anthracite'), '#4a4d57'],
+      [t('Walnut'), '#8a5a3b'],
+      [t('White'), '#f4f3ef'],
+    ],
+    topDef: '#26272b',
+    note: t('A shelf over the washer and dryer and a cabinet above it, wall to wall: one door for about every 50 cm of width.'),
+  },
   displayShelf: { note: t('The main bound light or plug lights the models (spots and accents); the first extra one is the grow light on the bottom shelf.') },
   sofa: {
     variantLabel: t('Shape'),
@@ -1436,6 +1456,7 @@ export const RESIZABLE: Partial<Record<ItemKind, { min: number; max: number; lab
   consoleTable: { min: 0.6, max: 2.2, label: t('Table length') },
   storageBench: { min: 0.8, max: 2, label: t('Bench length') },
   displayShelf: { min: 1.2, max: 3.6, label: t('Bookcase width') },
+  wallCabinetShelf: { min: 0.6, max: 4, label: t('Width') },
   coffeeTable: { min: 0.6, max: 1.8, label: t('Table length') },
   kitchenCounter: { min: 0.6, max: 4, label: t('Counter length') },
   tvUnit: { min: 0.8, max: 3.2, label: t('Unit length') },

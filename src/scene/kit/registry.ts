@@ -195,6 +195,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   storageRack: O.StorageRack,
   brickDrawers: O.BrickDrawers,
   wallShelfUnit: O.WallShelfUnit,
+  wallCabinetShelf: F.WallCabinetShelf,
   coffeeHutch: F.CoffeeHutch,
   displayShelf: O.DisplayShelf,
   stairs: O.Stairs,

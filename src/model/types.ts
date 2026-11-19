@@ -145,6 +145,7 @@ export type ItemKind =
   | 'displayShelf'
   | 'coffeeHutch'
   | 'wallShelfUnit'
+  | 'wallCabinetShelf'
   | 'stairs'
   | 'garageDoor'
   // front of the house and street (kit/street.tsx)

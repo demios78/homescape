@@ -19,7 +19,7 @@ export type Layer = 'floor' | 'wall' | 'ceiling' | 'rug' | 'top'
  * Wall-mounted items: their height is adjustable (Item.y = offset up/down from the default; for an LED strip the strip's
  * height above the floor). Items standing on the floor against a wall (cabinet, counter, fridge) are not in this list.
  */
-export const WALL_MOUNTED: ItemKind[] = ['minifigClock', 'wallLight', 'ledStrip', 'mirrorLight', 'acUnit', 'camera', 'motionSensor', 'tempSensor', 'alarmPanel', 'wallSwitch', 'plug', 'window', 'painting', 'carromBoard', 'waterMeter', 'pegboard', 'mirror', 'mirrorCabinet', 'wallFan', 'thermostat', 'waterHeater', 'boiler', 'towelWarmer', 'projectorScreen', 'wallPanel', 'doorbell', 'siren', 'powerMeter', 'waterValve', 'awning', 'evCharger', 'toolWall', 'shutterMirror']
+export const WALL_MOUNTED: ItemKind[] = ['minifigClock', 'wallLight', 'ledStrip', 'mirrorLight', 'acUnit', 'camera', 'motionSensor', 'tempSensor', 'alarmPanel', 'wallSwitch', 'plug', 'window', 'painting', 'carromBoard', 'waterMeter', 'pegboard', 'mirror', 'mirrorCabinet', 'wallFan', 'thermostat', 'waterHeater', 'boiler', 'towelWarmer', 'projectorScreen', 'wallPanel', 'doorbell', 'siren', 'powerMeter', 'waterValve', 'awning', 'evCharger', 'toolWall', 'shutterMirror', 'wallCabinetShelf']
 
 /**
  * Items that can optionally hang on a wall (Item.mount 'wall', e.g. a power strip). While hung they behave like wall
@@ -76,6 +76,8 @@ const WALL_SPAN: Record<string, [number, number]> = {
   awning: [2.2, 2.49],
   evCharger: [0.9, 1.5],
   toolWall: [1.1, 1.9],
+  // Shelf over a washer and dryer (top at 1.07 m) and the cabinet above it up to 2.3 m (kit/furniture.tsx > WallCabinetShelf)
+  wallCabinetShelf: [1.04, 2.3],
 }
 function spanOf(kind: ItemKind, variant?: string, len2?: number): [number, number] {
   // Window: bottom edge 0.9 (sill 3 cm below), curtain rail 10 cm on top; height Item.len2
