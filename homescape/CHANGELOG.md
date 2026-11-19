@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.52 (demios78 fork)
+
+- Robot vacuum: a new self-emptying base dock (tall two tank tower with a champagne band, water windows and a ramp) and a white or black color.
+- The robot now leaves its dock and roams the floor while its vacuum entity is cleaning, keeping clear of walls and furniture and passing under tables and chairs. When it returns or docks it drives back, turns and reverses onto the dock; paused or idle, it waits where it is.
+
 ## 0.2.1-dm.51 (demios78 fork)
 
 - Water meter: a new item (Smart devices) for a Flume or similar: a meter on the main pipe showing today's total, a red flow star that spins while water runs and a sensor light (blue while flowing, red on a leak).
