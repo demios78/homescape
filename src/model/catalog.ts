@@ -1485,6 +1485,7 @@ export const RESIZABLE2: Partial<Record<ItemKind, { min: number; max: number; la
   kitchenCounter: { min: 1.2, max: 4, label: t('L arm length (from the corner)'), def: 1.8, onlyL: true },
   stairs: { min: 0, max: 3, label: t('Open well beside the stairs (right side)'), def: 0 },
   minifigClock: { min: 0.4, max: 1.2, label: t('Clock size'), def: 0.8 },
+  wallCabinetShelf: { min: 0.2, max: 0.9, label: t('Shelf depth'), def: 0.4 },
   coffeeTable: { min: 0.4, max: 1.2, label: t('Table depth'), def: 0.6 },
   window: { min: 0.5, max: 2.3, label: t('Window height'), def: 1.2 },
   rug: { min: 0.5, max: 5, label: t('Rug length'), def: 1.8 },
@@ -1559,7 +1560,7 @@ export const DOUBLE_DOOR_W = 1.5
 export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, number] {
   const [w, d] = CATALOG[kind].size
   // The second size only for kinds that use it as depth (ceiling strip, rug); the L arm of a counter is computed separately.
-  if (kind === 'ceilingStrip' || kind === 'beamLights' || kind === 'diningTable' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel' || kind === 'coffeeTable' || kind === 'washer' || kind === 'dryer') return [len ?? w, len2 ?? d]
+  if (kind === 'ceilingStrip' || kind === 'beamLights' || kind === 'diningTable' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel' || kind === 'coffeeTable' || kind === 'washer' || kind === 'dryer' || kind === 'wallCabinetShelf') return [len ?? w, len2 ?? d]
   // A ceiling fan is round: the blade span in both directions
   if (kind === 'ceilingFan') return [len ?? w, len ?? d]
   // The minifigure clock is round: its diameter (Item.len2) is its width on the wall

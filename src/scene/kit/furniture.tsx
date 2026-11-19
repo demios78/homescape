@@ -3219,7 +3219,7 @@ export function DumbbellRack() {
 
 /**
  * Laundry wall cabinet with a shelf (wall item, 0.6-4 m wide, Item.len): a dark shelf just above a washer and dryer (top
- * at 1.07 m, 40 cm deep, on two brackets; color Item.top) and a wooden upper cabinet above it from 1.55 to 2.3 m (33 cm
+ * at 1.07 m, 40 cm deep by default, Item.len2 0.2-0.9 m; on two brackets; color Item.top) and a wooden upper cabinet above it from 1.55 to 2.3 m (33 cm
  * deep; color Item.body) with one inset door for about every 50 cm of width and a dark pull at the lower inner corner of
  * each door. Back against the wall (-z), the footprint is the shelf.
  */
@@ -3227,7 +3227,9 @@ export function WallCabinetShelf({ v }: { v: Visual }) {
   const L = v.opts.len ?? 2
   const wood = v.opts.body ?? '#b5824e'
   const shelf = v.opts.top ?? '#26272b'
-  const back = -0.2
+  // Shelf depth Item.len2 (the footprint); the cabinet keeps its 33 cm against the wall
+  const SD = v.opts.len2 ?? 0.4
+  const back = -SD / 2
   const doors = Math.max(1, Math.round(L / 0.5))
   const dw = (L - 0.03) / doors
   const CD = 0.33
@@ -3239,9 +3241,9 @@ export function WallCabinetShelf({ v }: { v: Visual }) {
   return (
     <group>
       {/* shelf and its brackets */}
-      <Box size={[L, 0.03, 0.4]} position={[0, 1.055, 0]} color={shelf} radius={0.004} />
+      <Box size={[L, 0.03, SD]} position={[0, 1.055, 0]} color={shelf} radius={0.004} />
       {[-1, 1].map((s) => (
-        <Box key={s} size={[0.03, 0.16, 0.3]} position={[s * (L / 2 - 0.12), 0.96, back + 0.15]} color={shelf} shadow={false} />
+        <Box key={s} size={[0.03, 0.16, SD * 0.75]} position={[s * (L / 2 - 0.12), 0.96, back + SD * 0.375]} color={shelf} shadow={false} />
       ))}
       {/* upper cabinet: carcass, then the doors with a slim raised frame and a pull */}
       <Box size={[L, ch, CD]} position={[0, y0 + ch / 2, cz]} color={wood} radius={0.006} />
