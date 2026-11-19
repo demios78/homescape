@@ -210,7 +210,8 @@ function Concorde({ bare, lit }: M) {
       {!bare && <Stand y={0.24} w={0.26} d={0.14} x={-0.05} />}
       <group position={[0, bare ? 0.06 : 0.27, 0]} rotation-z={bare ? 0 : 0.05}>
         <Cyl r={0.028} h={0.86} rotation-z={Math.PI / 2} color={white} segments={16} />
-        <Cyl r={0.002} rTop={0.028} h={0.14} position={[0.5, -0.012, 0]} rotation-z={-Math.PI / 2 - 0.08} color={white} segments={16} />
+        {/* drooped nose: the wide end meets the fuselage, the point leads (+x), tipped slightly down */}
+        <Cyl r={0.002} rTop={0.028} h={0.14} position={[0.5, -0.012, 0]} rotation-z={Math.PI / 2 - 0.08} color={white} segments={16} />
         <Cyl r={0.028} rTop={0.006} h={0.08} position={[-0.47, 0.004, 0]} rotation-z={Math.PI / 2} color={white} segments={16} />
         <Box size={[0.04, 0.012, 0.02]} position={[0.42, 0.018, 0]} color={DARK} shadow={false} />
         <mesh geometry={wing} material={whiteMat} position={[0, -0.012, 0]} castShadow />
@@ -382,8 +383,8 @@ const MODELS: Record<string, (p: M) => JSX.Element> = {
 
 /**
  * Brick model: the variant picks the model (the freighter by default). Hung on the wall (Item.mount 'wall') it stands on a
- * slim floating shelf without its display stand; wall snapping uses the catalog depth, so the model shifts to keep its back
- * against the wall.
+ * slim floating shelf without its display stand (the airliner hangs on two slim brackets instead); wall snapping uses the
+ * catalog depth, so the model shifts to keep its back against the wall.
  */
 export function BrickModel({ v }: { v: Visual }) {
   const key = v.opts.variant && BRICK_MODEL_SIZE[v.opts.variant] ? v.opts.variant : 'falcon'
@@ -394,7 +395,16 @@ export function BrickModel({ v }: { v: Visual }) {
   const shift = (D - CATALOG.brickModel.size[1]) / 2
   return (
     <group position={[0, BRICK_SHELF_Y, shift]}>
-      <Box size={[L * 0.9, 0.02, D * 0.8]} position={[0, -0.01, -D * 0.1]} color="#f2f0ec" radius={0.004} />
+      {key === 'concorde' ? (
+        [-0.15, 0.15].map((x) => (
+          <group key={x}>
+            <Box size={[0.012, 0.012, D / 2]} position={[x, 0.03, -D / 4]} color={STAND} shadow={false} />
+            <Box size={[0.012, 0.02, 0.012]} position={[x, 0.04, 0]} color={STAND} shadow={false} />
+          </group>
+        ))
+      ) : (
+        <Box size={[L * 0.9, 0.02, D * 0.8]} position={[0, -0.01, -D * 0.1]} color="#f2f0ec" radius={0.004} />
+      )}
       <Model bare lit={lit} />
     </group>
   )
