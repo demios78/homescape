@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.58 (demios78 fork)
+
+- Switching between View and Edit no longer zooms the camera out; the view stays where you left it
+
 ## 0.2.1-dm.57 (demios78 fork)
 
 - Brick models hung on the wall now float on their own, as if on invisible fishing line, with no shelf or brackets underneath.
