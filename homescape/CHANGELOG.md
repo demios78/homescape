@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.59 (demios78 fork)
+
+- A selected item's card in View has a pencil button that opens that item straight in Edit mode
+
 ## 0.2.1-dm.58 (demios78 fork)
 
 - Switching between View and Edit no longer zooms the camera out; the view stays where you left it
