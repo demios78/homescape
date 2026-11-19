@@ -303,7 +303,7 @@ export function surfaceAt(items: Item[], x: number, z: number, ignoreId?: string
   for (const it of items) {
     if (it.id === ignoreId || (only && !only.includes(it.kind))) continue
     // A glass end table (coffee table variant 'glassRect') is taller than a coffee table
-    const s = it.kind === 'coffeeTable' && it.variant === 'glassRect' ? 0.6 : SURFACE_Y[it.kind]
+    const s = it.kind === 'coffeeTable' && it.variant === 'glassRect' ? 0.6 : (it.kind === 'washer' || it.kind === 'dryer') && it.variant === 'profile' ? 1 : SURFACE_Y[it.kind]
     if (s == null) continue
     // If it stands on something itself (a dryer on a washing machine), its surface is that much higher.
     const y = s + (it.y != null && it.y > 0.05 ? it.y : 0)

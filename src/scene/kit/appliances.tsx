@@ -54,11 +54,74 @@ function DrumMachine({ v, ring, tint, panel }: P & { ring: string; tint: string;
   )
 }
 
+const CHROME = mat('#d9dce2', { metalness: 0.45, roughness: 0.18 })
+const GLASS_BLACK = mat('#15171c', { roughness: 0.12, metalness: 0.2 })
+
+/**
+ * Large front loader (Item.variant 'profile'): 0.71 × 0.81 m, 1 m tall, body color Item.body. A black glass control panel
+ * framed in chrome across the top (washer: detergent drawer on the left; dryer: a round logo), power and start buttons, a
+ * chrome cycle knob, a display that lights while running; a big chrome ring door with smoked glass over a recessed plinth.
+ */
+function ProfileMachine({ v, washer }: P & { washer: boolean }) {
+  const body = v.opts.body ?? '#eeeeec'
+  const glass = useDoorGlass('#1c2130')
+  const display = useLitMaterial('#262a33', v.on, '#8fd0ff', 1, 1.8)
+  const PW = 0.71
+  const PH = 1.0
+  const PD = 0.78
+  const F = PD / 2
+  const py = 0.895
+  return (
+    <group>
+      <Box size={[PW - 0.06, 0.035, PD - 0.08]} position={[0, 0.0175, -0.02]} color="#1b1c20" />
+      <Box size={[PW, PH - 0.035, PD]} position={[0, 0.035 + (PH - 0.035) / 2, 0]} color={body} radius={0.03} />
+      {/* control panel: black glass in a chrome frame */}
+      <Box size={[PW - 0.02, 0.165, 0.02]} position={[0, py, F + 0.006]} material={GLASS_BLACK} radius={0.008} shadow={false} />
+      <Box size={[PW - 0.02, 0.008, 0.026]} position={[0, py - 0.085, F + 0.006]} material={CHROME} shadow={false} />
+      <Box size={[PW - 0.02, 0.006, 0.026]} position={[0, py + 0.083, F + 0.006]} material={CHROME} shadow={false} />
+      {washer ? (
+        <>
+          <Box size={[0.15, 0.13, 0.012]} position={[-0.26, py, F + 0.019]} color={body} radius={0.006} shadow={false} />
+          <Box size={[0.07, 0.012, 0.006]} position={[-0.26, py - 0.045, F + 0.026]} color="#1b1c20" shadow={false} />
+        </>
+      ) : (
+        <>
+          <Cyl r={0.018} h={0.004} position={[-0.3, py + 0.05, F + 0.018]} rotation={[Math.PI / 2, 0, 0]} material={CHROME} segments={20} shadow={false} />
+          <Box size={[0.07, 0.012, 0.004]} position={[-0.27, py - 0.03, F + 0.018]} color="#3a3d46" shadow={false} />
+        </>
+      )}
+      {/* power and start buttons, cycle knob, display */}
+      <Box size={[0.032, 0.075, 0.006]} position={[-0.14, py, F + 0.018]} color="#2a2d35" radius={0.008} shadow={false} />
+      <Cyl r={0.048} h={0.03} position={[-0.04, py, F + 0.026]} rotation={[Math.PI / 2, 0, 0]} material={CHROME} segments={28} />
+      <Cyl r={0.036} h={0.006} position={[-0.04, py, F + 0.042]} rotation={[Math.PI / 2, 0, 0]} color="#2d3038" segments={28} shadow={false} />
+      <Box size={[0.24, 0.12, 0.006]} position={[0.19, py, F + 0.018]} material={display} radius={0.01} shadow={false} />
+      {/* door: chrome ring, smoked glass, laundry turning behind it */}
+      <group position={[0, 0.43, F + 0.012]}>
+        <mesh>
+          <torusGeometry args={[0.26, 0.02, 12, 48]} />
+          <primitive object={CHROME} attach="material" />
+        </mesh>
+        <Cyl r={0.25} h={0.012} position={[0, 0, -0.004]} rotation={[Math.PI / 2, 0, 0]} color="#22252c" segments={48} shadow={false} />
+        <Spin speed={v.on ? 7 : 0}>
+          <Ball r={0.05} position={[0.09, 0.05, -0.01]} color="#c97a6c" detail={1} shadow={false} />
+          <Ball r={0.045} position={[-0.08, -0.06, -0.01]} color="#7d8fc9" detail={1} shadow={false} />
+          <Ball r={0.04} position={[0.03, -0.12, -0.01]} color="#d8c48a" detail={1} shadow={false} />
+        </Spin>
+        <mesh material={glass} position={[0, 0, 0.012]} renderOrder={3}>
+          <circleGeometry args={[0.245, 48]} />
+        </mesh>
+      </group>
+    </group>
+  )
+}
+
 export function Washer({ v }: P) {
+  if (v.opts.variant === 'profile') return <ProfileMachine v={v} washer />
   return <DrumMachine v={v} ring={C.steel} tint="#2a3a6a" panel={C.offWhite} />
 }
 
 export function Dryer({ v }: P) {
+  if (v.opts.variant === 'profile') return <ProfileMachine v={v} washer={false} />
   return <DrumMachine v={v} ring={C.white} tint="#59627e" panel={C.brandPale} />
 }
 

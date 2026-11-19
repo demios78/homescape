@@ -581,6 +581,25 @@ export const DAYBED_DEPTH: [string, string, number][] = [
 ]
 
 /** Kinds with color and option settings: which settings are shown. */
+/** Washer and dryer: a standard 60 cm machine or a large (US style) front loader, 71 cm wide and 81 cm deep; body color */
+const FRONT_LOADER = {
+  variantLabel: t('Model'),
+  variants: [
+    ['plain', t('Standard')],
+    ['profile', t('Large front loader')],
+  ] as [string, string][],
+  variantDef: 'plain',
+  variantLen: { plain: undefined as unknown as number, profile: 0.71 },
+  variantLen2: { plain: undefined as unknown as number, profile: 0.81 },
+  body: t('Color'),
+  bodyList: [
+    [t('White'), '#eeeeec'],
+    [t('Sapphire blue'), '#59617a'],
+    [t('Graphite'), '#4b4c52'],
+  ] as [string, string][],
+  bodyDef: '#eeeeec',
+}
+
 export const OPTIONS: Partial<
   Record<
     ItemKind,
@@ -1165,6 +1184,8 @@ export const OPTIONS: Partial<
     ],
     variantDef: 'plain',
   },
+  washer: FRONT_LOADER,
+  dryer: FRONT_LOADER,
   dishwasher: {
     variantLabel: t('Model'),
     variants: [
@@ -1517,7 +1538,7 @@ export const DOUBLE_DOOR_W = 1.5
 export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, number] {
   const [w, d] = CATALOG[kind].size
   // The second size only for kinds that use it as depth (ceiling strip, rug); the L arm of a counter is computed separately.
-  if (kind === 'ceilingStrip' || kind === 'beamLights' || kind === 'diningTable' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel' || kind === 'coffeeTable') return [len ?? w, len2 ?? d]
+  if (kind === 'ceilingStrip' || kind === 'beamLights' || kind === 'diningTable' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel' || kind === 'coffeeTable' || kind === 'washer' || kind === 'dryer') return [len ?? w, len2 ?? d]
   // A ceiling fan is round: the blade span in both directions
   if (kind === 'ceilingFan') return [len ?? w, len ?? d]
   // The minifigure clock is round: its diameter (Item.len2) is its width on the wall
