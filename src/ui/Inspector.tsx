@@ -134,7 +134,27 @@ function ItemView({ item, room }: { item: Item; room?: Room }) {
 
   return (
     <div className={panel}>
-      <Header eyebrow={`${meta.label}${room ? ` · ${room.name}` : ''}`} title={title} Icon={KIND_ICON[item.kind]} onClose={() => select(null)} />
+      <Header
+        eyebrow={`${meta.label}${room ? ` · ${room.name}` : ''}`}
+        title={title}
+        Icon={KIND_ICON[item.kind]}
+        onClose={() => select(null)}
+        extra={
+          <button
+            type="button"
+            id={`item-edit-${item.id}`}
+            onClick={() => {
+              setMode('edit')
+              select({ type: 'item', id: item.id })
+            }}
+            className="grid size-8 shrink-0 place-items-center rounded-lg border border-line text-ink-2 hover:bg-surface-2"
+            title={t('Edit this item')}
+            aria-label={t('Edit this item')}
+          >
+            <Pencil size={15} />
+          </button>
+        }
+      />
       <div className={`${body} gap-4`}>
         {entity && (
           <>
