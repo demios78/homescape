@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.56 (demios78 fork)
+
+- Concorde brick model: the drooped nose now points forward, and on the wall it hangs on two slim brackets instead of standing on a shelf.
+
 ## 0.2.1-dm.55 (demios78 fork)
 
 - Wall cabinet with shelf: the shelf depth is adjustable on its card (20 to 90 cm), so it can cover most of the top of the washer and dryer.
