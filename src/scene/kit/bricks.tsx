@@ -382,29 +382,19 @@ const MODELS: Record<string, (p: M) => JSX.Element> = {
 }
 
 /**
- * Brick model: the variant picks the model (the freighter by default). Hung on the wall (Item.mount 'wall') it stands on a
- * slim floating shelf without its display stand (the airliner hangs on two slim brackets instead); wall snapping uses the
- * catalog depth, so the model shifts to keep its back against the wall.
+ * Brick model: the variant picks the model (the freighter by default). Hung on the wall (Item.mount 'wall') it floats
+ * without its display stand, as if hung on invisible fishing line; wall snapping uses the catalog depth, so the model
+ * shifts to keep its back against the wall.
  */
 export function BrickModel({ v }: { v: Visual }) {
   const key = v.opts.variant && BRICK_MODEL_SIZE[v.opts.variant] ? v.opts.variant : 'falcon'
   const Model = MODELS[key]
   const lit = v.on && !v.unavailable
   if (v.opts.mount !== 'wall') return <Model lit={lit} />
-  const [L, D] = [v.opts.len ?? BRICK_MODEL_SIZE[key][0], v.opts.len2 ?? BRICK_MODEL_SIZE[key][1]]
+  const D = v.opts.len2 ?? BRICK_MODEL_SIZE[key][1]
   const shift = (D - CATALOG.brickModel.size[1]) / 2
   return (
     <group position={[0, BRICK_SHELF_Y, shift]}>
-      {key === 'concorde' ? (
-        [-0.15, 0.15].map((x) => (
-          <group key={x}>
-            <Box size={[0.012, 0.012, D / 2]} position={[x, 0.03, -D / 4]} color={STAND} shadow={false} />
-            <Box size={[0.012, 0.02, 0.012]} position={[x, 0.04, 0]} color={STAND} shadow={false} />
-          </group>
-        ))
-      ) : (
-        <Box size={[L * 0.9, 0.02, D * 0.8]} position={[0, -0.01, -D * 0.1]} color="#f2f0ec" radius={0.004} />
-      )}
       <Model bare lit={lit} />
     </group>
   )

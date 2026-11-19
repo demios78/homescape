@@ -53,7 +53,7 @@ const WALL_SPAN: Record<string, [number, number]> = {
   'mirror:tall': [0.25, 1.87],
   'mirror:small': [1.267, 1.833],
   shutterMirror: [1.12, 2.17],
-  // Brick model on its floating wall shelf (kit/bricks.tsx > BRICK_SHELF_Y); the tallest model (TIE fighter) sets the top
+  // Brick model floating on the wall (kit/bricks.tsx > BRICK_SHELF_Y: the base height); the tallest model (TIE fighter) sets the top
   brickModel: [1.37, 1.68],
   mirrorCabinet: [1.137, 1.85],
   wallFan: [1.853, 2.264],
