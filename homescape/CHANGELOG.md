@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.54 (demios78 fork)
+
+- New "Wall cabinet with shelf" for the laundry: a dark shelf just above the washer and dryer and a wooden cabinet above it, wall to wall, with one door for about every 50 cm of width. Width, cabinet color and shelf color are set on its card.
+
 ## 0.2.1-dm.53 (demios78 fork)
 
 - Washer and dryer: a new "Large front loader" model, 71 cm wide, 81 cm deep and 1 m tall, with a chrome trimmed black control panel, a cycle knob, a display that lights while running and a big chrome ring door (the washer has a detergent drawer).
