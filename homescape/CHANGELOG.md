@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.53 (demios78 fork)
+
+- Washer and dryer: a new "Large front loader" model, 71 cm wide, 81 cm deep and 1 m tall, with a chrome trimmed black control panel, a cycle knob, a display that lights while running and a big chrome ring door (the washer has a detergent drawer).
+- Washers and dryers now have a body color: white, sapphire blue or graphite.
+
 ## 0.2.1-dm.52 (demios78 fork)
 
 - Robot vacuum: a new self-emptying base dock (tall two tank tower with a champagne band, water windows and a ramp) and a white or black color.
