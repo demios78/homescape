@@ -1267,39 +1267,6 @@ export function Camera({ v }: P) {
   )
 }
 
-const DOCK = new THREE.Vector3(0, 0, 0.22)
-
-export function RobotVacuum({ v }: P) {
-  const body = useRef<THREE.Group>(null)
-  const invalidate = useThree((s) => s.invalidate)
-  useAmbient(v.on)
-  useEffect(() => invalidate(), [v.on, invalidate])
-  useFrame((state) => {
-    const g = body.current
-    if (!g) return
-    if (v.on) {
-      const t = state.clock.elapsedTime * 0.5
-      g.position.set(Math.sin(t) * 0.8, 0, Math.cos(t * 0.7) * 0.6 + 0.6)
-      g.rotation.y = t
-      markShadows(1)
-    } else if (g.position.distanceToSquared(DOCK) > 1e-5) {
-      // Returning to the dock: request frames until it arrives.
-      g.position.lerp(DOCK, 0.1)
-      markShadows(1)
-      state.invalidate()
-    }
-  })
-  return (
-    <group>
-      <Box size={[0.36, 0.12, 0.12]} position={[0, 0.06, -0.06]} color={C.ink} radius={0.03} />
-      <group ref={body} position={[0, 0, 0.22]}>
-        <Cyl r={0.17} h={0.08} position={[0, 0.04, 0]} color={C.white} />
-        <Cyl r={0.06} h={0.02} position={[0, 0.09, 0.02]} color={v.on ? C.ok : C.steel} shadow={false} />
-      </group>
-    </group>
-  )
-}
-
 /** Battery and bolt shapes (charging badge): horizontal battery frame, its tip, three filled bars, a bolt. Built once. */
 let chargeGeos: { frame: THREE.ShapeGeometry; bars: THREE.ShapeGeometry; bolt: THREE.ShapeGeometry } | null = null
 function chargeGeometries() {

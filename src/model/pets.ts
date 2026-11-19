@@ -126,14 +126,16 @@ export interface PetGrid {
   rooms: Room[]
 }
 
-/** Who walks on the grid: pets and the people at home (model/people.ts > route) */
-export type Mover = Species | 'person'
+/** Who moves on the grid: pets, the people at home (model/people.ts > route) and robot vacuums (kit/devices.tsx > RobotVacuum) */
+export type Mover = Species | 'person' | 'robot'
 /** Clearance kept from walls and items (m) */
-export const CLEAR: Record<Mover, number> = { cat: 0.1, dog: 0.15, person: 0.18 }
+export const CLEAR: Record<Mover, number> = { cat: 0.1, dog: 0.15, person: 0.18, robot: 0.17 }
+const LOW: ItemKind[] = ['diningTable', 'coffeeTable', 'roundTable', 'desk', 'chair', 'gamingChair', 'shellChair', 'ironingBoard', 'outdoorTable', 'lounger', 'swing', 'clothesRack', 'workbench']
 /** Items it can pass under (table, chair); people none */
 const UNDER: Record<Mover, ItemKind[]> = {
   person: [],
-  cat: ['diningTable', 'coffeeTable', 'roundTable', 'desk', 'chair', 'gamingChair', 'shellChair', 'ironingBoard', 'outdoorTable', 'lounger', 'swing', 'clothesRack', 'workbench'],
+  robot: LOW,
+  cat: LOW,
   dog: ['diningTable', 'desk', 'outdoorTable', 'swing', 'clothesRack'],
 }
 /** Items that can be walked over or through */

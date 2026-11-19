@@ -6,6 +6,7 @@ import * as B from './bricks'
 import * as Dc from './decor'
 import * as D from './devices'
 import * as F from './furniture'
+import { RobotVacuum } from './robotVacuum'
 import * as O from './outdoor'
 import * as Pt from './pets'
 import * as S from './smart'
@@ -38,7 +39,7 @@ export const KIT: Record<ItemKind, ComponentType<{ v: Visual }>> = {
   camera: D.Camera,
   homepod: D.HomePod,
   deskCamera: D.DeskCamera,
-  robotVacuum: D.RobotVacuum,
+  robotVacuum: RobotVacuum,
   stickVacuum: D.StickVacuum,
   alarmPanel: D.AlarmPanel,
   motionSensor: D.MotionSensor,

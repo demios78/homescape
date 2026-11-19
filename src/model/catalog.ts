@@ -744,6 +744,21 @@ export const OPTIONS: Partial<
     bodyDef: '#c8323c',
     note: t("Bind the dock's plug or the vacuum's own entity: the dock's light glows blue while charging. While the vacuum entity is cleaning, the vacuum is not shown on the dock."),
   },
+  robotVacuum: {
+    variantLabel: t('Dock'),
+    variants: [
+      ['classic', t('Charging dock')],
+      ['base', t('Self-emptying base')],
+    ],
+    variantDef: 'classic',
+    body: t('Color'),
+    bodyList: [
+      [t('White'), '#f2f2ef'],
+      [t('Black'), '#45464c'],
+    ],
+    bodyDef: '#f2f2ef',
+    note: t('Bind the vacuum entity: while it is cleaning the robot leaves the dock and roams the floor, starting in its own room; when it returns or docks it drives back. Paused or idle, it waits where it is.'),
+  },
   deskCamera: {
     body: t('Color'),
     bodyList: [
