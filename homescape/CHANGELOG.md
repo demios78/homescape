@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.55 (demios78 fork)
+
+- Wall cabinet with shelf: the shelf depth is adjustable on its card (20 to 90 cm), so it can cover most of the top of the washer and dryer.
+
 ## 0.2.1-dm.54 (demios78 fork)
 
 - New "Wall cabinet with shelf" for the laundry: a dark shelf just above the washer and dryer and a wooden cabinet above it, wall to wall, with one door for about every 50 cm of width. Width, cabinet color and shelf color are set on its card.
