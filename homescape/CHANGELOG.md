@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.70 (demios78 fork)
+
+- The gothic gown has a wider V neckline that opens from the base of the neck
+
 ## 0.2.1-dm.69 (demios78 fork)
 
 - New outfit for the people at home: a gothic gown (black floor length gown with fringed sleeves and hem, a wide belt, big teased black hair, red lips). Pick it per person in the People panel under Outfits
