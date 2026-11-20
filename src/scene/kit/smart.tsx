@@ -930,7 +930,7 @@ function MantelFireplace({ v }: P) {
 
 /**
  * Painted brick fireplace (Item.variant 'brick', 2.1 x 0.65 m by default, Item.len / Item.len2): a whitewashed brick
- * chimney face (one canvas texture with the openings cut out and soot above the firebox) up to a dark wood beam mantel at
+ * chimney face (one canvas texture with the openings cut out) up to a dark wood beam mantel at
  * 1.42 m, a raised brick hearth (0.3 m) along its full width, a firebox right of center behind a bronze frame with two dark
  * glass doors, and an open log niche on the left holding a black fireplace tool set. With a bound entity on, flames burn
  * behind the glass. Beam color Item.top (dark wood by default).
@@ -953,7 +953,7 @@ function BrickFireplace({ v }: P) {
   const nx1 = nx0 + nw
   const ny1 = HT + 0.55
   const face = useMemo(
-    () => new THREE.MeshStandardMaterial({ map: brickFaceTexture(W, MB, [[nx0, HT, nx1, ny1], [fx0 + 0.04, HT, fx1 - 0.04, fy1 - 0.04]], [fx0, fx1, fy1]), alphaTest: 0.5, roughness: 0.9 }),
+    () => new THREE.MeshStandardMaterial({ map: brickFaceTexture(W, MB, [[nx0, HT, nx1, ny1], [fx0 + 0.04, HT, fx1 - 0.04, fy1 - 0.04]]), alphaTest: 0.5, roughness: 0.9 }),
     [W, nx0, nx1, ny1, fx0, fx1, fy1],
   )
   const hearthFront = useMemo(() => new THREE.MeshStandardMaterial({ map: brickFaceTexture(W, HT), roughness: 0.9 }), [W])
