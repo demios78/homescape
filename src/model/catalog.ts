@@ -1026,10 +1026,11 @@ export const OPTIONS: Partial<
     variants: [
       ['electric', t('Electric')],
       ['mantel', t('Wood mantel')],
+      ['brick', t('Painted brick')],
     ],
     variantDef: 'electric',
-    variantLen: { electric: 1.2, mantel: 1.68 },
-    variantLen2: { electric: 0.3, mantel: 0.8 },
+    variantLen: { electric: 1.2, mantel: 1.68, brick: 2.1 },
+    variantLen2: { electric: 0.3, mantel: 0.8, brick: 0.65 },
     top: t('Frame color'),
     topDef: '#dcb98c',
     note: t("Bind the fireplace's plug, climate or light entity: the flames burn while it is on."),

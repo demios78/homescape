@@ -8,7 +8,7 @@ import { markShadows } from '../frame'
 import { Airflow, Glow, Mist, MusicNotes, Ripple, Spin, useAmbient, useLitMaterial } from './effects'
 import { C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { birchTexture, glowTexture, ironScreenTexture, keyboardTexture } from './textures'
+import { birchTexture, brickFaceTexture, glowTexture, ironScreenTexture, keyboardTexture } from './textures'
 import type { Visual } from './visual'
 
 /*
@@ -823,6 +823,7 @@ function Flames({ y, night }: { y: number; night: boolean }) {
  */
 export function Fireplace({ v }: P) {
   if (v.opts.variant === 'mantel') return <MantelFireplace v={v} />
+  if (v.opts.variant === 'brick') return <BrickFireplace v={v} />
   return <ElectricFireplace v={v} />
 }
 
@@ -923,6 +924,107 @@ function MantelFireplace({ v }: P) {
           <Box key={k} size={[0.05, 0.015, 0.16]} position={[k * (Math.min(0.86, fw + 0.04) / 2 - 0.03), 0.008, 0]} material={iron} />
         ))}
       </group>
+    </group>
+  )
+}
+
+/**
+ * Painted brick fireplace (Item.variant 'brick', 2.1 x 0.65 m by default, Item.len / Item.len2): a whitewashed brick
+ * chimney face (one canvas texture with the openings cut out and soot above the firebox) up to a dark wood beam mantel at
+ * 1.42 m, a raised brick hearth (0.3 m) along its full width, a firebox right of center behind a bronze frame with two dark
+ * glass doors, and an open log niche on the left holding a black fireplace tool set. With a bound entity on, flames burn
+ * behind the glass. Beam color Item.top (dark wood by default).
+ */
+function BrickFireplace({ v }: P) {
+  const W = v.opts.len ?? 2.1
+  const D = v.opts.len2 ?? 0.65
+  const back = -D / 2
+  const cd = 0.18
+  const zf = back + cd
+  const HT = 0.3
+  const MB = 1.42
+  // openings, x from the left edge (m): log niche on the left, firebox right of center
+  const fw = Math.min(1.0, W * 0.48)
+  const fx0 = W / 2 + W * 0.17 - fw / 2
+  const fx1 = fx0 + fw
+  const fy1 = HT + 0.72
+  const nw = Math.min(0.42, W * 0.2)
+  const nx0 = Math.max(0.12, W * 0.24 - nw / 2)
+  const nx1 = nx0 + nw
+  const ny1 = HT + 0.55
+  const face = useMemo(
+    () => new THREE.MeshStandardMaterial({ map: brickFaceTexture(W, MB, [[nx0, HT, nx1, ny1], [fx0 + 0.04, HT, fx1 - 0.04, fy1 - 0.04]], [fx0, fx1, fy1]), alphaTest: 0.5, roughness: 0.9 }),
+    [W, nx0, nx1, ny1, fx0, fx1, fy1],
+  )
+  const hearthFront = useMemo(() => new THREE.MeshStandardMaterial({ map: brickFaceTexture(W, HT), roughness: 0.9 }), [W])
+  const hearthTop = useMemo(() => new THREE.MeshStandardMaterial({ map: brickFaceTexture(W, D - cd), roughness: 0.9 }), [W, D])
+  const white = '#ece9e2'
+  const beam = v.opts.top && v.opts.top !== '#dcb98c' ? v.opts.top : '#5b4535'
+  const bronze = mat('#a59d8a', { metalness: 0.15, roughness: 0.45 })
+  const glass = clear('#1c1e22', 0.82, 0.08)
+  const black = mat('#1b1b1d', { roughness: 0.5, metalness: 0.2 })
+  const X = (x: number) => x - W / 2
+  // chimney mass behind the face: columns between and around the openings, solid above them
+  const cols: [number, number, number][] = [
+    [0, nx0, 0],
+    [nx0, nx1, ny1],
+    [nx1, fx0, 0],
+    [fx0, fx1, fy1],
+    [fx1, W, 0],
+  ]
+  return (
+    <group>
+      {cols.map(([a, b, y0]) => (
+        <Box key={a} size={[b - a, MB - y0, cd - 0.004]} position={[X((a + b) / 2), (MB + y0) / 2, back + (cd - 0.004) / 2]} color={white} />
+      ))}
+      <mesh position={[0, MB / 2, zf + 0.001]} material={face}>
+        <planeGeometry args={[W, MB]} />
+      </mesh>
+      {/* raised hearth: brick front and top, a dark edge line at the floor */}
+      <Box size={[W, HT, D - cd]} position={[0, HT / 2, zf + (D - cd) / 2]} color={white} />
+      <mesh position={[0, HT / 2, D / 2 + 0.001]} material={hearthFront}>
+        <planeGeometry args={[W, HT]} />
+      </mesh>
+      <mesh position={[0, HT + 0.001, zf + (D - cd) / 2]} rotation-x={-Math.PI / 2} material={hearthTop}>
+        <planeGeometry args={[W, D - cd]} />
+      </mesh>
+      <Box size={[W + 0.01, 0.012, D - cd + 0.01]} position={[0, 0.006, zf + (D - cd) / 2]} color="#7a4e2c" shadow={false} />
+      {/* log niche: white painted inside, with a black tool set */}
+      <Box size={[nw, ny1 - HT, 0.02]} position={[X((nx0 + nx1) / 2), (HT + ny1) / 2, back + 0.02]} color="#d8d5ce" shadow={false} />
+      <group position={[X((nx0 + nx1) / 2), HT, back + cd * 0.55]}>
+        <Cyl r={0.06} h={0.012} position={[0, 0.006, 0]} material={black} segments={18} shadow={false} />
+        <Cyl r={0.008} h={0.42} position={[0, 0.22, 0]} material={black} segments={8} shadow={false} />
+        <Box size={[0.16, 0.012, 0.012]} position={[0, 0.42, 0]} material={black} shadow={false} />
+        {[-0.065, -0.022, 0.022, 0.065].map((x, i) => (
+          <group key={x} position={[x, 0, 0.01]}>
+            <Cyl r={0.005} h={0.38} position={[0, 0.22, 0]} material={black} segments={6} shadow={false} />
+            {i === 1 && <Box size={[0.05, 0.05, 0.008]} position={[0, 0.05, 0]} material={black} shadow={false} />}
+            {i === 2 && <Box size={[0.03, 0.07, 0.02]} position={[0, 0.06, 0]} material={black} shadow={false} />}
+          </group>
+        ))}
+      </group>
+      {/* firebox: dark recess, the bronze frame, two glass doors with a center bar */}
+      <Box size={[fw - 0.08, fy1 - HT - 0.04, 0.02]} position={[X((fx0 + fx1) / 2), (HT + fy1 - 0.04) / 2, back + 0.02]} color="#1d1b1c" shadow={false} />
+      <Box size={[fw - 0.08, 0.006, cd - 0.03]} position={[X((fx0 + fx1) / 2), HT + 0.004, back + (cd - 0.03) / 2]} color="#2c2a2b" shadow={false} />
+      <group position={[X((fx0 + fx1) / 2), 0, zf]}>
+        {[-1, 1].map((k) => (
+          <Box key={k} size={[0.06, fy1 - HT, 0.03]} position={[k * (fw / 2 - 0.03), (HT + fy1) / 2, 0.012]} material={bronze} />
+        ))}
+        <Box size={[fw, 0.07, 0.03]} position={[0, fy1 - 0.035, 0.012]} material={bronze} />
+        <Box size={[fw - 0.12, 0.03, 0.025]} position={[0, HT + 0.015, 0.01]} material={bronze} />
+        <Box size={[fw - 0.12, fy1 - HT - 0.1, 0.004]} position={[0, (HT + 0.03 + fy1 - 0.07) / 2, -0.002]} material={glass} shadow={false} />
+        <Box size={[0.025, fy1 - HT - 0.1, 0.012]} position={[0, (HT + 0.03 + fy1 - 0.07) / 2, 0.004]} material={bronze} shadow={false} />
+        {[-1, 1].map((k) => (
+          <Box key={k} size={[0.008, 0.07, 0.012]} position={[k * 0.04, HT + 0.33, 0.016]} material={bronze} shadow={false} />
+        ))}
+        {v.on && (
+          <group position={[0, HT, -0.09]}>
+            <Flames y={0.04} night={v.night} />
+          </group>
+        )}
+      </group>
+      {/* dark wood beam mantel, a little wider than the brick */}
+      <Box size={[W + 0.14, 0.12, 0.26]} position={[0, MB + 0.06, back + 0.13]} color={beam} radius={0.008} />
     </group>
   )
 }

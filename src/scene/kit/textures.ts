@@ -2186,3 +2186,61 @@ export function vacuumIssueTexture(kind: VacuumIssue) {
     128,
   )
 }
+
+const brickCache = new Map<string, THREE.CanvasTexture>()
+
+/**
+ * Painted brick face, W x H m (200 px per meter): whitewashed running bond bricks (20 x 6.5 cm, light gray mortar), each a
+ * slightly different white. holes ([x0, y0, x1, y1] in m from the bottom left) are cut out (transparent, for alphaTest);
+ * soot ([x0, x1, y] m) darkens the bricks above a firebox opening, strongest at its top edge.
+ */
+export function brickFaceTexture(W: number, H: number, holes: number[][] = [], soot?: [number, number, number]) {
+  const key = `${W.toFixed(2)}x${H.toFixed(2)}|${holes.map((h) => h.map((n) => n.toFixed(2)).join(',')).join(';')}|${soot?.join(',') ?? ''}`
+  let t = brickCache.get(key)
+  if (t) return t
+  const P = 200
+  const c = document.createElement('canvas')
+  c.width = Math.max(8, Math.round(W * P))
+  c.height = Math.max(8, Math.round(H * P))
+  const g = c.getContext('2d')!
+  g.fillStyle = '#d9d6cf'
+  g.fillRect(0, 0, c.width, c.height)
+  const r = rngOf(17)
+  const bh = 0.065 * P
+  const bw = 0.2 * P
+  const m = 0.011 * P
+  for (let row = 0; row * bh < c.height; row++) {
+    const y = c.height - (row + 1) * bh
+    const off = row % 2 ? bw / 2 : 0
+    for (let x = -off; x < c.width; x += bw) {
+      const v = 236 + Math.floor(r() * 14)
+      g.fillStyle = `rgb(${v}, ${v - 2}, ${v - 6})`
+      g.fillRect(x + m / 2, y + m / 2, bw - m, bh - m)
+    }
+  }
+  if (soot) {
+    const [x0, x1, y] = soot
+    const cx = ((x0 + x1) / 2) * P
+    const top = c.height - y * P
+    for (let i = 0; i < 14; i++) {
+      const px = (x0 + 0.1) * P + r() * (x1 - x0 - 0.2) * P
+      const h = (0.03 + r() * 0.12) * P
+      const grad = g.createLinearGradient(0, top, 0, top - h)
+      grad.addColorStop(0, 'rgba(40, 36, 32, 0.32)')
+      grad.addColorStop(1, 'rgba(40, 36, 32, 0)')
+      g.fillStyle = grad
+      g.fillRect(px - 0.03 * P, top - h, 0.05 * P + r() * 0.05 * P, h)
+    }
+    const glow = g.createRadialGradient(cx, top, 0, cx, top, (x1 - x0) * 0.4 * P)
+    glow.addColorStop(0, 'rgba(50, 44, 38, 0.22)')
+    glow.addColorStop(1, 'rgba(50, 44, 38, 0)')
+    g.fillStyle = glow
+    g.fillRect(0, 0, c.width, c.height)
+  }
+  for (const [x0, y0, x1, y1] of holes) g.clearRect(x0 * P, c.height - y1 * P, (x1 - x0) * P, (y1 - y0) * P)
+  t = new THREE.CanvasTexture(c)
+  t.colorSpace = THREE.SRGBColorSpace
+  t.anisotropy = 8
+  brickCache.set(key, t)
+  return t
+}
