@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.66 (demios78 fork)
+
+- A robot vacuum reporting an empty water tank now shows the water drop badge instead of the dust bin
+
 ## 0.2.1-dm.65 (demios78 fork)
 
 - In Edit, pressing and dragging an item no longer moves it right away: click it first to select it, then drag it to move it. Dragging an unselected item now rotates or pans the view like empty floor
