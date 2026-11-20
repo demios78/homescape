@@ -15,7 +15,7 @@ import { doorKey, useDoorTraffic } from '../doorTraffic'
 import { markShadows } from '../frame'
 import { Airflow, Glow, Mist, MusicNotes, Ripple, Spin, StripGlow, useAmbient, useEased, useLitMaterial, Wash } from './effects'
 import { C } from './palette'
-import { bandGlowTexture, glowTexture, pianoKeysTexture, siriTexture, softRectTexture, woodGrainTexture } from './textures'
+import { bandGlowTexture, glowTexture, pianoKeysTexture, siriTexture, softRectTexture, spotPoolTexture, woodGrainTexture } from './textures'
 import { Ball, Box, Cyl, mat } from './primitives'
 import { gainOf, monitorOn, type Visual } from './visual'
 import { useFilm } from './film'
@@ -1847,7 +1847,8 @@ const glowMat = (color: string, opacity: number) => {
 
 /**
  * Door frame state light: whenever a door sensor (or a driving light or plug) is bound, a lit band on both faces of the frame
- * (posts and head) in the swing sweep's color: green while closed, red while open. Follows the sensor only, not people
+ * (posts and head) and a spotlight pool on the floor under it (both sides) in the swing sweep's color: green while closed, red
+ * while open. Follows the sensor only, not people
  * passing. Scales with the wall height like the frame.
  */
 function FrameGlow({ v }: P) {
@@ -1882,9 +1883,17 @@ function FrameGlow({ v }: P) {
         {face(EDGE_Z + 0.122)}
         {face(EDGE_Z - 0.122)}
       </group>
+      {/* spotlight pool on the floor, centered under the frame: lights the ground in front and behind (not cut with the wall) */}
+      <mesh position={[0, 0.016, EDGE_Z]} rotation-x={-Math.PI / 2} renderOrder={4} userData={{ selectionAid: true }} raycast={() => null}>
+        <planeGeometry args={[W + 1.3, 2.4]} />
+        <meshBasicMaterial map={doorPool()} color={color} transparent opacity={v.night ? 0.8 : 0.65} depthWrite={false} toneMapped={false} polygonOffset polygonOffsetFactor={-4} polygonOffsetUnits={-4} />
+      </mesh>
     </group>
   )
 }
+
+let poolTex: THREE.Texture | null = null
+const doorPool = () => (poolTex ??= spotPoolTexture())
 
 function HingedDoor({ v }: P) {
   // No swing arc (floor plan mark) in walk mode

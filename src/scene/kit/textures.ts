@@ -362,6 +362,14 @@ export function glowTexture() {
   })
 }
 
+/** Spotlight pool on the floor: an even disc that fades softly toward its edge (door state light). */
+export function spotPoolTexture() {
+  return alphaTexture('spot-pool', 128, (u, v) => {
+    const r = Math.min(1, Math.hypot(u - 0.5, v - 0.5) * 2)
+    return smooth(1, 0.35, r) * (0.7 + 0.3 * (1 - r))
+  })
+}
+
 /** Soft rectangular halo: solid center (TV panel sized), fading toward the edges. For the TV backlight. */
 export function softRectTexture() {
   return alphaTexture('soft-rect', 256, (u, v) => {
