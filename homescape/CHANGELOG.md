@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.68 (demios78 fork)
+
+- The painted brick fireplace no longer has soot above the firebox
+
 ## 0.2.1-dm.67 (demios78 fork)
 
 - New fireplace type "Painted brick": a whitewashed brick chimney with a dark wood beam mantel, a raised brick hearth, a firebox with a bronze frame and glass doors, and a log niche with a fireplace tool set
