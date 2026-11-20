@@ -1897,6 +1897,20 @@ function ChargeGround({ state, w, l, night }: { state: 'charging' | 'charged'; w
 
 const isAway = (domain: string, state: string) => (domain === 'device_tracker' || domain === 'person') && !['home', 'unavailable', 'unknown', ''].includes(state)
 
+/** A spot sensor: occupancy or presence binary sensor (a Frigate zone's car occupancy) saying whether a car stands there */
+const isSpot = (e: HassEntity) => domainOf(e.entity_id) === 'binary_sensor' && ['occupancy', 'presence'].includes(deviceClass(e))
+
+/**
+ * Whether the car is in its spot by its spot sensors (main or extra; isSpot): true or false when it has any, null without.
+ * A car with spot sensors that are all off is not drawn in View (a street spot stays empty); Edit shows its ghost.
+ */
+function inSpot(v: Visual): boolean | null {
+  const main = v.bound && v.domain === 'binary_sensor' && ['occupancy', 'presence'].includes(String(v.attrs.device_class ?? ''))
+  const spots = v.related.filter(isSpot)
+  if (!main && !spots.length) return null
+  return (main && v.on) || spots.some(isActive)
+}
+
 /**
  * Car (1.9 × 4.6 m; length along z, front with headlights at +z, rear with red tail lights at -z). Item.variant 'sedan'
  * (default), 'suv', 'hatch', 'crossover' (electric, glass roof),
@@ -1911,7 +1925,8 @@ export function Car({ v }: P) {
   const s = CARS[kind]
   const g = carGeometry(kind)
   const color = v.opts.body ?? '#c8323c'
-  const away = isAway(v.domain, v.state) || v.related.some((e) => isAway(domainOf(e.entity_id), e.state))
+  const spot = inSpot(v)
+  const away = isAway(v.domain, v.state) || v.related.some((e) => isAway(domainOf(e.entity_id), e.state)) || spot === false
   const charge = away ? null : carCharge(v)
   const charging = charge === 'charging'
   const unlocked = (v.domain === 'lock' && v.state === 'unlocked') || v.related.some((e) => domainOf(e.entity_id) === 'lock' && e.state === 'unlocked')
@@ -1933,6 +1948,8 @@ export function Car({ v }: P) {
     if (!pulsing || !pulse.current) return
     pulse.current.opacity = (v.night ? 0.55 : 0.3) + 0.3 * Math.sin(clock.elapsedTime * 3.2)
   })
+  // An empty spot (spot sensors all off): nothing in View, the ghost in Edit so it can be selected
+  if (spot === false && !v.edit) return null
   const m = (x: THREE.Material) => (away ? ghost : x)
   const sh = !away
   const glass = mat('#2a3550', { roughness: 0.12, metalness: 0.4 })

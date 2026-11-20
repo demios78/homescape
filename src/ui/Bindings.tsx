@@ -32,6 +32,7 @@ const COMPANION: Partial<Record<ItemKind, string[]>> = {
   console: ['power', 'energy'],
   monitor: ['power', 'camera'],
   monitorV: ['power', 'camera'],
+  car: ['occupancy', 'presence', 'lock', 'battery'],
   // a light or plug can drive the door instead of a sensor (ha/derive.ts > DOOR_DRIVERS)
   door: ['door', 'opening', 'garage_door', 'lock', 'motion', 'battery', 'light', 'switch'],
   window: ['window', 'opening', 'cover', 'battery'],
