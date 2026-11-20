@@ -912,20 +912,6 @@ function DoorDriven({ item }: { item: Item }) {
   )
 }
 
-/** Door frame state light checkbox (Item.frameGlow): green closed and locked, red open or unlocked. Off removes the field. */
-function DoorFrameGlow({ item }: { item: Item }) {
-  if (item.kind !== 'door' || item.variant === 'opening') return null
-  const { updateItem } = useLayout.getState()
-  return (
-    <div className="grid gap-1">
-      <label className="flex min-h-10 items-center gap-2 text-[12.5px] font-semibold text-ink-2">
-        <input id={`door-frame-glow-${item.id}`} type="checkbox" checked={Boolean(item.frameGlow)} onChange={(e) => updateItem(item.id, { frameGlow: e.target.checked || undefined })} />
-        {t('Light the frame with the door state')}
-      </label>
-      <span className="text-[11px] text-ink-3">{t('Green while closed (and locked), red while open or unlocked. Needs a bound door sensor or lock.')}</span>
-    </div>
-  )
-}
 
 function OpeningEdit({ item }: { item: Item }) {
   const rooms = useLayout((s) => activeLevel(s)?.rooms)
@@ -1115,7 +1101,6 @@ function ItemEdit({ item, room }: { item: Item; room?: Room }) {
 
         {(item.kind === 'door' || item.kind === 'window') && !(item.kind === 'door' && (item.variant === 'sliding' || item.variant === 'opening')) && <OpeningEdit item={item} />}
         <DoorDriven item={item} />
-        <DoorFrameGlow item={item} />
         <HeatingKind item={item} />
         <ChairFold item={item} />
         <Placement item={item} />

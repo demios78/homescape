@@ -1821,7 +1821,7 @@ export function Door({ v }: P) {
   return (
     <>
       <DoorBody v={v} />
-      {v.opts.frameGlow && v.opts.variant !== 'opening' && <FrameGlow v={v} />}
+      {v.opts.variant !== 'opening' && <FrameGlow v={v} />}
     </>
   )
 }
@@ -1846,20 +1846,19 @@ const glowMat = (color: string, opacity: number) => {
 }
 
 /**
- * Door frame state light (Item.frameGlow): a lit band on both faces of the frame (posts and head), green while the door is
- * closed (and locked when a lock is bound), red while it is open or unlocked. Follows the bound sensor and lock only, not
- * people passing. Without a sensor or lock nothing shows. Scales with the wall height like the frame.
+ * Door frame state light: whenever a door sensor (or a driving light or plug) is bound, a lit band on both faces of the frame
+ * (posts and head) in the swing sweep's color: green while closed, red while open. Follows the sensor only, not people
+ * passing. Scales with the wall height like the frame.
  */
 function FrameGlow({ v }: P) {
   const root = useRef<THREE.Group>(null)
   const tall = useRef<THREE.Group>(null)
-  const { sensedOpen, lock, hasContact } = doorState(v)
+  const { sensedOpen, hasContact } = doorState(v)
   useWallHeight(root, v.interior, (h) => {
     if (tall.current) tall.current.scale.y = Math.max(0.02, h / FULL_H)
   })
-  if (!hasContact && !lock) return null
-  const bad = sensedOpen || (lock !== undefined && lock !== 'locked')
-  const color = bad ? C.alarm : C.ok
+  if (!hasContact) return null
+  const color = sensedOpen ? C.alarm : C.ok
   // frame width per door type (the same defaults as the door components)
   const kind = v.opts.variant ?? 'hinged'
   const W = kind === 'hinged' ? 1 : (v.opts.len ?? ({ sliding: 1.6, french: 1.2, double: 1.2, patio: 2.5 } as Record<string, number>)[kind] ?? 1)
