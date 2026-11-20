@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.75 (demios78 fork)
+
+- While the kitchen faucet runs (the water meter's flow is in the sink range), a person comes to the kitchen sink and washes dishes, even late at night.
+
 ## 0.2.1-dm.74 (demios78 fork)
 
 - Robot vacuums connected through Shark2MQTT now show the right issue icon from their error text (for example a stuck side brush).
