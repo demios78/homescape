@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.65 (demios78 fork)
+
+- In Edit, pressing and dragging an item no longer moves it right away: click it first to select it, then drag it to move it. Dragging an unselected item now rotates or pans the view like empty floor
+
 ## 0.2.1-dm.64 (demios78 fork)
 
 - A robot vacuum in an error now gets a red spotlight with a floating badge over its dock, and over the robot itself when it stopped away from the dock. The badge shows the issue: tangled brush, full bin, water tank, battery, blocked sensor, stuck, or a general warning
