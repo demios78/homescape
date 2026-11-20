@@ -2058,3 +2058,131 @@ function rngOf(seed: number) {
     return s / 4294967296
   }
 }
+
+/** Spotlight beam: opaque toward the floor (v 0), fading out toward the top so the beam has no hard upper end. */
+export function beamFadeTexture() {
+  return alphaTexture('beam-fade', 64, (_u, v) => smooth(1, 0.35, v) * (0.55 + 0.45 * (1 - v)))
+}
+
+/** Robot vacuum issue kinds drawn by vacuumIssueTexture. */
+export type VacuumIssue = 'alert' | 'stuck' | 'brush' | 'bin' | 'battery' | 'sensor' | 'water'
+
+/**
+ * A floating issue badge for a robot vacuum: a red disc with a white rim and a white pictogram (warning sign, wheel,
+ * brush, dust bin, low battery, sensor eye, water drop).
+ */
+export function vacuumIssueTexture(kind: VacuumIssue) {
+  return base(
+    `vac-issue-${kind}`,
+    (g, s) => {
+      g.clearRect(0, 0, s, s)
+      const c = s / 2
+      g.fillStyle = '#ffffff'
+      g.beginPath()
+      g.arc(c, c, s * 0.48, 0, Math.PI * 2)
+      g.fill()
+      g.fillStyle = '#e2453b'
+      g.beginPath()
+      g.arc(c, c, s * 0.43, 0, Math.PI * 2)
+      g.fill()
+      g.strokeStyle = g.fillStyle = '#ffffff'
+      g.lineWidth = s * 0.055
+      g.lineCap = 'round'
+      g.lineJoin = 'round'
+      const bang = (x: number, y: number, h: number) => {
+        g.beginPath()
+        g.moveTo(x, y - h / 2)
+        g.lineTo(x, y + h * 0.18)
+        g.stroke()
+        g.beginPath()
+        g.arc(x, y + h * 0.42, s * 0.032, 0, Math.PI * 2)
+        g.fill()
+      }
+      if (kind === 'alert') bang(c, c - s * 0.02, s * 0.42)
+      if (kind === 'stuck') {
+        // wheel with spokes and a small warning mark
+        g.beginPath()
+        g.arc(c - s * 0.05, c + s * 0.04, s * 0.2, 0, Math.PI * 2)
+        g.stroke()
+        for (let i = 0; i < 3; i++) {
+          const a = (i / 3) * Math.PI * 2
+          g.beginPath()
+          g.moveTo(c - s * 0.05, c + s * 0.04)
+          g.lineTo(c - s * 0.05 + Math.cos(a) * s * 0.2, c + s * 0.04 + Math.sin(a) * s * 0.2)
+          g.stroke()
+        }
+        bang(c + s * 0.25, c - s * 0.12, s * 0.2)
+      }
+      if (kind === 'brush') {
+        // side brush: hub and three bristle arms with a tangle loop
+        for (let i = 0; i < 3; i++) {
+          const a = (i / 3) * Math.PI * 2 - Math.PI / 2
+          g.beginPath()
+          g.moveTo(c, c)
+          g.lineTo(c + Math.cos(a) * s * 0.27, c + Math.sin(a) * s * 0.27)
+          g.stroke()
+        }
+        g.beginPath()
+        g.arc(c, c, s * 0.06, 0, Math.PI * 2)
+        g.fill()
+        g.lineWidth = s * 0.03
+        g.beginPath()
+        g.ellipse(c, c, s * 0.17, s * 0.1, 0.5, 0, Math.PI * 2)
+        g.stroke()
+      }
+      if (kind === 'bin') {
+        // dust bin: lid and a tapered can with lines
+        g.beginPath()
+        g.moveTo(c - s * 0.2, c - s * 0.16)
+        g.lineTo(c + s * 0.2, c - s * 0.16)
+        g.stroke()
+        g.beginPath()
+        g.moveTo(c - s * 0.06, c - s * 0.22)
+        g.lineTo(c + s * 0.06, c - s * 0.22)
+        g.stroke()
+        g.beginPath()
+        g.moveTo(c - s * 0.16, c - s * 0.1)
+        g.lineTo(c - s * 0.12, c + s * 0.24)
+        g.lineTo(c + s * 0.12, c + s * 0.24)
+        g.lineTo(c + s * 0.16, c - s * 0.1)
+        g.stroke()
+        g.lineWidth = s * 0.035
+        for (const x of [-0.05, 0.05]) {
+          g.beginPath()
+          g.moveTo(c + x * s, c - s * 0.04)
+          g.lineTo(c + x * s, c + s * 0.17)
+          g.stroke()
+        }
+      }
+      if (kind === 'battery') {
+        g.strokeRect(c - s * 0.24, c - s * 0.12, s * 0.42, s * 0.24)
+        g.fillRect(c + s * 0.18, c - s * 0.05, s * 0.06, s * 0.1)
+        g.fillRect(c - s * 0.19, c - s * 0.07, s * 0.08, s * 0.14)
+      }
+      if (kind === 'sensor') {
+        // eye with a slash: a blocked sensor
+        g.beginPath()
+        g.moveTo(c - s * 0.27, c)
+        g.quadraticCurveTo(c, c - s * 0.25, c + s * 0.27, c)
+        g.quadraticCurveTo(c, c + s * 0.25, c - s * 0.27, c)
+        g.stroke()
+        g.beginPath()
+        g.arc(c, c, s * 0.07, 0, Math.PI * 2)
+        g.fill()
+        g.beginPath()
+        g.moveTo(c - s * 0.22, c + s * 0.22)
+        g.lineTo(c + s * 0.22, c - s * 0.22)
+        g.stroke()
+      }
+      if (kind === 'water') {
+        g.beginPath()
+        g.moveTo(c, c - s * 0.27)
+        g.bezierCurveTo(c + s * 0.06, c - s * 0.12, c + s * 0.2, c + s * 0.02, c + s * 0.2, c + s * 0.1)
+        g.arc(c, c + s * 0.1, s * 0.2, 0, Math.PI)
+        g.bezierCurveTo(c - s * 0.2, c + s * 0.02, c - s * 0.06, c - s * 0.12, c, c - s * 0.27)
+        g.fill()
+      }
+    },
+    128,
+  )
+}

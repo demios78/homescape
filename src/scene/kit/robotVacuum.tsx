@@ -1,11 +1,13 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
-import type * as THREE from 'three'
+import * as THREE from 'three'
+import { deviceClass, domainOf, isActive } from '@/ha/derive'
 import { activeLevel, useLayout } from '@/model/layoutStore'
 import { buildPetGrid, findPath, gridRoom, randomSpot, type PetGrid } from '@/model/pets'
 import { markShadows } from '../frame'
 import { useLitMaterial } from './effects'
 import { Ball, Box, Cyl, mat } from './primitives'
+import { beamFadeTexture, spotPoolTexture, vacuumIssueTexture, type VacuumIssue } from './textures'
 import type { Visual } from './visual'
 
 type P = { v: Visual }
@@ -30,6 +32,68 @@ function wantOf(v: Visual): 'roam' | 'stay' | 'home' {
 }
 
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
+
+/** Error words to issue icons, checked in order against the vacuum's error text (any language HA reports in English). */
+const ISSUES: [RegExp, VacuumIssue][] = [
+  [/brush|tangle|roller|hair/, 'brush'],
+  [/bin|dust|debris|full|bag|evacuat|empty/, 'bin'],
+  [/water|tank|mop|pad|clean water|dirty water/, 'water'],
+  [/battery|charg|power|low/, 'battery'],
+  [/cliff|sensor|lidar|laser|bumper|camera|lens|navig/, 'sensor'],
+  [/stuck|trap|wheel|lift|tilt|blocked|obstacle|motor/, 'stuck'],
+]
+
+/**
+ * The robot's error, or null: its vacuum entity (main or bound) in the 'error' state, or a bound problem sensor that is on.
+ * The issue comes from the error text in the attributes (error, error_message, status...) or an error sensor's state.
+ */
+function issueOf(v: Visual): VacuumIssue | null {
+  const vac = v.domain === 'vacuum' ? { state: v.state, attributes: v.attrs } : v.related.find((e) => domainOf(e.entity_id) === 'vacuum')
+  const problem = v.related.find((e) => domainOf(e.entity_id) === 'binary_sensor' && deviceClass(e) === 'problem' && isActive(e))
+  const sensor = v.related.find((e) => domainOf(e.entity_id) === 'sensor' && /error/.test(e.entity_id) && !/^(none|ok|no error|0|unknown|unavailable|)$/i.test(e.state))
+  if (vac?.state !== 'error' && !problem && !sensor) return null
+  const a = vac?.attributes ?? {}
+  const text = [a.error, a.error_message, a.error_code, a.status, sensor?.state, sensor?.attributes.error].filter((x) => x != null).join(' ').toLowerCase()
+  for (const [re, kind] of ISSUES) if (re.test(text)) return kind
+  return 'alert'
+}
+
+const red = '#ff3b30'
+let beam: THREE.MeshBasicMaterial | null = null
+const beamMat = () =>
+  (beam ??= new THREE.MeshBasicMaterial({ color: red, map: beamFadeTexture(), transparent: true, opacity: 0.32, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide }))
+let pool: THREE.MeshBasicMaterial | null = null
+const poolMat = () =>
+  (pool ??= new THREE.MeshBasicMaterial({ color: red, map: spotPoolTexture(), transparent: true, opacity: 0.7, depthWrite: false, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }))
+const issueMats = new Map<VacuumIssue, THREE.SpriteMaterial>()
+const issueMat = (k: VacuumIssue) => {
+  let m = issueMats.get(k)
+  if (!m) {
+    m = new THREE.SpriteMaterial({ map: vacuumIssueTexture(k), toneMapped: false, depthWrite: false, sizeAttenuation: false })
+    issueMats.set(k, m)
+  }
+  return m
+}
+const noHit = () => null
+
+/**
+ * Red error spotlight from above (beam cone fading upward, a red pool on the floor) with the issue badge floating at
+ * badgeY. r: the pool radius on the floor.
+ */
+function ErrorSpot({ issue, r, badgeY }: { issue: VacuumIssue; r: number; badgeY: number }) {
+  const H = 1.7
+  return (
+    <group>
+      <mesh position={[0, H / 2, 0]} material={beamMat()} renderOrder={12} userData={{ selectionAid: true }} raycast={noHit}>
+        <cylinderGeometry args={[0.05, r * 0.85, H, 28, 1, true]} />
+      </mesh>
+      <mesh position={[0, 0.016, 0]} rotation-x={-Math.PI / 2} material={poolMat()} renderOrder={4} userData={{ selectionAid: true }} raycast={noHit}>
+        <planeGeometry args={[r * 2, r * 2]} />
+      </mesh>
+      <sprite position={[0, badgeY, 0]} scale={[0.032, 0.032, 1]} material={issueMat(issue)} renderOrder={13} raycast={noHit} />
+    </group>
+  )
+}
 
 /** The robot: round body, front sensor windows with a camera, the lidar turret on top, a side brush underneath. */
 function Robot({ color, active, brush }: { color: string; active: boolean; brush: React.RefObject<THREE.Group | null> }) {
@@ -112,7 +176,8 @@ function ClassicDock() {
  * 'robot': it keeps clear of walls and furniture and passes under tables and chairs): mostly in its own room, now and then
  * another reachable room. Returning or docked, it drives back, turns and reverses onto the dock; paused or idle, it waits.
  * The robot is drawn in world coordinates (the item group's transform undone, like the ceiling strip), so it can leave the
- * footprint. Only on the active floor and in View; in Edit it sits on the dock.
+ * footprint. Only on the active floor and in View; in Edit it sits on the dock. In an error (issueOf) a red spotlight with a
+ * floating issue badge shines on the dock, and on the robot too once it is off the dock.
  */
 export function RobotVacuum({ v }: P) {
   const variant = v.opts.variant === 'base' ? 'base' : 'classic'
@@ -127,6 +192,8 @@ export function RobotVacuum({ v }: P) {
 
   const body = useRef<THREE.Group>(null)
   const brush = useRef<THREE.Group>(null)
+  // The robot's own error spot: hidden while it sits on the dock (the dock's spot covers both)
+  const spot = useRef<THREE.Group>(null)
   const sim = useRef({ out: false, x: 0, z: 0, yaw: 0, queue: [] as Pt[], backing: false, docking: false, wait: 0, init: false })
 
   // Docked pose in the frame the robot is drawn in (world when the item position is known, else item local)
@@ -229,19 +296,38 @@ export function RobotVacuum({ v }: P) {
       g.rotation.y = s.yaw
       markShadows(1)
     }
+    if (spot.current) {
+      const away = Math.hypot(s.x - dock.x, s.z - dock.z) > 0.3
+      if (spot.current.visible !== away) {
+        spot.current.visible = away
+        moving = true
+      }
+    }
     if (brush.current && s.out && want === 'roam') brush.current.rotation.y += step * 14
     // Keep frames coming while away and not paused: a frame that only pops a waypoint moves nothing but must not end the loop
     if (moving || (s.out && want !== 'stay')) state.invalidate()
   })
 
+  // In an error: a red spotlight and the issue badge over the dock and over the robot (wherever it stopped)
+  const issue = v.edit ? null : issueOf(v)
   const robot = (
     <group ref={body}>
       <Robot color={color} active={want === 'roam'} brush={brush} />
+      {issue && (
+        <group ref={spot} visible={false}>
+          <ErrorSpot issue={issue} r={0.42} badgeY={0.6} />
+        </group>
+      )}
     </group>
   )
   return (
     <group>
       {variant === 'base' ? <Base color={color} /> : <ClassicDock />}
+      {issue && (
+        <group position={[0, 0, variant === 'base' ? -0.05 : -0.06]}>
+          <ErrorSpot issue={issue} r={0.38} badgeY={variant === 'base' ? 0.72 : 0.36} />
+        </group>
+      )}
       {at ? (
         <group rotation-y={-at.rot}>
           <group position={[-at.x, 0, -at.z]}>{robot}</group>
