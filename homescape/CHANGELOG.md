@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.63 (demios78 fork)
+
+- New fireplace type "Wood mantel": a white mantel with a shelf, dentil trim and pilasters, a slate surround, a raised black hearth, a cast iron scroll screen and birch logs on a grate
+- New picture type "Calligraphy": an embossed champagne frame around a black panel with a gold grid of script
+
 ## 0.2.1-dm.62 (demios78 fork)
 
 - A door with a bound sensor now also casts a soft spotlight on the floor centered under its frame, on both sides of the wall, in the same green or red as the frame and sweep
