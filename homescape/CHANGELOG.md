@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.60 (demios78 fork)
+
+- Doors with a bound sensor or lock have a new option, "Light the frame with the door state": the frame glows green while the door is closed (and locked) and red while it is open or unlocked
+
 ## 0.2.1-dm.59 (demios78 fork)
 
 - A selected item's card in View has a pencil button that opens that item straight in Edit mode
