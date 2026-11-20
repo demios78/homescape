@@ -12,7 +12,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
  * x < 0 is the person's right (n, negative), x > 0 their left (p, positive).
  */
 
-export type HairStyle = 'bun' | 'ponytail' | 'spiky' | 'tousled' | 'teased'
+export type HairStyle = 'bun' | 'ponytail' | 'spiky' | 'tousled' | 'teased' | 'slick'
 
 /** Leg dimensions (m): hip joint height above the ground, thigh, shin (knee to ankle), sole (ankle to ground) */
 export const LEG = { hip: 0.82, thigh: 0.37, shin: 0.37, sole: 0.075 }
@@ -48,6 +48,10 @@ export interface Look {
   shadow?: string
   /** Nail polish on the fists */
   nails?: string
+  /** Pinstripe suit instead of top and pants: double breasted jacket, white shirt, bow tie, dress shoes */
+  suit?: boolean
+  /** Pencil mustache color */
+  mustache?: string
 }
 
 /** The household: four people in casual modern clothes (slightly cool colors). */
@@ -83,8 +87,31 @@ export const GOWN_LOOK: Look = {
   nails: '#121115',
 }
 
-/** Outfits a person can wear (People panel): the casual look of their slot, or the gown. */
-export type Outfit = 'casual' | 'gown'
+/**
+ * Pinstripe suit outfit (People panel > Outfits): a charcoal double breasted pinstripe suit with padded shoulders, wide
+ * lapels, two rows of buttons and a pocket square, a white shirt with a wine bow tie, black dress shoes, slicked back black
+ * hair with a side part and a pencil mustache. Inspired by a classic gothic family father; a generic look.
+ */
+export const SUIT_LOOK: Look = {
+  skin: '#dcae8a',
+  hair: '#141214',
+  hairStyle: 'slick',
+  accent: '#5c2430',
+  top: '#3a3a44',
+  topStyle: 'sweater',
+  pants: '#3a3a44',
+  jeans: false,
+  shoes: '#121214',
+  sole: '#121214',
+  eyes: '#3a2a20',
+  blanket: '#d8dce6',
+  build: 1.08,
+  suit: true,
+  mustache: '#141214',
+}
+
+/** Outfits a person can wear (People panel): the casual look of their slot, the gown or the suit. */
+export type Outfit = 'casual' | 'gown' | 'suit'
 
 /* ---------- merging ---------- */
 
@@ -98,6 +125,8 @@ interface Prim {
   /** Orientation (instead of Euler) */
   q?: THREE.Quaternion
   s?: V3
+  /** Vertical pinstripes: n stripes around the primitive's own y axis, in color c (needs many radial segments) */
+  stripes?: { n: number; c: string }
 }
 
 const _m = new THREE.Matrix4()
@@ -108,20 +137,25 @@ const _s = new THREE.Vector3()
 
 /** Places primitives by position, rotation and scale and merges them with their colors into one geometry. */
 function bake(prims: Prim[]): THREE.BufferGeometry {
-  const parts = prims.map(({ g, c, p = [0, 0, 0], r = [0, 0, 0], q, s = [1, 1, 1] }) => {
+  const parts = prims.map(({ g, c, p = [0, 0, 0], r = [0, 0, 0], q, s = [1, 1, 1], stripes }) => {
     // The rounded box is non-indexed and the other primitives are indexed: make all non-indexed so they can merge
     const geo = g.index ? g.toNonIndexed() : g.clone()
     if (geo.attributes.uv) geo.deleteAttribute('uv')
-    _m.compose(_p.set(...p), q ?? _q.setFromEuler(_e.set(...r)), _s.set(...s))
-    geo.applyMatrix4(_m)
     const col = c instanceof THREE.Color ? c : new THREE.Color(c)
     const n = geo.attributes.position.count
     const arr = new Float32Array(n * 3)
+    // stripes are decided in the primitive's own space (angle around its y axis), before it is placed
+    const pin = stripes ? new THREE.Color(stripes.c) : null
+    const pos = geo.attributes.position
     for (let i = 0; i < n; i++) {
-      arr[i * 3] = col.r
-      arr[i * 3 + 1] = col.g
-      arr[i * 3 + 2] = col.b
+      const on = pin && (((Math.atan2(pos.getX(i), pos.getZ(i)) / (Math.PI * 2)) * stripes!.n + 1000) % 1) < 0.2
+      const k = on ? pin! : col
+      arr[i * 3] = k.r
+      arr[i * 3 + 1] = k.g
+      arr[i * 3 + 2] = k.b
     }
+    _m.compose(_p.set(...p), q ?? _q.setFromEuler(_e.set(...r)), _s.set(...s))
+    geo.applyMatrix4(_m)
     geo.setAttribute('color', new THREE.BufferAttribute(arr, 3))
     return geo
   })
@@ -135,6 +169,9 @@ function bake(prims: Prim[]): THREE.BufferGeometry {
 
 const SPH = new THREE.SphereGeometry(1, 24, 16)
 const SPH_LO = new THREE.SphereGeometry(1, 14, 10)
+/** Fine spheres and tubes for pinstripes (the stripe color is per vertex) */
+const SPH_PIN = new THREE.SphereGeometry(1, 96, 18)
+const cylPin = (rt: number, rb: number, h: number) => new THREE.CylinderGeometry(rt, rb, h, 96)
 const cyl = (rt: number, rb: number, h: number, seg = 20) => new THREE.CylinderGeometry(rt, rb, h, seg)
 const cap = (r: number, len: number) => new THREE.CapsuleGeometry(r, len, 4, 14)
 const torus = (r: number, tube: number, arc = Math.PI * 2, seg = 32) => new THREE.TorusGeometry(r, tube, 8, seg, arc)
@@ -192,6 +229,10 @@ function face(look: Look): Prim[] {
     out.push({ g: cap(0.008, 0.038), c: tint(look.hair, 0.75), p: [sx * 0.052, 0.182, surf(sx * 0.052, 0.182) + 0.003], r: [0.15, 0, Math.PI / 2 - sx * 0.14] })
     // cheek blush
     out.push({ g: SPH_LO, c: mix(skin, '#ee8a82', 0.42), p: [sx * 0.074, 0.074, surf(sx * 0.074, 0.074) - 0.002], s: [0.024, 0.015, 0.006] })
+  }
+  if (look.mustache) {
+    // pencil mustache: two thin strokes over the lip, meeting under the nose
+    for (const sx of [-1, 1]) out.push({ g: cap(0.0045, 0.03), c: look.mustache, p: [sx * 0.019, 0.072, surf(sx * 0.019, 0.072) + 0.001], r: [0, 0, Math.PI / 2 + sx * 0.18] })
   }
   if (look.lips) {
     // painted lips: a full upper and lower lip in a small open pout
@@ -280,6 +321,12 @@ function hair(look: Look): Prim[] {
       out.push({ g: cone(0.042, len), c: Math.abs(f) > 100 ? tint(h, 0.92) : h, p: [pos.x + d.x * len * 0.4, pos.y + d.y * len * 0.4, pos.z + d.z * len * 0.4], q: toward(d) })
     }
     out.push({ g: SPH, c: h, p: [0, 0.2, -0.02], s: [0.12, 0.09, 0.12] })
+  } else if (look.hairStyle === 'slick') {
+    // slicked back with a side part: a close glossy cap, a swept front wave, short sides
+    out.push({ g: SPH, c: h, p: [0, 0.19, -0.04], s: [0.136, 0.13, 0.135] })
+    out.push({ g: SPH, c: lighter, p: [0.02, 0.27, 0.02], r: [0.35, 0, -0.3], s: [0.09, 0.035, 0.07] })
+    out.push({ g: cap(0.004, 0.08), c: tint(h, 2.2), p: [0.05, 0.27, 0.0], r: [Math.PI / 2, 0, 0] })
+    for (const sx of [-1, 1]) out.push({ g: SPH, c: h, p: [sx * 0.124, 0.15, -0.005], s: [0.02, 0.045, 0.055] })
   } else if (look.hairStyle === 'teased') {
     // big teased hair: a tall rounded volume over the crown, blunt bangs to the brows, long straight sides past the shoulders
     out.push({ g: SPH, c: h, p: [0, 0.275, -0.035], s: [0.172, 0.19, 0.17] })
@@ -444,6 +491,7 @@ function build(look: Look): Record<PartName, THREE.BufferGeometry> {
   // eyelid (visible when blinking): a skin colored half ellipsoid covering the eye
   const lid: Prim[] = [{ g: SPH, c: tint(look.skin, 0.93), p: [0, 0, 0.004], s: [0.033, 0.037, 0.019] }]
   if (look.gown) gown(look, { pelvis, thigh, shin, foot, spine, chest, upperArm, forearm, hand })
+  if (look.suit) suit(look, { pelvis, thigh, shin, foot, spine, chest, upperArm, forearm, hand })
   return {
     pelvis: bake(pelvis),
     thigh: bake(thigh),
@@ -555,6 +603,77 @@ function gown(look: Look, parts: Record<'pelvis' | 'thigh' | 'shin' | 'foot' | '
   }
   // painted nails at the front of the fist
   if (look.nails) for (const x of [-0.022, -0.007, 0.008, 0.023]) parts.hand.push({ g: SPH_LO, c: look.nails, p: [x, -0.083, 0.032], s: [0.007, 0.006, 0.006] })
+}
+
+/**
+ * Replaces the casual clothes with the pinstripe suit (in place): striped trousers and jacket (the stripes run around each
+ * piece's own axis), a jacket skirt over the hips, padded shoulders, wide lapels over a white shirt with a bow tie, two rows
+ * of buttons, a pocket square, white shirt cuffs and black dress shoes.
+ */
+function suit(look: Look, parts: Record<'pelvis' | 'thigh' | 'shin' | 'foot' | 'spine' | 'chest' | 'upperArm' | 'forearm' | 'hand', Prim[]>) {
+  const b = look.build
+  const d = look.top
+  const pin = { n: 26, c: '#9a9ba8' }
+  const T = LEG.thigh
+  const S = LEG.shin
+  const shirt = '#f2f0ea'
+  parts.pelvis.length = 0
+  parts.pelvis.push(
+    { g: SPH_PIN, c: d, p: [0, -0.03, -0.012], s: [0.145 * b, 0.1, 0.1], stripes: pin },
+    // jacket skirt over the hips, a little longer at the front
+    { g: cylPin(0.162, 0.175, 0.17), c: d, p: [0, 0.02, 0], s: [b, 1, 0.86], stripes: pin },
+  )
+  parts.thigh.length = 0
+  parts.thigh.push(
+    { g: SPH_PIN, c: d, p: [0, -0.01, 0], s: [0.092, 0.092, 0.092], stripes: pin },
+    { g: cylPin(0.092, 0.08, T - 0.02), c: d, p: [0, -T / 2, 0], stripes: pin },
+    { g: SPH_PIN, c: d, p: [0, -T + 0.005, 0.004], s: [0.08, 0.08, 0.082], stripes: pin },
+  )
+  parts.shin.length = 0
+  parts.shin.push(
+    { g: cylPin(0.079, 0.082, S - 0.03), c: d, p: [0, -(S - 0.03) / 2, 0], stripes: pin },
+    { g: cylPin(0.083, 0.083, 0.02), c: tint(d, 0.85), p: [0, -S + 0.04, 0] },
+  )
+  parts.foot.length = 0
+  parts.foot.push(
+    { g: rbox(0.095, 0.06, 0.22, 0.028), c: look.shoes, p: [0, -0.04, 0.045] },
+    { g: SPH, c: look.shoes, p: [0, -0.05, 0.15], s: [0.045, 0.028, 0.055] },
+    { g: rbox(0.1, 0.018, 0.25, 0.008), c: '#2a2a2e', p: [0, -0.066, 0.05] },
+  )
+  parts.spine.length = 0
+  parts.spine.push({ g: SPH_PIN, c: d, p: [0, 0.08, 0], s: [0.155 * b, 0.13, 0.12], stripes: pin })
+  const chestR: V3 = [0.18 * b, 0.17, 0.13]
+  parts.chest.length = 0
+  parts.chest.push(
+    { g: SPH_PIN, c: d, p: [0, 0.06, 0], s: chestR, stripes: pin },
+    // padded shoulders
+    { g: SPH_PIN, c: d, p: [-0.165 * b, 0.122, 0], s: [0.072, 0.062, 0.07], stripes: pin },
+    { g: SPH_PIN, c: d, p: [0.165 * b, 0.122, 0], s: [0.072, 0.062, 0.07], stripes: pin },
+    // white shirt in the opening, collar around the neck, bow tie
+    { g: neckline(chestR, 0.06, 0.07 * b, 0.212, 0.03), c: shirt },
+    { g: torus(0.054, 0.014, Math.PI * 2, 22), c: shirt, p: [0, 0.205, 0.008], r: [Math.PI / 2 - 0.25, 0, 0] },
+    { g: SPH, c: look.accent, p: [-0.026, 0.19, 0.093], r: [0, 0, 0.2], s: [0.026, 0.017, 0.012] },
+    { g: SPH, c: look.accent, p: [0.026, 0.19, 0.093], r: [0, 0, -0.2], s: [0.026, 0.017, 0.012] },
+    { g: SPH_LO, c: tint(look.accent, 0.8), p: [0, 0.19, 0.098], s: [0.011, 0.011, 0.01] },
+    // pocket square (left chest)
+    { g: rbox(0.04, 0.024, 0.012, 0.004), c: '#b8b7c4', p: [0.095 * b, 0.11, 0.108], r: [-0.35, 0.35, 0.15] },
+  )
+  // wide lapels sloping in to the button line, and two rows of buttons
+  for (const sx of [-1, 1]) {
+    parts.chest.push({ g: rbox(0.05, 0.17, 0.016, 0.008), c: tint(d, 1.08), p: [sx * 0.058 * b, 0.115, 0.11], r: [-0.42, sx * 0.3, sx * 0.38] })
+    for (const y of [0.02, -0.04]) parts.chest.push({ g: SPH_LO, c: '#18181c', p: [sx * 0.045, y, 0.128 - Math.abs(y - 0.06) * 0.06], s: [0.009, 0.009, 0.005] })
+  }
+  parts.upperArm.length = 0
+  parts.upperArm.push(
+    { g: SPH_PIN, c: d, p: [0, 0, 0], s: [0.066, 0.066, 0.066], stripes: pin },
+    { g: cylPin(0.066, 0.06, 0.24), c: d, p: [0, -0.12, 0], stripes: pin },
+    { g: SPH_PIN, c: d, p: [0, -0.262, 0], s: [0.058, 0.058, 0.058], stripes: pin },
+  )
+  parts.forearm.length = 0
+  parts.forearm.push(
+    { g: cylPin(0.055, 0.05, 0.19), c: d, p: [0, -0.1, 0], stripes: pin },
+    { g: cyl(0.045, 0.045, 0.03, 18), c: shirt, p: [0, -0.205, 0] },
+  )
 }
 
 const cache = new Map<Look, Record<PartName, THREE.BufferGeometry>>()

@@ -12,7 +12,7 @@ import { useView } from './camera'
 import { markShadows } from './frame'
 import { Human } from './Human'
 import { animateHuman, type HumanRefs } from './humanAnim'
-import { GOWN_LOOK, LOOKS } from './humanModel'
+import { GOWN_LOOK, LOOKS, SUIT_LOOK } from './humanModel'
 import { useAmbient } from './kit/effects'
 
 /*
@@ -366,7 +366,7 @@ function Crowd({ plan, level }: { plan: PeoplePlan; level: Level }) {
   return (
     <>
       {LOOKS.slice(0, MAX).map((look, i) => (
-        <Human key={i} look={outfits[i] === 'gown' ? GOWN_LOOK : look} register={registers[i]} />
+        <Human key={i} look={outfits[i] === 'gown' ? GOWN_LOOK : outfits[i] === 'suit' ? SUIT_LOOK : look} register={registers[i]} />
       ))}
     </>
   )

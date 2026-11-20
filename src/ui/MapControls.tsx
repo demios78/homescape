@@ -1,6 +1,6 @@
 import { Box, BrickWall, CircleHelp, Hand, House, Map, Minus, PanelRightClose, PanelRightOpen, Plus, Rotate3d, RotateCcw, RotateCw, Tag, Users, Warehouse, X } from 'lucide-react'
 import { useState } from 'react'
-import { cameraApi, type StreetKinds, toggleRoof, useView } from '@/scene/camera'
+import { cameraApi, type PersonOutfit, type StreetKinds, toggleRoof, useView } from '@/scene/camera'
 import { usePeoplePlan } from '@/scene/People'
 import { t, tn } from '@/i18n'
 import { usePanel } from './panelState'
@@ -67,6 +67,13 @@ function Help({ onClose }: { onClose: () => void }) {
 const MODE_LABEL = { home: t('At home'), sleep: t('Asleep'), away: t('Out') } as const
 
 /** Kinds of street life that turn on and off separately (scene/StreetLife.tsx) */
+/** Outfits a household member can wear (People panel) */
+const OUTFITS: [PersonOutfit, string, string][] = [
+  ['casual', t('Casual'), t('Casual')],
+  ['gown', t('Gown'), t('Gothic gown')],
+  ['suit', t('Suit'), t('Pinstripe suit')],
+]
+
 const STREET_ROWS: [keyof StreetKinds, string][] = [
   ['cars', t('Passing cars')],
   ['walkers', t('Pedestrians and dog walkers')],
@@ -120,14 +127,15 @@ function PeoplePanel({ onClose }: { onClose: () => void }) {
       <div className="grid gap-1.5" id="people-outfits">
         <span className="text-[12px] font-semibold text-ink-2">{t('Outfits')}</span>
         {Array.from({ length: residents }, (_, i) => (
-          <div key={i} className="flex items-center gap-1.5">
-            <span className="w-16 shrink-0 truncate text-[12px] text-ink-2">{t('Person {n}', { n: i + 1 })}</span>
-            <button type="button" id={`outfit-${i}-casual`} className={seg(outfits[i] !== 'gown')} onClick={() => setOutfit(i, 'casual')}>
-              {t('Casual')}
-            </button>
-            <button type="button" id={`outfit-${i}-gown`} className={seg(outfits[i] === 'gown')} onClick={() => setOutfit(i, 'gown')}>
-              {t('Gothic gown')}
-            </button>
+          <div key={i} className="grid gap-1">
+            <span className="truncate text-[11.5px] text-ink-3">{t('Person {n}', { n: i + 1 })}</span>
+            <div className="flex gap-1.5">
+              {OUTFITS.map(([k, label, full]) => (
+                <button key={k} type="button" id={`outfit-${i}-${k}`} title={full} className={`${seg(outfits[i] === k)} truncate px-1`} onClick={() => setOutfit(i, k)}>
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         ))}
       </div>

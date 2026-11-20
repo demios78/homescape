@@ -66,11 +66,11 @@ function readStreet(): StreetKinds {
 const RESIDENTS_KEY = 'homescape-residents'
 const OUTFITS_KEY = 'homescape-outfits'
 /** What each household member wears (scene/humanModel.ts > Outfit; kept as plain strings so this file stays free of three) */
-export type PersonOutfit = 'casual' | 'gown'
+export type PersonOutfit = 'casual' | 'gown' | 'suit'
 function readOutfits(): PersonOutfit[] {
   try {
     const v = JSON.parse(readPref(OUTFITS_KEY) ?? '[]') as unknown
-    return [0, 1, 2, 3].map((i) => (Array.isArray(v) && v[i] === 'gown' ? 'gown' : 'casual'))
+    return [0, 1, 2, 3].map((i) => (Array.isArray(v) && (v[i] === 'gown' || v[i] === 'suit') ? v[i] : 'casual'))
   } catch {
     return ['casual', 'casual', 'casual', 'casual']
   }
@@ -125,7 +125,7 @@ interface ViewState {
   street: StreetKinds
   /** Household: number of people at home when there is no motion (1-4, default 2). Remembered. */
   residents: number
-  /** Outfit per household slot (four entries; casual or gothic gown). Remembered. */
+  /** Outfit per household slot (four entries; casual, gothic gown or pinstripe suit). Remembered. */
   outfits: PersonOutfit[]
   /** Whether lower floors are drawn below the active floor (building view in a multi-storey home). Remembered. */
   lowerFloors: boolean
