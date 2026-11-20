@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.61 (demios78 fork)
+
+- A door with a bound sensor (or a light or plug that opens it) now always lights its frame in the same color as its swing sweep: green closed, red open. The separate frame option is gone, and the lock no longer turns the frame red
+
 ## 0.2.1-dm.60 (demios78 fork)
 
 - Doors with a bound sensor or lock have a new option, "Light the frame with the door state": the frame glows green while the door is closed (and locked) and red while it is open or unlocked
