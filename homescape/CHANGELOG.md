@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.64 (demios78 fork)
+
+- A robot vacuum in an error now gets a red spotlight with a floating badge over its dock, and over the robot itself when it stopped away from the dock. The badge shows the issue: tangled brush, full bin, water tank, battery, blocked sensor, stuck, or a general warning
+
 ## 0.2.1-dm.63 (demios78 fork)
 
 - New fireplace type "Wood mantel": a white mantel with a shelf, dentil trim and pilasters, a slate surround, a raised black hearth, a cast iron scroll screen and birch logs on a grate
