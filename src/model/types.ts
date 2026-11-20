@@ -350,6 +350,11 @@ export interface Item {
    * door sensor. Checkbox on the door's card; off when not given.
    */
   driven?: boolean
+  /**
+   * Door only: the frame glows with the door's state, green when closed (and locked when a lock is bound), red when open or
+   * unlocked. Checkbox on the door's card; off when not given.
+   */
+  frameGlow?: boolean
   /** Hung on the wall (only for rules.ts > MOUNTABLE kinds: power strip). When not given, on the floor or a surface. */
   mount?: 'wall'
   /** Beam angle of a downlight (degrees, full cone; 20-150 on the card, 90 when not given). */

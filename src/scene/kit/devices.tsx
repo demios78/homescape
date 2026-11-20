@@ -1818,11 +1818,73 @@ function PatioDoor({ v }: P) {
 }
 
 export function Door({ v }: P) {
+  return (
+    <>
+      <DoorBody v={v} />
+      {v.opts.frameGlow && v.opts.variant !== 'opening' && <FrameGlow v={v} />}
+    </>
+  )
+}
+
+function DoorBody({ v }: P) {
   if (v.opts.variant === 'patio') return <PatioDoor v={v} />
   if (v.opts.variant === 'opening') return <CasedOpening v={v} />
   if (v.opts.variant === 'sliding') return <SlidingDoor v={v} />
   if (v.opts.variant === 'french' || v.opts.variant === 'double') return <FrenchDoor v={v} />
   return <HingedDoor v={v} />
+}
+
+const glowMats = new Map<string, THREE.MeshBasicMaterial>()
+const glowMat = (color: string, opacity: number) => {
+  const key = `${color}:${opacity}`
+  let m = glowMats.get(key)
+  if (!m) {
+    m = new THREE.MeshBasicMaterial({ color, toneMapped: false, transparent: opacity < 1, opacity, depthWrite: opacity >= 1 })
+    glowMats.set(key, m)
+  }
+  return m
+}
+
+/**
+ * Door frame state light (Item.frameGlow): a lit band on both faces of the frame (posts and head), green while the door is
+ * closed (and locked when a lock is bound), red while it is open or unlocked. Follows the bound sensor and lock only, not
+ * people passing. Without a sensor or lock nothing shows. Scales with the wall height like the frame.
+ */
+function FrameGlow({ v }: P) {
+  const root = useRef<THREE.Group>(null)
+  const tall = useRef<THREE.Group>(null)
+  const { sensedOpen, lock, hasContact } = doorState(v)
+  useWallHeight(root, v.interior, (h) => {
+    if (tall.current) tall.current.scale.y = Math.max(0.02, h / FULL_H)
+  })
+  if (!hasContact && !lock) return null
+  const bad = sensedOpen || (lock !== undefined && lock !== 'locked')
+  const color = bad ? C.alarm : C.ok
+  // frame width per door type (the same defaults as the door components)
+  const kind = v.opts.variant ?? 'hinged'
+  const W = kind === 'hinged' ? 1 : (v.opts.len ?? ({ sliding: 1.6, french: 1.2, double: 1.2, patio: 2.5 } as Record<string, number>)[kind] ?? 1)
+  const core = glowMat(color, 1)
+  const halo = glowMat(color, v.night ? 0.35 : 0.22)
+  const face = (z: number) => (
+    <group position={[0, 0, z]}>
+      {[-1, 1].map((s) => (
+        <group key={s}>
+          <Box size={[0.03, 2.15, 0.004]} position={[(s * W) / 2, 1.075, 0]} material={core} shadow={false} />
+          <Box size={[0.07, 2.19, 0.002]} position={[(s * W) / 2, 1.095, Math.sign(z) * 0.002]} material={halo} shadow={false} />
+        </group>
+      ))}
+      <Box size={[W + 0.03, 0.03, 0.004]} position={[0, 2.19, 0]} material={core} shadow={false} />
+      <Box size={[W + 0.07, 0.07, 0.002]} position={[0, 2.19, Math.sign(z) * 0.002]} material={halo} shadow={false} />
+    </group>
+  )
+  return (
+    <group ref={root}>
+      <group ref={tall}>
+        {face(EDGE_Z + 0.122)}
+        {face(EDGE_Z - 0.122)}
+      </group>
+    </group>
+  )
 }
 
 function HingedDoor({ v }: P) {

@@ -66,6 +66,8 @@ export interface ItemOpts {
   bar?: number
   /** Door driven by a bound light or plug (Item.driven) */
   driven?: boolean
+  /** Door frame glows green or red with the door state (Item.frameGlow) */
+  frameGlow?: boolean
 }
 
 /**
