@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.67 (demios78 fork)
+
+- New fireplace type "Painted brick": a whitewashed brick chimney with a dark wood beam mantel, a raised brick hearth, a firebox with a bronze frame and glass doors, and a log niche with a fireplace tool set
+
 ## 0.2.1-dm.66 (demios78 fork)
 
 - A robot vacuum reporting an empty water tank now shows the water drop badge instead of the dust bin
