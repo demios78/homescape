@@ -53,7 +53,11 @@ function issueOf(v: Visual): VacuumIssue | null {
   const sensor = v.related.find((e) => domainOf(e.entity_id) === 'sensor' && /error/.test(e.entity_id) && !/^(none|ok|no error|0|unknown|unavailable|)$/i.test(e.state))
   if (vac?.state !== 'error' && !problem && !sensor) return null
   const a = vac?.attributes ?? {}
-  const text = [a.error, a.error_message, a.error_code, a.status, sensor?.state, sensor?.attributes.error].filter((x) => x != null).join(' ').toLowerCase()
+  // Shark2MQTT: error_text; a problem sensor's id names its issue (dirty_water_tank_full, replace_battery)
+  const text = [a.error, a.error_message, a.error_text, a.error_code, a.status, sensor?.state, sensor?.attributes.error, problem?.entity_id.split('.')[1].replace(/_/g, ' ')]
+    .filter((x) => x != null)
+    .join(' ')
+    .toLowerCase()
   for (const [re, kind] of ISSUES) if (re.test(text)) return kind
   return 'alert'
 }
