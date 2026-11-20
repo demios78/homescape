@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.74 (demios78 fork)
+
+- Robot vacuums connected through Shark2MQTT now show the right issue icon from their error text (for example a stuck side brush).
+- A bound tank or battery problem sensor (dirty water tank full, clean water tank empty, replace battery) now shows the matching icon.
+
 ## 0.2.1-dm.73 (demios78 fork)
 
 - A car bound to an occupancy sensor (for example a Frigate zone that watches a parking spot) now appears only while the sensor sees a car, so the street in front of the house shows when a car is parked there.
