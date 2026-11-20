@@ -161,6 +161,7 @@ function ItemNodeImpl({ item, entity, related, night, levelId, still = false }: 
     return {
       ...opening,
       bound: true,
+      entityId: entity.entity_id,
       on,
       // The light intensity factor (Item.intensity) is applied to the shown level: bulbs, strips and glows shine with it.
       level: (isLightKind(item.kind) ? lightLevel(entity) : on ? 1 : 0) * (intensity ?? 1),

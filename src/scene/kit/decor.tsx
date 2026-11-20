@@ -5,6 +5,7 @@ import { useAmbient, useLitMaterial } from './effects'
 import { C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
 import { useScreen } from './screens'
+import { useCameraFeed } from './cameraFeed'
 import { artTexture, calligraphyTexture, carromTexture, keyboardTexture, ornateFrameTexture, pegboardTexture, shutterFrameTexture } from './textures'
 import { monitorOn, type Visual } from './visual'
 
@@ -45,13 +46,18 @@ export function MousePad() {
 /** Portrait monitor: the screen glows while on. */
 export function MonitorV({ v }: P) {
   // While on: a scrolling document (kit/screens.ts)
-  const screen = useScreen(monitorOn(v), 2, mat(C.screenOff, { roughness: 0.25 }), Math.abs((v.at?.x ?? 0) * 3.1 + (v.at?.z ?? 0) * 1.7))
+  const doc = useScreen(monitorOn(v), 2, mat(C.screenOff, { roughness: 0.25 }), Math.abs((v.at?.x ?? 0) * 3.1 + (v.at?.z ?? 0) * 1.7))
+  // A bound camera plays its live video instead (kit/cameraFeed.ts; landscape video squeezed onto the tall panel)
+  const glass = useRef<THREE.Group>(null)
+  const screen = useCameraFeed(v, glass, 0.4) ?? doc
   return (
     <group>
       <Box size={[0.2, 0.02, 0.16]} position={[0, 0.01, 0]} color={C.ink} />
       <Box size={[0.04, 0.16, 0.04]} position={[0, 0.09, -0.03]} color={C.ink} />
       <Box size={[0.38, 0.64, 0.03]} position={[0, 0.5, -0.02]} color={C.ink} radius={0.01} />
-      <Box size={[0.34, 0.6, 0.01]} position={[0, 0.5, 0.0]} material={screen} shadow={false} />
+      <group ref={glass} position={[0, 0.5, 0.0]}>
+        <Box size={[0.34, 0.6, 0.01]} material={screen} shadow={false} />
+      </group>
     </group>
   )
 }

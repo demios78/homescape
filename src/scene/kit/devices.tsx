@@ -20,6 +20,7 @@ import { Ball, Box, Cyl, mat } from './primitives'
 import { gainOf, monitorOn, type Visual } from './visual'
 import { useFilm } from './film'
 import { useScreen } from './screens'
+import { useCameraFeed } from './cameraFeed'
 
 /*
  * Lights, devices, sensors, doors and windows. All built in code, all showing their state.
@@ -499,7 +500,10 @@ export function Tv({ v }: P) {
   const py = wall ? TV_WALL_Y : TV_STAND_Y
   const tv = tvScreenOf(v)
   // A film plays on the screen when on (kit/film.ts); the frame freezes when paused
-  const screen = useFilm(tv.on, tv.paused, mat(C.screenOff, { roughness: 0.25 }), Math.abs((v.at?.x ?? 0) * 3.1 + (v.at?.z ?? 0) * 1.7))
+  const film = useFilm(tv.on, tv.paused, mat(C.screenOff, { roughness: 0.25 }), Math.abs((v.at?.x ?? 0) * 3.1 + (v.at?.z ?? 0) * 1.7))
+  // A bound camera plays its live video instead (kit/cameraFeed.ts)
+  const glass = useRef<THREE.Group>(null)
+  const screen = useCameraFeed(v, glass, 0.8) ?? film
   const back = backlightOf(v, tv.on)
   return (
     <group>
@@ -512,7 +516,9 @@ export function Tv({ v }: P) {
         </>
       )}
       <Box size={[1.42, 0.82, 0.05]} position={[0, py, -0.08]} color={C.ink} radius={0.015} />
-      <Box size={[1.34, 0.74, 0.01]} position={[0, py, -0.05]} material={screen} shadow={false} />
+      <group ref={glass} position={[0, py, -0.05]}>
+        <Box size={[1.34, 0.74, 0.01]} material={screen} shadow={false} />
+      </group>
       {back && <TvBacklight {...back} night={v.night} y={py} />}
     </group>
   )
@@ -663,13 +669,18 @@ export function Console({ v }: P) {
 
 export function Monitor({ v }: P) {
   // When on, a blurry desktop: editor and browser windows, scrolling lines (kit/screens.ts)
-  const screen = useScreen(monitorOn(v), 1, mat(C.screenOff, { roughness: 0.25 }), Math.abs((v.at?.x ?? 0) * 3.1 + (v.at?.z ?? 0) * 1.7))
+  const desk = useScreen(monitorOn(v), 1, mat(C.screenOff, { roughness: 0.25 }), Math.abs((v.at?.x ?? 0) * 3.1 + (v.at?.z ?? 0) * 1.7))
+  // A bound camera plays its live video instead (kit/cameraFeed.ts)
+  const glass = useRef<THREE.Group>(null)
+  const screen = useCameraFeed(v, glass, 0.4) ?? desk
   return (
     <group>
       <Box size={[0.22, 0.02, 0.16]} position={[0, 0.01, 0]} color={C.ink} />
       <Box size={[0.04, 0.22, 0.04]} position={[0, 0.12, -0.03]} color={C.ink} />
       <Box size={[0.66, 0.38, 0.03]} position={[0, 0.38, -0.02]} color={C.ink} radius={0.01} />
-      <Box size={[0.62, 0.34, 0.01]} position={[0, 0.38, 0.0]} material={screen} shadow={false} />
+      <group ref={glass} position={[0, 0.38, 0.0]}>
+        <Box size={[0.62, 0.34, 0.01]} material={screen} shadow={false} />
+      </group>
     </group>
   )
 }

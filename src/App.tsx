@@ -528,6 +528,7 @@ export default function App() {
       homeFlight: () => import('@/scene/camera').then((m) => JSON.parse(JSON.stringify(m.flightDebug))),
       pets: () => import('@/scene/petsDebug').then((m) => m.petsDebug),
       street: () => import('@/scene/streetPlan').then((m) => m.streetDebug),
+      cameraFeeds: () => import('@/scene/kit/cameraFeed').then((m) => m.cameraFeedsDebug()),
       roof: () => import('@/scene/camera').then((m) => ({ ...m.roofView })),
       weather: () => import('@/scene/weatherState').then((m) => ({ ...m.weatherDebug, light: { ...m.weatherLight } })),
       weatherPreview: (sky) => import('@/ha/weather').then((m) => m.useWeatherPref.getState().setPreview((sky ?? null) as never)),

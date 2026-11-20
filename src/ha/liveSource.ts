@@ -85,7 +85,7 @@ export async function connectLive(opts: { hassUrl: string; token?: string }): Pr
     throw err
   }
 
-  return sourceFromConnection(conn, hostLabel(hassUrl), true)
+  return sourceFromConnection(conn, hostLabel(hassUrl), true, hassUrl)
 }
 
 const hostLabel = (hassUrl: string) => {
@@ -104,14 +104,25 @@ export async function connectEmbedded(): Promise<HaSource | null> {
   const host = hostConnection()
   if (!host) return null
   const { auth, conn } = await host
-  return sourceFromConnection(conn, `${t('Home Assistant')} · ${hostLabel(auth.data.hassUrl)}`, false)
+  return sourceFromConnection(conn, `${t('Home Assistant')} · ${hostLabel(auth.data.hassUrl)}`, false, auth.data.hassUrl)
 }
 
-/** A source on an open connection; `owned` connections are closed with the source (the frontend's own one is not) */
-function sourceFromConnection(conn: Connection, label: string, owned: boolean): HaSource {
+/**
+ * A source on an open connection; `owned` connections are closed with the source (the frontend's own one is not).
+ * `hassUrl` resolves the relative paths HA answers with (camera streams).
+ */
+function sourceFromConnection(conn: Connection, label: string, owned: boolean, hassUrl: string): HaSource {
   return {
     kind: 'live',
     label,
+    async cameraStream(entityId) {
+      try {
+        const r = await conn.sendMessagePromise<{ url?: string }>({ type: 'camera/stream', entity_id: entityId, format: 'hls' })
+        return r?.url ? new URL(r.url, hassUrl.endsWith('/') ? hassUrl : `${hassUrl}/`).href : null
+      } catch {
+        return null
+      }
+    },
     subscribe(cb) {
       return subscribeEntities(conn, (ents) => cb(ents as unknown as Entities))
     },

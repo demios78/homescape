@@ -39,6 +39,8 @@ export interface HaSource {
   callService(domain: string, service: string, data: Record<string, unknown>): Promise<void>
   registry(): Promise<HaRegistry>
   close(): void
+  /** Live only: the URL of a camera's HLS stream (HA's camera/stream), absolute; null when the camera cannot stream */
+  cameraStream?(entityId: string): Promise<string | null>
   /** Demo only: adds or updates an entity in the local state (tests; never touches a real home) */
   inject?(e: HassEntity): void
   /**

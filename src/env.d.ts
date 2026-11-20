@@ -28,6 +28,7 @@ interface Window {
     people: () => Promise<unknown>
     /** Street life (scene/streetPlan.ts > streetDebug): cars, walkers, dog, kids; force('car' | 'walker' | 'dog' | 'kids' | 'leave') */
     street: () => Promise<unknown>
+    cameraFeeds: () => Promise<unknown>
     /** Roof state (scene/roof.ts > roofView): whether the active floor's roof is down, roof visibility per floor */
     roof: () => Promise<{ covered: boolean; alpha: Record<string, number> }>
     /** Weather in the scene (scene/weatherState.ts): sky, preview or not, visible precipitation, wind, lightning count; values applied to the light */

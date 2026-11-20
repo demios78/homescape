@@ -5,6 +5,8 @@ import type { HassEntity } from '@/ha/types'
 export interface Visual {
   /** Bound to a HA entity */
   bound: boolean
+  /** The main entity's id (when it is in HA's state) */
+  entityId?: string
   /** On / running / triggered */
   on: boolean
   /** Light intensity 0-1 */
