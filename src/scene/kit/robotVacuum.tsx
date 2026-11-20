@@ -36,8 +36,8 @@ const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
 /** Error words to issue icons, checked in order against the vacuum's error text (any language HA reports in English). */
 const ISSUES: [RegExp, VacuumIssue][] = [
   [/brush|tangle|roller|hair/, 'brush'],
+  [/water|tank|mop|pad/, 'water'],
   [/bin|dust|debris|full|bag|evacuat|empty/, 'bin'],
-  [/water|tank|mop|pad|clean water|dirty water/, 'water'],
   [/battery|charg|power|low/, 'battery'],
   [/cliff|sensor|lidar|laser|bumper|camera|lens|navig/, 'sensor'],
   [/stuck|trap|wheel|lift|tilt|blocked|obstacle|motor/, 'stuck'],
