@@ -367,7 +367,7 @@ All HA access goes through the `HaSource` interface: `subscribe`, `callService`,
   - During placement or room drawing the left button belongs to the scene (the camera ignores it); the camera works with the right button, the wheel and the keyboard.
   - Click vs drag: selection happens only in `onClick` and only when `e.delta <= DRAG_PX` (4 px). Panning or rotating the camera and releasing never selects or deselects anything.
   - A room moves by dragging its floor only if it is **already selected** and in Edit mode. Dragging an unselected floor pans the camera.
-  - Items drag directly in Edit; moving and history start once the pointer moves 4 px. The camera is off while dragging.
+  - Items drag only once selected in Edit: the first click selects, a second press and drag moves it (pressing an unselected item rotates or pans the camera like empty ground). Moving and history start once the pointer moves 4 px. The camera is off while dragging.
   - While Space is held, items, rooms, handles and tools receive no events; the camera pans even over an item.
   - Double click: focus a room or item; double click on empty ground: the whole home.
   - Keyboard (`App.tsx > useShortcuts`): **WASD** and the arrows pan (⇧ faster; in Edit the arrows nudge the selected item 5 cm, ⇧ 25 cm, the selected room 25 cm), **Q / E** rotate 45°, `+`/`-` zoom, `F` focus, `Esc` releases placement first, then the tool, then the selection, `R`/`⇧R` rotate the ghost while placing, else the selected item, `Delete` deletes, `⌘Z`/`⇧⌘Z`. Also `P` (right panel), `T` (roof), ⌘K / Ctrl+K or `/` (search).

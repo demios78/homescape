@@ -181,12 +181,15 @@ function ItemNodeImpl({ item, entity, related, night, levelId, still = false }: 
 
   /*
    * In view mode pressing does nothing (the camera pans, a click selects).
-   * In edit mode pressing prepares a drag; the move starts once the pointer travels DRAG_PX.
+   * In edit mode pressing an item that is already selected prepares a drag; the move starts once the pointer travels DRAG_PX.
+   * Pressing an unselected item leaves the press to the camera (dragging rotates or pans the view, a click selects it), so
+   * moving an item is two actions: select it, then drag it.
    * While moving the rules are checked (the ring turns red); dropped on an invalid spot, the item goes back.
    */
   const onDown = (e: ThreeEvent<PointerEvent>) => {
     const s = useLayout.getState()
     if (s.mode !== 'edit' || s.tool !== 'select' || e.button !== 0 || busy()) return
+    if (s.selection?.type !== 'item' || s.selection.id !== item.id) return
     if (!e.ray.intersectPlane(plane, hit)) return
     e.stopPropagation()
     drag.current = { ox: item.x - hit.x, oz: item.z - hit.z, sx: e.nativeEvent.clientX, sy: e.nativeEvent.clientY, started: false }
