@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1-dm.72 (demios78 fork)
+
+- TVs, monitors and vertical monitors with a camera bound now play that camera's live video on their screen.
+- A camera stream only runs while one of its screens is in view, and stops shortly after it leaves the view or the tab is hidden.
+- Several screens can show the same camera from a single stream.
+- Cameras are now suggested when binding a TV or monitor.
+
 ## 0.2.1-dm.71 (demios78 fork)
 
 - New outfit for the people at home: a pinstripe suit (double breasted jacket, wide trousers, white shirt, bow tie, slicked back hair, pencil mustache). The People panel's Outfits now read Casual, Gown and Suit
