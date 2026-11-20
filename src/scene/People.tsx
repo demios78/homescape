@@ -6,6 +6,7 @@ import { passDoors } from './doorTraffic'
 import { useHa } from '@/ha/store'
 import { besideDoor, frontDoor } from '@/model/geometry'
 import { activeLevel, useLayout } from '@/model/layoutStore'
+import { useWaterRunning } from './kit/water'
 import { planPeople, route, type Activity, type PeoplePlan, type Pose, type Spot } from '@/model/people'
 import type { Level } from '@/model/types'
 import { useView } from './camera'
@@ -385,7 +386,9 @@ export function usePeoplePlan() {
     return () => window.clearInterval(id)
   }, [])
   const alarm = useMemo(() => Object.values(entities).find((e) => e.entity_id.startsWith('alarm_control_panel.'))?.state, [entities])
-  const plan = useMemo(() => (level ? planPeople({ level, entities, registry, alarm, now, residents }) : null), [level, entities, registry, alarm, now, residents])
+  // The faucets run (house water flow in the sink range): someone washes dishes at the kitchen sink
+  const faucet = useWaterRunning() === 'sink'
+  const plan = useMemo(() => (level ? planPeople({ level, entities, registry, alarm, now, residents, faucet }) : null), [level, entities, registry, alarm, now, residents, faucet])
   return { plan, level }
 }
 

@@ -95,7 +95,7 @@ function PeoplePanel({ onClose }: { onClose: () => void }) {
   const setStreet = useView((s) => s.setStreet)
   const { plan, level } = usePeoplePlan()
   const nameOf = (id: string) => level?.rooms.find((r) => r.id === id)?.name
-  const names = (plan?.active ?? []).map((id) => nameOf(id) && (plan?.desk.includes(id) ? t('{room} (at the computer)', { room: nameOf(id)! }) : nameOf(id))).filter(Boolean)
+  const names = (plan?.active ?? []).map((id) => nameOf(id) && (plan?.desk.includes(id) ? t('{room} (at the computer)', { room: nameOf(id)! }) : plan?.sink === id ? t('{room} (washing dishes)', { room: nameOf(id)! }) : nameOf(id))).filter(Boolean)
   const litNames = (plan?.lit ?? []).map(nameOf).filter(Boolean)
   const seg = (on: boolean) => `min-h-9 flex-1 rounded-lg text-[12.5px] font-semibold ${on ? 'bg-brand text-white' : 'bg-surface-2 text-ink-2 hover:text-ink'}`
   return (

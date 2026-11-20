@@ -1778,6 +1778,7 @@
  "{rooms} and {items} deleted. ⌘Z undoes it.": "{rooms} und {items} gelöscht. Rückgängig mit ⌘Z.",
  "{rooms} and {items} selected": "{rooms} und {items} ausgewählt",
  "{room} (at the computer)": "{room} (am Computer)",
+ "{room} (washing dishes)": "{room} (spült ab)",
  "{room} deleted with the {count} items in it. ⌘Z undoes it.": {"one": "{room} samt {count} Objekt darin gelöscht. Rückgängig mit ⌘Z.", "other": "{room} samt den {count} Objekten darin gelöscht. Rückgängig mit ⌘Z."},
  "{room} deleted. ⌘Z undoes it.": "{room} gelöscht. Rückgängig mit ⌘Z.",
  "{value}%": "{value} %",

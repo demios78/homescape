@@ -1778,6 +1778,7 @@
  "{rooms} and {items} deleted. ⌘Z undoes it.": "已删除{rooms}和{items}。按 ⌘Z 可撤销。",
  "{rooms} and {items} selected": "已选中{rooms}和{items}",
  "{room} (at the computer)": "{room}（在电脑前）",
+ "{room} (washing dishes)": "{room}（在洗碗）",
  "{room} deleted with the {count} items in it. ⌘Z undoes it.": {"other": "已删除 {room} 及其中的 {count} 件物品。按 ⌘Z 可撤销。"},
  "{room} deleted. ⌘Z undoes it.": "已删除 {room}。按 ⌘Z 可撤销。",
  "{value}%": "{value}%",

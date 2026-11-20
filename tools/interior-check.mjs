@@ -377,6 +377,27 @@ const wash = await p.evaluate(async (roomId) => {
   return { a: a && { use: a.use, activity: a.activity, x: a.x }, b: b && { use: b.use, activity: b.activity, x: b.x } }
 }, k.room)
 ok(wash.a?.use === 'sink' && wash.a.activity === 'wash' && Math.abs(wash.a.x - 211.6) < 0.05 && wash.b?.use === 'kitchenCounter' && Math.abs(wash.b.x - 211.6) > 0.5, `A person washes dishes at the counter's sink, then chops next to it (${JSON.stringify(wash)})`)
+// The kitchen faucet runs (water meter flow in the sink range): someone comes to wash dishes, even at night (user request, 20 Nov 2026)
+const faucet = await p.evaluate(async () => {
+  const m = await import('/src/model/people.ts')
+  const s = window.__homescape.getState().layout
+  const lv = s.layout.levels.find((l) => l.id === s.levelId) ?? s.layout.levels[0]
+  const ents = Object.fromEntries(
+    window.__homescape.entityIds().map((id) => {
+      const e = window.__homescape.entity(id)
+      return [id, /^(binary_sensor|light|media_player)\./.test(id) ? { ...e, state: 'off', last_changed: '2020-01-01T00:00:00Z' } : { ...e, last_changed: '2020-01-01T00:00:00Z' }]
+    }),
+  )
+  const night = new Date()
+  night.setHours(3, 0, 0, 0)
+  const plan = (faucet) => m.planPeople({ level: lv, entities: ents, registry: null, alarm: 'disarmed', now: night.getTime(), residents: 2, faucet })
+  const on = plan(true)
+  const off = plan(false)
+  const dish = m.dishSpot(lv)
+  const at = on.spots.find((x) => x.activity === 'wash')
+  return { mode: on.mode, sink: on.sink, room: dish?.roomId, at: at && { use: at.use, x: at.x, z: at.z }, dish: dish && { x: dish.x, z: dish.z }, offMode: off.mode, offWash: off.spots.filter((x) => x.activity === 'wash').length }
+})
+ok(faucet.at?.use === 'sink' && faucet.sink === faucet.room && Math.hypot(faucet.at.x - faucet.dish.x, faucet.at.z - faucet.dish.z) < 0.01 && faucet.mode === 'home' && faucet.offMode === 'sleep' && faucet.offWash === 0, `While the kitchen faucet runs someone washes dishes at the sink, even at 3 am; with it off they sleep (${JSON.stringify(faucet)})`)
 await p.evaluate(() => window.__homescape.setMode('view'))
 await p.click('#fps-toggle')
 await p.waitForSelector('#fps-hud')

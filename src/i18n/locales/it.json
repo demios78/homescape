@@ -1778,6 +1778,7 @@
  "{rooms} and {items} deleted. ⌘Z undoes it.": "{rooms} e {items} eliminati. ⌘Z per annullare.",
  "{rooms} and {items} selected": "{rooms} e {items} selezionati",
  "{room} (at the computer)": "{room} (al computer)",
+ "{room} (washing dishes)": "{room} (lava i piatti)",
  "{room} deleted with the {count} items in it. ⌘Z undoes it.": {"one": "Stanza eliminata: {room}, con {count} oggetto. ⌘Z per annullare.", "other": "Stanza eliminata: {room}, con {count} oggetti. ⌘Z per annullare."},
  "{room} deleted. ⌘Z undoes it.": "Stanza eliminata: {room}. ⌘Z per annullare.",
  "{value}%": "{value}%",

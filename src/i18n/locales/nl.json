@@ -1778,6 +1778,7 @@
  "{rooms} and {items} deleted. ⌘Z undoes it.": "{rooms} en {items} verwijderd. Ongedaan maken met ⌘Z.",
  "{rooms} and {items} selected": "{rooms} en {items} geselecteerd",
  "{room} (at the computer)": "{room} (achter de computer)",
+ "{room} (washing dishes)": "{room} (aan de afwas)",
  "{room} deleted with the {count} items in it. ⌘Z undoes it.": {"one": "{room} met {count} item erin verwijderd. Ongedaan maken met ⌘Z.", "other": "{room} met de {count} items erin verwijderd. Ongedaan maken met ⌘Z."},
  "{room} deleted. ⌘Z undoes it.": "{room} verwijderd. Ongedaan maken met ⌘Z.",
  "{value}%": "{value}%",

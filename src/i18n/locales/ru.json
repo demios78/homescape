@@ -1778,6 +1778,7 @@
  "{rooms} and {items} deleted. ⌘Z undoes it.": "Удалено: {rooms} и {items}. Отменить: ⌘Z.",
  "{rooms} and {items} selected": "Выбрано: {rooms} и {items}",
  "{room} (at the computer)": "{room} (за компьютером)",
+ "{room} (washing dishes)": "{room} (моет посуду)",
  "{room} deleted with the {count} items in it. ⌘Z undoes it.": {"one": "Комната {room} удалена вместе с {count} предметом в ней. Отменить: ⌘Z.", "few": "Комната {room} удалена вместе с {count} предметами в ней. Отменить: ⌘Z.", "many": "Комната {room} удалена вместе с {count} предметами в ней. Отменить: ⌘Z.", "other": "Комната {room} удалена вместе с {count} предметами в ней. Отменить: ⌘Z."},
  "{room} deleted. ⌘Z undoes it.": "Комната {room} удалена. Отменить: ⌘Z.",
  "{value}%": "{value} %",

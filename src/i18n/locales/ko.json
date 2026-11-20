@@ -1778,6 +1778,7 @@
  "{rooms} and {items} deleted. ⌘Z undoes it.": "삭제됨: {rooms}, {items}. ⌘Z로 되돌릴 수 있어요.",
  "{rooms} and {items} selected": "선택됨: {rooms}, {items}",
  "{room} (at the computer)": "{room} (컴퓨터 앞)",
+ "{room} (washing dishes)": "{room} (설거지 중)",
  "{room} deleted with the {count} items in it. ⌘Z undoes it.": {"other": "{room} 삭제됨 (안의 아이템 {count}개 포함). ⌘Z로 되돌릴 수 있어요."},
  "{room} deleted. ⌘Z undoes it.": "{room} 삭제됨. ⌘Z로 되돌릴 수 있어요.",
  "{value}%": "{value}%",

@@ -1778,6 +1778,7 @@
  "{rooms} and {items} deleted. ⌘Z undoes it.": "Usunięto: {rooms} i {items}. Cofnij: ⌘Z.",
  "{rooms} and {items} selected": "Zaznaczono: {rooms} i {items}",
  "{room} (at the computer)": "{room} (przy komputerze)",
+ "{room} (washing dishes)": "{room} (zmywa naczynia)",
  "{room} deleted with the {count} items in it. ⌘Z undoes it.": {"one": "Usunięto pokój {room} wraz z {count} elementem w nim. Cofnij: ⌘Z.", "few": "Usunięto pokój {room} wraz z {count} elementami w nim. Cofnij: ⌘Z.", "many": "Usunięto pokój {room} wraz z {count} elementami w nim. Cofnij: ⌘Z.", "other": "Usunięto pokój {room} wraz z {count} elementami w nim. Cofnij: ⌘Z."},
  "{room} deleted. ⌘Z undoes it.": "Usunięto pokój {room}. Cofnij: ⌘Z.",
  "{value}%": "{value}%",

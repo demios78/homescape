@@ -1778,6 +1778,7 @@
  "{rooms} and {items} deleted. ⌘Z undoes it.": "{rooms} ve {items} silindi. Geri almak için ⌘Z.",
  "{rooms} and {items} selected": "{rooms}, {items} seçildi",
  "{room} (at the computer)": "{room} (bilgisayar başında)",
+ "{room} (washing dishes)": "{room} (bulaşık yıkıyor)",
  "{room} deleted with the {count} items in it. ⌘Z undoes it.": "{room} ve içindeki {count} eşya silindi. Geri almak için ⌘Z.",
  "{room} deleted. ⌘Z undoes it.": "{room} silindi. Geri almak için ⌘Z.",
  "{value}%": "%{value}",

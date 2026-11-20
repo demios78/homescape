@@ -1778,6 +1778,7 @@
  "{rooms} and {items} deleted. ⌘Z undoes it.": "{rooms} और {items} हटा दिए गए। पूर्ववत करने के लिए ⌘Z दबाएँ।",
  "{rooms} and {items} selected": "{rooms} और {items} चुने गए",
  "{room} (at the computer)": "{room} (कंप्यूटर पर)",
+ "{room} (washing dishes)": "{room} (बर्तन धो रहे हैं)",
  "{room} deleted with the {count} items in it. ⌘Z undoes it.": {"one": "{room} और उसके {count} आइटम हटा दिए गए। पूर्ववत करने के लिए ⌘Z दबाएँ।", "other": "{room} और उसके {count} आइटम हटा दिए गए। पूर्ववत करने के लिए ⌘Z दबाएँ।"},
  "{room} deleted. ⌘Z undoes it.": "{room} हटा दिया गया। पूर्ववत करने के लिए ⌘Z दबाएँ।",
  "{value}%": "{value}%",

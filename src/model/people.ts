@@ -48,6 +48,8 @@ export interface PeoplePlan {
   lit: string[]
   /** Rooms with a computer on: someone sits at it (also in active) */
   desk: string[]
+  /** Room whose kitchen sink someone is washing dishes at because the faucet runs (also in active) */
+  sink: string | null
   spots: Spot[]
 }
 
@@ -602,22 +604,44 @@ export interface PeopleInput {
   now: number
   /** Household size (from the settings; default 2) */
   residents: number
+  /** The faucets run (the water meter's flow is in the sink range, scene/kit/water.ts > useWaterRunning) */
+  faucet?: boolean
+}
+
+/** Kitchen-like rooms: a sink there is for dishes (a laundry room's utility sink comes after) */
+const KITCHEN: ItemKind[] = ['stove', 'oven', 'fridge', 'dishwasher', 'kitchenCounter']
+
+/**
+ * Where someone washes dishes while the faucets run: the sink spot (a counter's built-in sink or a sink item) of a kitchen
+ * first, else any sink; washbasins do not count.
+ */
+export function dishSpot(level: Level): Spot | null {
+  const rooms = level.rooms.filter((r) => !isOutdoor(r))
+  const kitchen = (r: Room) => itemsIn(level, r).some((i) => KITCHEN.includes(i.kind))
+  for (const r of [...rooms.filter(kitchen), ...rooms.filter((r) => !kitchen(r))]) {
+    const s = workSpots(level, r).find((w) => w.use === 'sink')
+    if (s) return s
+  }
+  return null
 }
 
 /** Plan of the people: mode, how many, who is where. */
-export function planPeople({ level, entities, registry, alarm, now, residents }: PeopleInput): PeoplePlan {
+export function planPeople({ level, entities, registry, alarm, now, residents, faucet }: PeopleInput): PeoplePlan {
   const signals = roomSignals(level, entities, registry, now)
   const anchorOf = new Map(signals.map((s) => [s.roomId, s.anchor]))
   // Someone sits at a computer that is on: strong activity; that room's motion and light are the same person
   const desks = desksInUse(level, entities, registry)
   const desk = [...new Set(desks.map((d) => d.roomId))]
-  const moved = signals.filter((s) => s.strong && !desk.includes(s.roomId)).map((s) => s.roomId)
-  const active = [...desk, ...moved]
+  // The faucet runs: someone washes dishes at the kitchen sink (that room's motion and light are the same person)
+  const dishes = faucet ? dishSpot(level) : null
+  const sink = dishes?.roomId && !desk.includes(dishes.roomId) ? dishes.roomId : null
+  const moved = signals.filter((s) => s.strong && !desk.includes(s.roomId) && s.roomId !== sink).map((s) => s.roomId)
+  const active = [...desk, ...(sink ? [sink] : []), ...moved]
   const lit = signals.filter((s) => !s.strong && !desk.includes(s.roomId)).map((s) => s.roomId)
   const mode = peopleMode(alarm, now, active.length > 0)
   // Every room with motion at the same time and every computer on is at least one person: more than the household (guests) up to 3 or the household size
-  const count = mode === 'away' ? residents : Math.min(Math.max(3, residents), Math.max(residents, desks.length + moved.length))
-  if (mode === 'away' || !level.rooms.length) return { mode, count, active, lit, desk, spots: outsideSpots(level, count) }
+  const count = mode === 'away' ? residents : Math.min(Math.max(3, residents), Math.max(residents, desks.length + moved.length + (sink ? 1 : 0)))
+  if (mode === 'away' || !level.rooms.length) return { mode, count, active, lit, desk, sink: null, spots: outsideSpots(level, count) }
   const used = new Set<string>()
   const spots: Spot[] = []
   const take = (s: Spot) => {
@@ -642,6 +666,7 @@ export function planPeople({ level, entities, registry, alarm, now, residents }:
     const room = roomOf(d.roomId)
     if (room) take(deskSpot(level, room, used, d.anchor))
   }
+  if (sink && dishes && spots.length < count && !used.has(key(dishes))) take({ ...dishes, activity: 'wash' })
   const sinceOf = new Map(signals.map((s) => [s.roomId, s.since]))
   const visit = (id: string) => {
     const room = roomOf(id)
@@ -677,7 +702,7 @@ export function planPeople({ level, entities, registry, alarm, now, residents }:
     if (spots.length >= count) break
     if (!used.has(key(s))) take(s)
   }
-  return { mode, count, active, lit, desk, spots: spots.map((s, k) => ({ ...s, activity: s.activity ?? activityFor(s, k, level, entities, now) })) }
+  return { mode, count, active, lit, desk, sink, spots: spots.map((s, k) => ({ ...s, activity: s.activity ?? activityFor(s, k, level, entities, now) })) }
 }
 
 /** Whether the TV is on (player or plug; not off, standby or unavailable) */
