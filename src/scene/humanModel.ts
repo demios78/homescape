@@ -462,6 +462,28 @@ function build(look: Look): Record<PartName, THREE.BufferGeometry> {
 }
 
 /**
+ * V neckline laid on the chest: a triangle (top half width w at height top, point at height bottom) on the front of the
+ * chest ellipsoid (radii r, centre height cy), lifted 3 mm off it so it follows the curve without poking through.
+ */
+function neckline(r: V3, cy: number, w: number, top: number, bottom: number) {
+  const g = new THREE.PlaneGeometry(1, 1, 10, 12)
+  const pos = g.attributes.position
+  for (let i = 0; i < pos.count; i++) {
+    const u = pos.getX(i) + 0.5
+    const v = pos.getY(i) + 0.5
+    const y = bottom + v * (top - bottom)
+    // keep the edge on the front of the chest where it narrows toward the neck
+    const xmax = 0.92 * r[0] * Math.sqrt(Math.max(0, 1 - ((y - cy) / r[1]) ** 2))
+    const x = (u - 0.5) * 2 * Math.min(w * v, xmax)
+    const k = 1 - (x / r[0]) ** 2 - ((y - cy) / r[1]) ** 2
+    const z = r[2] * Math.sqrt(Math.max(0, k)) + 0.003
+    pos.setXYZ(i, x, y, z)
+  }
+  g.computeVertexNormals()
+  return g
+}
+
+/**
  * Replaces the casual clothes with the gown (in place). Each leg carries its own flared skirt panel, so the gown walks and
  * sits with the legs; the gap between the two panels in front reads as the slit. The hem ends in a fringe of points just
  * above the floor, with a short train behind.
@@ -505,15 +527,18 @@ function gown(look: Look, parts: Record<'pelvis' | 'thigh' | 'shin' | 'foot' | '
     { g: SPH, c: look.shoes, p: [0, -0.05, 0.14], s: [0.035, 0.025, 0.05] },
     { g: cyl(0.01, 0.006, 0.06, 8), c: look.shoes, p: [0, -0.04, -0.03] },
   )
-  // bodice: fitted, a narrow V neckline (skin) from the collarbone down
+  // bodice: fitted, a wide V neckline from near the shoulders down to the bust line (skin laid on the chest surface)
   parts.spine.length = 0
   parts.spine.push({ g: SPH, c: d, p: [0, 0.08, 0], s: [0.14 * b, 0.13, 0.115] })
   parts.chest.length = 0
+  const chestR: V3 = [0.17 * b, 0.17, 0.13]
   parts.chest.push(
-    { g: SPH, c: d, p: [0, 0.06, 0], s: [0.17 * b, 0.17, 0.13] },
+    { g: SPH, c: d, p: [0, 0.06, 0], s: chestR },
     { g: SPH, c: d, p: [-0.15 * b, 0.122, 0], s: [0.06, 0.055, 0.06] },
     { g: SPH, c: d, p: [0.15 * b, 0.122, 0], s: [0.06, 0.055, 0.06] },
-    { g: cone(0.04, 0.16, 3), c: look.skin, p: [0, 0.13, 0.121], r: [Math.PI - 0.18, 0, 0], s: [1, 1, 0.25] },
+    { g: neckline(chestR, 0.06, 0.1 * b, 0.212, 0.0), c: look.skin },
+    // base of the neck and collarbones, so the opening meets the neck without a band of fabric
+    { g: SPH, c: look.skin, p: [0, 0.184, 0.0], s: [0.1 * b, 0.048, 0.086] },
   )
   parts.upperArm.length = 0
   parts.upperArm.push(
