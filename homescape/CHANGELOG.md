@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.62 (demios78 fork)
+
+- A door with a bound sensor now also casts a soft spotlight on the floor centered under its frame, on both sides of the wall, in the same green or red as the frame and sweep
+
 ## 0.2.1-dm.61 (demios78 fork)
 
 - A door with a bound sensor (or a light or plug that opens it) now always lights its frame in the same color as its swing sweep: green closed, red open. The separate frame option is gone, and the lock no longer turns the frame red
