@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dm.71 (demios78 fork)
+
+- New outfit for the people at home: a pinstripe suit (double breasted jacket, wide trousers, white shirt, bow tie, slicked back hair, pencil mustache). The People panel's Outfits now read Casual, Gown and Suit
+
 ## 0.2.1-dm.70 (demios78 fork)
 
 - The gothic gown has a wider V neckline that opens from the base of the neck
