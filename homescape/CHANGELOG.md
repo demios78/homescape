@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1-dm.73 (demios78 fork)
+
+- A car bound to an occupancy sensor (for example a Frigate zone that watches a parking spot) now appears only while the sensor sees a car, so the street in front of the house shows when a car is parked there.
+- Occupancy sensors are suggested when binding a car.
+
 ## 0.2.1-dm.72 (demios78 fork)
 
 - TVs, monitors and vertical monitors with a camera bound now play that camera's live video on their screen.
