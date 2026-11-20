@@ -5,13 +5,13 @@ import * as THREE from 'three'
 import type { Activity } from '@/model/people'
 import { Human } from '@/scene/Human'
 import { animateHuman, type AnimState, type HumanRefs } from '@/scene/humanAnim'
-import { LOOKS } from '@/scene/humanModel'
+import { GOWN_LOOK, LOOKS } from '@/scene/humanModel'
 
 /*
  * Character lab (developer tool; #characters in the address bar): four people on a bright, plain floor, each with a
  * different motion (walking, seated activity, standing activity). For inspecting looks and motion and taking screenshots;
  * the rest of the app is not loaded. Query: #characters?is=cook (same activity for all), ?walk (all walk), ?close=2
- * (close-up of the 2nd person's face), ?side (side view).
+ * (close-up of the 2nd person's face), ?side (side view), ?gown (everyone in the gothic gown).
  */
 
 interface Slot {
@@ -60,7 +60,7 @@ function Person({ i, slot }: { i: number; slot: Slot }) {
   })
   return (
     <>
-      <Human look={LOOKS[i % LOOKS.length]} register={register} />
+      <Human look={location.hash.includes('gown') ? GOWN_LOOK : LOOKS[i % LOOKS.length]} register={register} />
       {slot.sit > 0 && (
         <mesh position={[(i - 1.5) * 1.1, slot.seatY / 2, -0.12]} castShadow receiveShadow>
           <boxGeometry args={[0.55, slot.seatY, 0.5]} />

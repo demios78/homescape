@@ -12,7 +12,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
  * x < 0 is the person's right (n, negative), x > 0 their left (p, positive).
  */
 
-export type HairStyle = 'bun' | 'ponytail' | 'spiky' | 'tousled'
+export type HairStyle = 'bun' | 'ponytail' | 'spiky' | 'tousled' | 'teased'
 
 /** Leg dimensions (m): hip joint height above the ground, thigh, shin (knee to ankle), sole (ankle to ground) */
 export const LEG = { hip: 0.82, thigh: 0.37, shin: 0.37, sole: 0.075 }
@@ -41,6 +41,13 @@ export interface Look {
   blanket: string
   /** Shoulder and body width factor */
   build: number
+  /** Gothic gown instead of top and pants: floor length, flared fringed sleeves and hem, wide belt; pumps instead of sneakers */
+  gown?: boolean
+  /** Lipstick (a pout instead of the smile) and eye shadow */
+  lips?: string
+  shadow?: string
+  /** Nail polish on the fists */
+  nails?: string
 }
 
 /** The household: four people in casual modern clothes (slightly cool colors). */
@@ -50,6 +57,34 @@ export const LOOKS: Look[] = [
   { skin: '#f1ccb0', hair: '#c0642f', hairStyle: 'spiky', accent: '#e3b04a', top: '#2f4566', topStyle: 'tee', pants: '#c6b08a', jeans: false, shoes: '#6b4a35', sole: '#efe8da', eyes: '#41603a', blanket: '#d5e5ee', build: 1.06 },
   { skin: '#b98262', hair: '#3a281d', hairStyle: 'tousled', accent: '#d65f4a', top: '#efeae0', topStyle: 'tee', overshirt: '#687a3e', pants: '#3d5068', jeans: true, shoes: '#2d2f36', sole: '#f0f0f0', eyes: '#2f2219', blanket: '#e5edd8', build: 1 },
 ]
+
+/**
+ * Gothic gown outfit (People panel > Outfits): a black floor length gown with a V neck, flared fringed sleeves, a wide belt
+ * with a jeweled clasp and a fringed hem, big teased black hair with blunt bangs and long straight sides, pale skin, red
+ * lips, dark eye shadow and nails. Inspired by a classic horror hostess gown; a generic look.
+ */
+export const GOWN_LOOK: Look = {
+  skin: '#f3e1d8',
+  hair: '#121115',
+  hairStyle: 'teased',
+  accent: '#b3242c',
+  top: '#16151a',
+  topStyle: 'sweater',
+  pants: '#16151a',
+  jeans: false,
+  shoes: '#111114',
+  sole: '#111114',
+  eyes: '#5d7480',
+  blanket: '#d9d2e6',
+  build: 0.9,
+  gown: true,
+  lips: '#c3202c',
+  shadow: '#6c5a86',
+  nails: '#121115',
+}
+
+/** Outfits a person can wear (People panel): the casual look of their slot, or the gown. */
+export type Outfit = 'casual' | 'gown'
 
 /* ---------- merging ---------- */
 
@@ -147,6 +182,7 @@ function face(look: Look): Prim[] {
     // eye: white, iris, pupil, highlight, upper lash line
     const ex = sx * EYE.x
     const z = eyeZ()
+    if (look.shadow) out.push({ g: SPH, c: look.shadow, p: [ex, EYE.y + 0.014, z - 0.004], s: [0.04, 0.036, 0.016] })
     out.push({ g: SPH, c: '#fbfaf7', p: [ex, EYE.y, z], s: [0.034, 0.04, 0.017] })
     out.push({ g: SPH, c: look.eyes, p: [ex + sx * 0.002, EYE.y - 0.003, z + 0.009], s: [0.024, 0.028, 0.01] })
     out.push({ g: SPH_LO, c: '#15100e', p: [ex + sx * 0.002, EYE.y - 0.003, z + 0.014], s: [0.013, 0.015, 0.0065] })
@@ -157,8 +193,15 @@ function face(look: Look): Prim[] {
     // cheek blush
     out.push({ g: SPH_LO, c: mix(skin, '#ee8a82', 0.42), p: [sx * 0.074, 0.074, surf(sx * 0.074, 0.074) - 0.002], s: [0.024, 0.015, 0.006] })
   }
-  // smiling mouth: lower arc
-  out.push({ g: torus(0.02, 0.0042, Math.PI * 0.7, 14), c: '#8a3f3a', p: [0, 0.066, surf(0, 0.05) - 0.001], r: [0, 0, -0.85 * Math.PI] })
+  if (look.lips) {
+    // painted lips: a full upper and lower lip in a small open pout
+    out.push({ g: SPH_LO, c: look.lips, p: [0, 0.064, surf(0, 0.064) - 0.003], s: [0.022, 0.007, 0.008] })
+    out.push({ g: SPH_LO, c: look.lips, p: [0, 0.05, surf(0, 0.05) - 0.003], s: [0.02, 0.009, 0.009] })
+    out.push({ g: SPH_LO, c: '#3a1418', p: [0, 0.057, surf(0, 0.057) - 0.004], s: [0.012, 0.004, 0.006] })
+  } else {
+    // smiling mouth: lower arc
+    out.push({ g: torus(0.02, 0.0042, Math.PI * 0.7, 14), c: '#8a3f3a', p: [0, 0.066, surf(0, 0.05) - 0.001], r: [0, 0, -0.85 * Math.PI] })
+  }
   return out
 }
 
@@ -237,6 +280,17 @@ function hair(look: Look): Prim[] {
       out.push({ g: cone(0.042, len), c: Math.abs(f) > 100 ? tint(h, 0.92) : h, p: [pos.x + d.x * len * 0.4, pos.y + d.y * len * 0.4, pos.z + d.z * len * 0.4], q: toward(d) })
     }
     out.push({ g: SPH, c: h, p: [0, 0.2, -0.02], s: [0.12, 0.09, 0.12] })
+  } else if (look.hairStyle === 'teased') {
+    // big teased hair: a tall rounded volume over the crown, blunt bangs to the brows, long straight sides past the shoulders
+    out.push({ g: SPH, c: h, p: [0, 0.275, -0.035], s: [0.172, 0.19, 0.17] })
+    out.push({ g: SPH, c: lighter, p: [0.05, 0.33, 0.0], s: [0.09, 0.06, 0.09] })
+    out.push({ g: SPH, c: h, p: [0, 0.15, -0.07], s: [0.17, 0.16, 0.13] })
+    out.push({ g: rbox(0.2, 0.06, 0.05, 0.02), c: h, p: [0, 0.2, surf(0, 0.2) - 0.006], r: [-0.25, 0, 0] })
+    for (const sx of [-1, 1]) {
+      out.push({ g: rbox(0.05, 0.36, 0.09, 0.022), c: h, p: [sx * 0.135, -0.03, 0.01], r: [0, 0, sx * 0.04] })
+      out.push({ g: rbox(0.04, 0.32, 0.06, 0.02), c: tint(h, 1.15), p: [sx * 0.105, -0.06, 0.055], r: [0.08, 0, sx * 0.08] })
+    }
+    out.push({ g: rbox(0.26, 0.42, 0.07, 0.03), c: h, p: [0, -0.04, -0.1] })
   } else {
     // tousled short wavy hair: tufts on top, a curly fringe falling on the forehead
     const tufts: [number, number][] = [
@@ -389,6 +443,7 @@ function build(look: Look): Record<PartName, THREE.BufferGeometry> {
       : []
   // eyelid (visible when blinking): a skin colored half ellipsoid covering the eye
   const lid: Prim[] = [{ g: SPH, c: tint(look.skin, 0.93), p: [0, 0, 0.004], s: [0.033, 0.037, 0.019] }]
+  if (look.gown) gown(look, { pelvis, thigh, shin, foot, spine, chest, upperArm, forearm, hand })
   return {
     pelvis: bake(pelvis),
     thigh: bake(thigh),
@@ -404,6 +459,77 @@ function build(look: Look): Record<PartName, THREE.BufferGeometry> {
     tail: tail.length ? bake(tail) : new THREE.BufferGeometry(),
     lid: bake(lid),
   }
+}
+
+/**
+ * Replaces the casual clothes with the gown (in place). Each leg carries its own flared skirt panel, so the gown walks and
+ * sits with the legs; the gap between the two panels in front reads as the slit. The hem ends in a fringe of points just
+ * above the floor, with a short train behind.
+ */
+function gown(look: Look, parts: Record<'pelvis' | 'thigh' | 'shin' | 'foot' | 'spine' | 'chest' | 'upperArm' | 'forearm' | 'hand', Prim[]>) {
+  const b = look.build
+  const d = look.top
+  const sheen = tint(d, 1.6)
+  const T = LEG.thigh
+  const S = LEG.shin
+  const belt = '#0b0b0d'
+  parts.pelvis.length = 0
+  parts.pelvis.push(
+    { g: SPH, c: d, p: [0, -0.03, -0.012], s: [0.15 * b, 0.1, 0.1] },
+    // wide belt with a jeweled clasp (gold bar with a red stone) on the left front
+    { g: cyl(0.158, 0.162, 0.1, 28), c: belt, p: [0, 0.07, 0], s: [b, 1, 0.82] },
+    { g: rbox(0.02, 0.07, 0.012, 0.004), c: '#d4b25a', p: [0.05, 0.07, 0.13], r: [0, 0, -0.5] },
+    { g: SPH_LO, c: look.accent, p: [0.06, 0.09, 0.135], s: [0.012, 0.012, 0.008] },
+  )
+  parts.thigh.length = 0
+  parts.thigh.push(
+    { g: SPH, c: d, p: [0, -0.01, 0], s: [0.1, 0.1, 0.1] },
+    { g: cyl(0.1, 0.12, T, 24), c: d, p: [0, -T / 2, -0.006] },
+  )
+  parts.shin.length = 0
+  const hemY = -S - 0.04
+  parts.shin.push(
+    { g: cyl(0.12, 0.17, S + 0.04, 26), c: d, p: [0, hemY / 2, -0.01] },
+    // short train behind the heel
+    { g: SPH, c: d, p: [0, hemY + 0.01, -0.13], s: [0.13, 0.025, 0.12] },
+  )
+  // fringed hem: points around the bottom edge
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2
+    parts.shin.push({ g: cone(0.018, 0.05, 6), c: i % 2 ? d : sheen, p: [Math.sin(a) * 0.165, hemY - 0.02, Math.cos(a) * 0.165 - 0.01], r: [Math.PI, 0, 0] })
+  }
+  // pointed black pumps, mostly hidden under the hem
+  parts.foot.length = 0
+  parts.foot.push(
+    { g: rbox(0.07, 0.05, 0.17, 0.025), c: look.shoes, p: [0, -0.04, 0.05] },
+    { g: SPH, c: look.shoes, p: [0, -0.05, 0.14], s: [0.035, 0.025, 0.05] },
+    { g: cyl(0.01, 0.006, 0.06, 8), c: look.shoes, p: [0, -0.04, -0.03] },
+  )
+  // bodice: fitted, a narrow V neckline (skin) from the collarbone down
+  parts.spine.length = 0
+  parts.spine.push({ g: SPH, c: d, p: [0, 0.08, 0], s: [0.14 * b, 0.13, 0.115] })
+  parts.chest.length = 0
+  parts.chest.push(
+    { g: SPH, c: d, p: [0, 0.06, 0], s: [0.17 * b, 0.17, 0.13] },
+    { g: SPH, c: d, p: [-0.15 * b, 0.122, 0], s: [0.06, 0.055, 0.06] },
+    { g: SPH, c: d, p: [0.15 * b, 0.122, 0], s: [0.06, 0.055, 0.06] },
+    { g: cone(0.04, 0.16, 3), c: look.skin, p: [0, 0.13, 0.121], r: [Math.PI - 0.18, 0, 0], s: [1, 1, 0.25] },
+  )
+  parts.upperArm.length = 0
+  parts.upperArm.push(
+    { g: SPH, c: d, p: [0, 0, 0], s: [0.06, 0.06, 0.06] },
+    { g: cyl(0.06, 0.055, 0.24), c: d, p: [0, -0.12, 0] },
+    { g: SPH, c: d, p: [0, -0.262, 0], s: [0.054, 0.054, 0.054] },
+  )
+  // sleeve flaring out past the wrist, with a fringe of points
+  parts.forearm.length = 0
+  parts.forearm.push({ g: cap(0.047, 0.12), c: d, p: [0, -0.09, 0] }, { g: cyl(0.05, 0.085, 0.09, 20), c: d, p: [0, -0.2, 0] })
+  for (let i = 0; i < 9; i++) {
+    const a = (i / 9) * Math.PI * 2
+    parts.forearm.push({ g: cone(0.012, 0.05, 5), c: i % 2 ? d : sheen, p: [Math.sin(a) * 0.08, -0.265, Math.cos(a) * 0.08], r: [Math.PI, 0, 0] })
+  }
+  // painted nails at the front of the fist
+  if (look.nails) for (const x of [-0.022, -0.007, 0.008, 0.023]) parts.hand.push({ g: SPH_LO, c: look.nails, p: [x, -0.083, 0.032], s: [0.007, 0.006, 0.006] })
 }
 
 const cache = new Map<Look, Record<PartName, THREE.BufferGeometry>>()

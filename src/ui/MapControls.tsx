@@ -82,6 +82,8 @@ function PeoplePanel({ onClose }: { onClose: () => void }) {
   const setShow = useView((s) => s.setPeople)
   const residents = useView((s) => s.residents)
   const setResidents = useView((s) => s.setResidents)
+  const outfits = useView((s) => s.outfits)
+  const setOutfit = useView((s) => s.setOutfit)
   const street = useView((s) => s.street)
   const setStreet = useView((s) => s.setStreet)
   const { plan, level } = usePeoplePlan()
@@ -114,6 +116,20 @@ function PeoplePanel({ onClose }: { onClose: () => void }) {
             </button>
           ))}
         </div>
+      </div>
+      <div className="grid gap-1.5" id="people-outfits">
+        <span className="text-[12px] font-semibold text-ink-2">{t('Outfits')}</span>
+        {Array.from({ length: residents }, (_, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <span className="w-16 shrink-0 truncate text-[12px] text-ink-2">{t('Person {n}', { n: i + 1 })}</span>
+            <button type="button" id={`outfit-${i}-casual`} className={seg(outfits[i] !== 'gown')} onClick={() => setOutfit(i, 'casual')}>
+              {t('Casual')}
+            </button>
+            <button type="button" id={`outfit-${i}-gown`} className={seg(outfits[i] === 'gown')} onClick={() => setOutfit(i, 'gown')}>
+              {t('Gothic gown')}
+            </button>
+          </div>
+        ))}
       </div>
       {plan && (
         <p className="rounded-xl bg-surface-2 px-3 py-2 text-[12px] leading-relaxed text-ink-2" id="people-status">

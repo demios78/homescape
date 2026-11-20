@@ -12,7 +12,7 @@ import { useView } from './camera'
 import { markShadows } from './frame'
 import { Human } from './Human'
 import { animateHuman, type HumanRefs } from './humanAnim'
-import { LOOKS } from './humanModel'
+import { GOWN_LOOK, LOOKS } from './humanModel'
 import { useAmbient } from './kit/effects'
 
 /*
@@ -238,6 +238,7 @@ function step(w: Walker, dt: number, t: number): boolean {
 }
 
 function Crowd({ plan, level }: { plan: PeoplePlan; level: Level }) {
+  const outfits = useView((s) => s.outfits)
   const walkers = useRef<(Walker | null)[]>(Array(MAX).fill(null))
   const refs = useRef<(HumanRefs | null)[]>(Array(MAX).fill(null))
   const registers = useMemo(() => Array.from({ length: MAX }, (_, i) => (r: HumanRefs | null) => void (refs.current[i] = r)), [])
@@ -365,7 +366,7 @@ function Crowd({ plan, level }: { plan: PeoplePlan; level: Level }) {
   return (
     <>
       {LOOKS.slice(0, MAX).map((look, i) => (
-        <Human key={i} look={look} register={registers[i]} />
+        <Human key={i} look={outfits[i] === 'gown' ? GOWN_LOOK : look} register={registers[i]} />
       ))}
     </>
   )

@@ -64,6 +64,17 @@ function readStreet(): StreetKinds {
   }
 }
 const RESIDENTS_KEY = 'homescape-residents'
+const OUTFITS_KEY = 'homescape-outfits'
+/** What each household member wears (scene/humanModel.ts > Outfit; kept as plain strings so this file stays free of three) */
+export type PersonOutfit = 'casual' | 'gown'
+function readOutfits(): PersonOutfit[] {
+  try {
+    const v = JSON.parse(readPref(OUTFITS_KEY) ?? '[]') as unknown
+    return [0, 1, 2, 3].map((i) => (Array.isArray(v) && v[i] === 'gown' ? 'gown' : 'casual'))
+  } catch {
+    return ['casual', 'casual', 'casual', 'casual']
+  }
+}
 const LOWER_KEY = 'homescape-lower-floors'
 // v2: the old roof button switched to "Always" (which turned off lifting on approach); the new button toggles between Auto and Hidden
 const ROOF_KEY = 'homescape-roof-v2'
@@ -114,6 +125,8 @@ interface ViewState {
   street: StreetKinds
   /** Household: number of people at home when there is no motion (1-4, default 2). Remembered. */
   residents: number
+  /** Outfit per household slot (four entries; casual or gothic gown). Remembered. */
+  outfits: PersonOutfit[]
   /** Whether lower floors are drawn below the active floor (building view in a multi-storey home). Remembered. */
   lowerFloors: boolean
   /** Room names on the 3D view in view mode (remembered); edit mode always shows them with their size */
@@ -138,6 +151,7 @@ interface ViewState {
   setPeople: (on: boolean) => void
   setStreet: (kind: keyof StreetKinds, on: boolean) => void
   setResidents: (n: number) => void
+  setOutfit: (slot: number, outfit: PersonOutfit) => void
   setLowerFloors: (on: boolean) => void
   setLabels: (on: boolean) => void
   setRoof: (mode: RoofMode) => void
@@ -157,6 +171,7 @@ export const useView = create<ViewState>()((set, get) => ({
   people: readPref(PEOPLE_KEY) !== '0',
   street: readStreet(),
   residents: Math.min(4, Math.max(1, Number(readPref(RESIDENTS_KEY)) || 2)),
+  outfits: readOutfits(),
   lowerFloors: readPref(LOWER_KEY) !== '0',
   labels: readPref(LABELS_KEY) !== '0',
   roof: (['auto', 'on', 'off'] as const).find((m) => m === readPref(ROOF_KEY)) ?? 'auto',
@@ -192,6 +207,11 @@ export const useView = create<ViewState>()((set, get) => ({
   setResidents: (residents) => {
     writePref(RESIDENTS_KEY, String(residents))
     set({ residents })
+  },
+  setOutfit: (slot, outfit) => {
+    const outfits = get().outfits.map((o, i) => (i === slot ? outfit : o))
+    writePref(OUTFITS_KEY, JSON.stringify(outfits))
+    set({ outfits })
   },
   setLowerFloors: (lowerFloors) => {
     writePref(LOWER_KEY, lowerFloors ? '1' : '0')
