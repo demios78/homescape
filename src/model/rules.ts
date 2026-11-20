@@ -48,6 +48,7 @@ const WALL_SPAN: Record<string, [number, number]> = {
   plug: [0.255, 0.385],
   window: [0.87, 2.2],
   painting: [1.25, 1.85],
+  'painting:calligraphy': [1.195, 1.905],
   carromBoard: [0.795, 1.605],
   pegboard: [1.02, 1.58],
   'mirror:tall': [0.25, 1.87],
@@ -84,7 +85,7 @@ function spanOf(kind: ItemKind, variant?: string, len2?: number): [number, numbe
   if (kind === 'window') return [WINDOW_BOTTOM - 0.03, WINDOW_BOTTOM + windowSize({ len2 }).h + 0.1]
   // Minifigure clock: centered at 1.55 m, as tall as its diameter (Item.len2)
   if (kind === 'minifigClock') return [1.55 - (len2 ?? 0.8) / 2, 1.55 + (len2 ?? 0.8) / 2]
-  return WALL_SPAN[kind === 'mirror' ? `mirror:${variant ?? 'tall'}` : kind === 'tv' ? 'tv:wall' : kind] ?? [0, WALL_H]
+  return WALL_SPAN[kind === 'mirror' ? `mirror:${variant ?? 'tall'}` : kind === 'tv' ? 'tv:wall' : kind === 'painting' && variant === 'calligraphy' ? 'painting:calligraphy' : kind] ?? [0, WALL_H]
 }
 
 /** Whether the item hangs on a wall (wall TV and wall-mounted power strip included): its height is adjustable. */

@@ -1021,7 +1021,19 @@ export const OPTIONS: Partial<
     top: t('Filament color'),
     topList: ACCENT_COLORS,
   },
-  fireplace: { top: t('Frame color'), topDef: '#dcb98c', note: t("Bind the fireplace's plug, climate or light entity: the flames burn while it is on.") },
+  fireplace: {
+    variantLabel: t('Type'),
+    variants: [
+      ['electric', t('Electric')],
+      ['mantel', t('Wood mantel')],
+    ],
+    variantDef: 'electric',
+    variantLen: { electric: 1.2, mantel: 1.68 },
+    variantLen2: { electric: 0.3, mantel: 0.8 },
+    top: t('Frame color'),
+    topDef: '#dcb98c',
+    note: t("Bind the fireplace's plug, climate or light entity: the flames burn while it is on."),
+  },
   tree: {
     variantLabel: t('Type'),
     variants: [
@@ -1315,7 +1327,16 @@ export const OPTIONS: Partial<
   garageDoor: { note: t("Bind the garage door's motor (cover) or door sensor: the panels slide up as far as it is open.") },
   pegboard: { body: t('Panel color') },
   deskPalm: { body: t('Pot color'), bodyDef: '#ffffff' },
-  painting: { body: t('Frame color') },
+  painting: {
+    variantLabel: t('Type'),
+    variants: [
+      ['art', t('Abstract art')],
+      ['calligraphy', t('Calligraphy')],
+    ],
+    variantDef: 'art',
+    variantLen: { art: 0.8, calligraphy: 0.92 },
+    body: t('Frame color'),
+  },
   aquarium: { body: t('Cabinet color') },
   // Pets: the cat's coat, the dog's breed (scene/petModel.ts > CAT_LOOKS, DOG_LOOKS), item colors
   cat: {
@@ -1560,7 +1581,7 @@ export const DOUBLE_DOOR_W = 1.5
 export function sizeOf(kind: ItemKind, len?: number, len2?: number): [number, number] {
   const [w, d] = CATALOG[kind].size
   // The second size only for kinds that use it as depth (ceiling strip, rug); the L arm of a counter is computed separately.
-  if (kind === 'ceilingStrip' || kind === 'beamLights' || kind === 'diningTable' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel' || kind === 'coffeeTable' || kind === 'washer' || kind === 'dryer' || kind === 'wallCabinetShelf') return [len ?? w, len2 ?? d]
+  if (kind === 'ceilingStrip' || kind === 'beamLights' || kind === 'diningTable' || kind === 'rug' || kind === 'doormat' || kind === 'pool' || kind === 'bed' || kind === 'daybed' || kind === 'brickModel' || kind === 'coffeeTable' || kind === 'washer' || kind === 'dryer' || kind === 'wallCabinetShelf' || kind === 'fireplace') return [len ?? w, len2 ?? d]
   // A ceiling fan is round: the blade span in both directions
   if (kind === 'ceilingFan') return [len ?? w, len ?? d]
   // The minifigure clock is round: its diameter (Item.len2) is its width on the wall

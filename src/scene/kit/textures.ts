@@ -1844,3 +1844,217 @@ export function diamondFabricTexture() {
       }
   })
 }
+
+/**
+ * Cast iron fire screen (alpha cutout): thick dark scrolls, S curves and hearts, a frame bar along the edges with a dipped
+ * top, and a large flower in the lower middle. Transparent between the bars; used with alphaTest.
+ */
+export function ironScreenTexture() {
+  return base(
+    'iron-screen',
+    (g, s) => {
+      g.clearRect(0, 0, s, s)
+      g.strokeStyle = '#1b1a1c'
+      g.lineCap = 'round'
+      g.lineJoin = 'round'
+      const r = rngOf(7)
+      // outer frame: sides, bottom, a top bar that dips in the middle
+      g.lineWidth = s * 0.035
+      g.beginPath()
+      g.moveTo(s * 0.03, s * 0.97)
+      g.lineTo(s * 0.03, s * 0.05)
+      g.quadraticCurveTo(s * 0.5, s * 0.16, s * 0.97, s * 0.05)
+      g.lineTo(s * 0.97, s * 0.97)
+      g.closePath()
+      g.stroke()
+      // scroll rows: pairs of S curves and C scrolls
+      g.lineWidth = s * 0.022
+      for (let row = 0; row < 3; row++) {
+        const y0 = s * (0.2 + row * 0.26)
+        for (let col = 0; col < 5; col++) {
+          const x0 = s * (0.1 + col * 0.2)
+          const flip = (row + col) % 2 ? 1 : -1
+          g.beginPath()
+          g.moveTo(x0, y0)
+          g.bezierCurveTo(x0 + flip * s * 0.09, y0 + s * 0.02, x0 - flip * s * 0.09, y0 + s * 0.16, x0, y0 + s * 0.2)
+          g.stroke()
+          g.beginPath()
+          g.arc(x0 + flip * s * 0.04, y0 + s * 0.035, s * 0.03, 0, Math.PI * (1.4 + r() * 0.4))
+          g.stroke()
+        }
+      }
+      // horizontal tie bars
+      g.lineWidth = s * 0.016
+      for (const y of [0.42, 0.68]) {
+        g.beginPath()
+        g.moveTo(s * 0.03, s * y)
+        g.lineTo(s * 0.97, s * y)
+        g.stroke()
+      }
+      // flower in the lower middle
+      g.lineWidth = s * 0.018
+      const cx = s * 0.55
+      const cy = s * 0.62
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2
+        g.beginPath()
+        g.ellipse(cx + Math.cos(a) * s * 0.06, cy + Math.sin(a) * s * 0.06, s * 0.055, s * 0.02, a, 0, Math.PI * 2)
+        g.stroke()
+      }
+      g.fillStyle = '#1b1a1c'
+      g.beginPath()
+      g.arc(cx, cy, s * 0.035, 0, Math.PI * 2)
+      g.fill()
+      // a smaller flower upper left
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2
+        g.beginPath()
+        g.ellipse(s * 0.2 + Math.cos(a) * s * 0.035, s * 0.33 + Math.sin(a) * s * 0.035, s * 0.03, s * 0.012, a, 0, Math.PI * 2)
+        g.stroke()
+      }
+    },
+    512,
+  )
+}
+
+/**
+ * Calligraphy panel: a black ground with a gold vine border and a heading band, then a grid of cells, each holding an
+ * abstract gold script stroke (flowing curves and dots, not real letters).
+ */
+export function calligraphyTexture() {
+  return base(
+    'calligraphy',
+    (g, s) => {
+      g.fillStyle = '#18191d'
+      g.fillRect(0, 0, s, s)
+      const gold = '#d8c48f'
+      g.strokeStyle = gold
+      g.fillStyle = gold
+      const r = rngOf(11)
+      // vine border: two rules with small flowers between them
+      g.lineWidth = 2
+      g.strokeRect(s * 0.04, s * 0.05, s * 0.92, s * 0.9)
+      g.strokeRect(s * 0.08, s * 0.1, s * 0.84, s * 0.8)
+      for (let i = 0; i < 40; i++) {
+        const t = i / 40
+        const pts = [
+          [s * (0.06 + t * 0.88), s * 0.075],
+          [s * (0.06 + t * 0.88), s * 0.925],
+          [s * 0.06, s * (0.075 + t * 0.85)],
+          [s * 0.94, s * (0.075 + t * 0.85)],
+        ]
+        for (const [x, y] of pts) {
+          g.beginPath()
+          g.arc(x, y, s * 0.006, 0, Math.PI * 2)
+          g.fill()
+        }
+      }
+      // heading band of arches
+      g.lineWidth = 2.5
+      for (let i = 0; i < 9; i++) {
+        const x = s * (0.12 + i * 0.095)
+        g.beginPath()
+        g.arc(x, s * 0.155, s * 0.03, Math.PI, 0)
+        g.stroke()
+      }
+      // grid: 10 columns, 9 rows
+      const x0 = s * 0.1
+      const x1 = s * 0.9
+      const y0 = s * 0.2
+      const y1 = s * 0.88
+      const cols = 10
+      const rows = 9
+      g.lineWidth = 1.2
+      g.globalAlpha = 0.7
+      for (let c = 0; c <= cols; c++) {
+        g.beginPath()
+        g.moveTo(x0 + ((x1 - x0) * c) / cols, y0)
+        g.lineTo(x0 + ((x1 - x0) * c) / cols, y1)
+        g.stroke()
+      }
+      for (let k = 0; k <= rows; k++) {
+        g.beginPath()
+        g.moveTo(x0, y0 + ((y1 - y0) * k) / rows)
+        g.lineTo(x1, y0 + ((y1 - y0) * k) / rows)
+        g.stroke()
+      }
+      g.globalAlpha = 1
+      g.lineWidth = 2.2
+      const cw = (x1 - x0) / cols
+      const ch = (y1 - y0) / rows
+      for (let k = 0; k < rows; k++) {
+        for (let c = 0; c < cols; c++) {
+          const cx = x0 + cw * c
+          const cy = y0 + ch * k + ch * 0.62
+          // a flowing baseline stroke with one or two rising strokes and a dot
+          g.beginPath()
+          g.moveTo(cx + cw * 0.85, cy - ch * 0.1 * r())
+          g.bezierCurveTo(cx + cw * 0.6, cy + ch * 0.2, cx + cw * 0.35, cy - ch * 0.15, cx + cw * 0.12, cy + ch * 0.08)
+          g.stroke()
+          const n = 1 + Math.floor(r() * 2)
+          for (let i = 0; i < n; i++) {
+            const x = cx + cw * (0.25 + r() * 0.5)
+            g.beginPath()
+            g.moveTo(x, cy)
+            g.lineTo(x + cw * 0.03, cy - ch * (0.35 + r() * 0.2))
+            g.stroke()
+          }
+          g.beginPath()
+          g.arc(cx + cw * (0.3 + r() * 0.4), cy - ch * 0.42, 1.6, 0, Math.PI * 2)
+          g.fill()
+        }
+      }
+    },
+    1024,
+  )
+}
+
+/** Embossed champagne silver picture frame moulding: a scroll relief along the length (repeats along u). */
+export function ornateFrameTexture() {
+  return base('ornate-frame', (g, s) => {
+    const grad = g.createLinearGradient(0, 0, 0, s)
+    grad.addColorStop(0, '#ddd5bb')
+    grad.addColorStop(0.5, '#fbf6e6')
+    grad.addColorStop(1, '#d0c7aa')
+    g.fillStyle = grad
+    g.fillRect(0, 0, s, s)
+    g.lineWidth = s * 0.03
+    for (let i = 0; i < 4; i++) {
+      const x = (i + 0.5) * (s / 4)
+      g.strokeStyle = '#f6f0da'
+      g.beginPath()
+      g.arc(x, s * 0.5, s * 0.12, Math.PI * 0.2, Math.PI * 1.6)
+      g.stroke()
+      g.strokeStyle = '#a49a7c'
+      g.beginPath()
+      g.arc(x + s * 0.06, s * 0.5, s * 0.07, Math.PI * 1.2, Math.PI * 2.6)
+      g.stroke()
+    }
+  })
+}
+
+/** Birch bark: off-white with dark horizontal lenticels and a few peeling tan patches. */
+export function birchTexture() {
+  return base('birch', (g, s) => {
+    g.fillStyle = '#e9e2d2'
+    g.fillRect(0, 0, s, s)
+    const r = rngOf(5)
+    for (let i = 0; i < 70; i++) {
+      g.fillStyle = r() < 0.75 ? '#3a332c' : '#b88a5e'
+      g.fillRect(r() * s, r() * s, s * (0.02 + r() * 0.08), s * (0.006 + r() * 0.02))
+    }
+  })
+}
+
+/** Seeded random numbers for the textures above (same drawing on every load). */
+function rngOf(seed: number) {
+  let s = seed >>> 0 || 1
+  return () => {
+    s ^= s << 13
+    s >>>= 0
+    s ^= s >> 17
+    s ^= s << 5
+    s >>>= 0
+    return s / 4294967296
+  }
+}

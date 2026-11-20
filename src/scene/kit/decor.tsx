@@ -5,7 +5,7 @@ import { useAmbient, useLitMaterial } from './effects'
 import { C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
 import { useScreen } from './screens'
-import { artTexture, carromTexture, keyboardTexture, pegboardTexture, shutterFrameTexture } from './textures'
+import { artTexture, calligraphyTexture, carromTexture, keyboardTexture, ornateFrameTexture, pegboardTexture, shutterFrameTexture } from './textures'
 import { monitorOn, type Visual } from './visual'
 
 /*
@@ -108,6 +108,42 @@ export function Pegboard({ v }: P) {
 
 /** Painting: thin frame, pastel abstract picture (front faces +z). Centre height 1.55 m. */
 export function Painting({ v }: P) {
+  if (v.opts.variant === 'calligraphy') return <CalligraphyPanel v={v} />
+  return <ArtPainting v={v} />
+}
+
+/** Calligraphy frame height (m); its width is Item.len (0.92 by default). Centre at 1.55 m like the painting. */
+const CALLI_H = 0.71
+
+/**
+ * Framed calligraphy (Item.variant 'calligraphy'): a wide embossed champagne silver frame with a mitred, slightly raised
+ * moulding, a thin gold liner and a black panel with a gold vine border and a grid of script cells.
+ */
+function CalligraphyPanel({ v }: P) {
+  const W = v.opts.len ?? 0.92
+  const H = CALLI_H
+  const F = 0.085
+  const frame = useMemo(() => new THREE.MeshStandardMaterial({ map: ornateFrameTexture(), color: '#fffaf0', roughness: 0.45, metalness: 0.1 }), [])
+  const panel = useMemo(() => new THREE.MeshStandardMaterial({ map: calligraphyTexture(), roughness: 0.8 }), [])
+  return (
+    <group position={[0, 1.55, 0]}>
+      <Box size={[W, H, 0.012]} position={[0, 0, -0.016]} color="#18191d" />
+      {[-1, 1].map((k) => (
+        <group key={k}>
+          <Box size={[W, F, 0.04]} position={[0, k * (H / 2 - F / 2), 0]} material={frame} radius={0.008} />
+          <Box size={[F, H - 2 * F + 0.002, 0.04]} position={[k * (W / 2 - F / 2), 0, 0]} material={frame} radius={0.008} />
+          <Box size={[W - 2 * F, 0.008, 0.012]} position={[0, k * (H / 2 - F - 0.004), 0.004]} color="#c8b47a" shadow={false} />
+          <Box size={[0.008, H - 2 * F, 0.012]} position={[k * (W / 2 - F - 0.004), 0, 0.004]} color="#c8b47a" shadow={false} />
+        </group>
+      ))}
+      <mesh position={[0, 0, -0.002]} material={panel}>
+        <planeGeometry args={[W - 2 * F - 0.016, H - 2 * F - 0.016]} />
+      </mesh>
+    </group>
+  )
+}
+
+function ArtPainting({ v }: P) {
   const tex = artTexture()
   return (
     <group>

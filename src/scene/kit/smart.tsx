@@ -8,7 +8,7 @@ import { markShadows } from '../frame'
 import { Airflow, Glow, Mist, MusicNotes, Ripple, Spin, useAmbient, useLitMaterial } from './effects'
 import { C } from './palette'
 import { Ball, Box, Cyl, mat, rng } from './primitives'
-import { glowTexture, keyboardTexture } from './textures'
+import { birchTexture, glowTexture, ironScreenTexture, keyboardTexture } from './textures'
 import type { Visual } from './visual'
 
 /*
@@ -822,6 +822,112 @@ function Flames({ y, night }: { y: number; night: boolean }) {
  * color Item.top.
  */
 export function Fireplace({ v }: P) {
+  if (v.opts.variant === 'mantel') return <MantelFireplace v={v} />
+  return <ElectricFireplace v={v} />
+}
+
+/**
+ * Wood fireplace with a mantel (Item.variant 'mantel', 1.68 x 0.8 m by default, Item.len / Item.len2): a white surround
+ * (stepped pilasters, frieze, a dentil row, crown and a shelf at 1.37 m), a black slate panel around a dark firebox with a
+ * cast iron grate and three birch logs, a raised black hearth with a white edge on a wood plinth, and a freestanding cast
+ * iron scroll screen on the hearth. With a bound entity on, embers glow and flames burn. Body Item.body, shelf Item.top.
+ */
+function MantelFireplace({ v }: P) {
+  const W = v.opts.len ?? 1.68
+  const D = v.opts.len2 ?? 0.8
+  const body = bodyOf(v, C.white)
+  const shelf = v.opts.top ?? body
+  const back = -D / 2
+  const md = 0.26
+  const zf = back + md
+  const SW = W - 0.18
+  const leg = 0.28
+  const OW = SW - 2 * leg
+  const yb = 0.045
+  const yt = 1.0
+  const fw = OW - 0.1
+  const fh = 0.62
+  const hd = D - md
+  const slate = mat('#4b4d54', { roughness: 0.35 })
+  const soot = '#262427'
+  const iron = mat('#2a282b', { roughness: 0.6, metalness: 0.3 })
+  const embers = useLitMaterial('#3a2a26', v.on, '#ff6a2a', 0.8, 1.6)
+  const birch = useMemo(() => new THREE.MeshStandardMaterial({ map: birchTexture(), roughness: 0.85 }), [])
+  const screen = useMemo(() => new THREE.MeshStandardMaterial({ map: ironScreenTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6, metalness: 0.3 }), [])
+  const fz = (back + zf) / 2
+  const dentils = Math.floor((SW + 0.02) / 0.045)
+  return (
+    <group>
+      {/* hearth: wood plinth, white edge, black slab */}
+      <Box size={[W - 0.04, 0.015, hd + 0.02]} position={[0, 0.0075, zf + hd / 2 - 0.01]} color="#6b3f22" />
+      <Box size={[W - 0.06, 0.03, hd]} position={[0, 0.03, zf + hd / 2 - 0.005]} color={body} />
+      <Box size={[W - 0.14, 0.004, hd - 0.06]} position={[0, 0.047, zf + (hd - 0.06) / 2]} material={slate} shadow={false} />
+      {/* pilasters with a raised panel and a capital */}
+      {[-1, 1].map((k) => (
+        <group key={k} position={[k * (SW / 2 - leg / 2), 0, 0]}>
+          <Box size={[leg, yt + 0.2 - yb, md - 0.02]} position={[0, (yt + 0.2 + yb) / 2, back + (md - 0.02) / 2]} color={body} />
+          <Box size={[leg - 0.08, yt - yb - 0.08, 0.018]} position={[0, (yt + yb) / 2, zf - 0.011]} color={body} />
+          <Box size={[leg - 0.12, yt - yb - 0.16, 0.01]} position={[0, (yt + yb) / 2, zf + 0.002]} color={tint(body, 0.97)} />
+          <Box size={[leg + 0.03, 0.05, md + 0.01]} position={[0, yt + 0.12, back + (md + 0.01) / 2]} color={body} />
+        </group>
+      ))}
+      {/* frieze over the opening, dentil row, crown steps and the shelf */}
+      <Box size={[OW + 0.02, yt + 0.2 - yt, md - 0.02]} position={[0, yt + 0.1, back + (md - 0.02) / 2]} color={body} />
+      <Box size={[SW + 0.06, 0.03, md + 0.02]} position={[0, yt + 0.215, back + (md + 0.02) / 2]} color={body} />
+      {Array.from({ length: dentils }, (_, i) => (
+        <Box key={i} size={[0.025, 0.035, 0.02]} position={[-((dentils - 1) * 0.045) / 2 + i * 0.045, yt + 0.25, zf + 0.02]} color={body} shadow={false} />
+      ))}
+      <Box size={[SW + 0.1, 0.035, md + 0.03]} position={[0, yt + 0.25, back + (md + 0.03) / 2]} color={tint(body, 0.96)} />
+      <Box size={[W - 0.04, 0.05, md + 0.06]} position={[0, yt + 0.3, back + (md + 0.06) / 2]} color={body} />
+      <Box size={[W, 0.035, md + 0.09]} position={[0, yt + 0.3525, back + (md + 0.09) / 2]} color={shelf} radius={0.006} />
+      {/* slate panel around the firebox */}
+      <Box size={[OW, yt - yb - fh, 0.012]} position={[0, (yt + yb + fh) / 2, zf - 0.03]} material={slate} />
+      {[-1, 1].map((k) => (
+        <Box key={k} size={[(OW - fw) / 2, fh, 0.012]} position={[k * (fw / 2 + (OW - fw) / 4), yb + fh / 2, zf - 0.03]} material={slate} />
+      ))}
+      {/* firebox: back, sides and floor */}
+      <Box size={[fw, fh, 0.02]} position={[0, yb + fh / 2, back + 0.01]} color={soot} shadow={false} />
+      {[-1, 1].map((k) => (
+        <Box key={k} size={[0.02, fh, md - 0.04]} position={[k * (fw / 2 - 0.01), yb + fh / 2, back + (md - 0.04) / 2]} color={soot} shadow={false} />
+      ))}
+      <Box size={[fw, 0.006, md - 0.03]} position={[0, yb + 0.003, back + (md - 0.03) / 2]} color="#3b3a3c" shadow={false} />
+      {/* grate: side rails, cross bars, front prongs and back uprights */}
+      <group position={[0, yb, fz]}>
+        {[-1, 1].map((k) => (
+          <Box key={k} size={[0.015, 0.015, 0.2]} position={[k * 0.26, 0.07, 0]} material={iron} shadow={false} />
+        ))}
+        {[-0.08, 0, 0.08].map((z) => (
+          <Box key={z} size={[0.54, 0.012, 0.012]} position={[0, 0.07, z]} material={iron} shadow={false} />
+        ))}
+        {[-0.2, -0.1, 0, 0.1, 0.2].map((x) => (
+          <group key={x}>
+            <Box size={[0.012, 0.07, 0.012]} position={[x, 0.035, 0.09]} material={iron} shadow={false} />
+            <Box size={[0.012, 0.12, 0.012]} position={[x, 0.12, -0.1]} rotation-x={-0.25} material={iron} shadow={false} />
+          </group>
+        ))}
+        {/* ember bed and birch logs */}
+        <Box size={[0.46, 0.012, 0.14]} position={[0, 0.02, 0]} material={embers} shadow={false} />
+        <Cyl r={0.042} h={0.42} position={[0, 0.12, 0.03]} rotation={[0, 0.05, Math.PI / 2]} material={birch} segments={14} shadow={false} />
+        <Cyl r={0.04} h={0.4} position={[0.01, 0.12, -0.05]} rotation={[0, -0.06, Math.PI / 2]} material={birch} segments={14} shadow={false} />
+        <Cyl r={0.04} h={0.38} position={[0.02, 0.195, -0.01]} rotation={[0, 0.08, Math.PI / 2]} material={birch} segments={14} shadow={false} />
+        {v.on && <Flames y={0.16} night={v.night} />}
+      </group>
+      {/* freestanding cast iron screen on the hearth */}
+      <group position={[0, yb, zf + 0.09]}>
+        {[-0.003, 0.003].map((dz) => (
+          <mesh key={dz} position={[0, 0.34, dz]} material={screen}>
+            <planeGeometry args={[Math.min(0.86, fw + 0.04), 0.66]} />
+          </mesh>
+        ))}
+        {[-1, 1].map((k) => (
+          <Box key={k} size={[0.05, 0.015, 0.16]} position={[k * (Math.min(0.86, fw + 0.04) / 2 - 0.03), 0.008, 0]} material={iron} />
+        ))}
+      </group>
+    </group>
+  )
+}
+
+function ElectricFireplace({ v }: P) {
   const body = bodyOf(v, C.white)
   const shelf = v.opts.top ?? '#dcb98c'
   const embers = useLitMaterial('#3a2a26', v.on, '#ff6a2a', 0.8, 1.6)
